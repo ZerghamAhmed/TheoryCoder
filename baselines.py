@@ -76,6 +76,10 @@ STATE FORMAT:
 
 {state_format}
 
+INITIAL STATE FOR LEVEL:
+
+{starting_state}
+
 PREVIOUS ACTION SEQUENCE PREDICTION:
 
 {previous_guessed_actions}
@@ -213,11 +217,10 @@ class Baselines:
         domain_content = self.load_file(self.domain_file_name)
         world_model_content = self.load_file(self.world_model_load_name)
 
-        formatted_state = json.dumps(state, indent=4)
         prompt = self._make_langchain_prompt(INITIAL_REQUEST_PROMPT,
             actions_set=self.actions_set,
-            state_format=formatted_state,
-            current_state=formatted_state,
+            state_format=engine.state_format,
+            current_state=state,
             domain_file=domain_content,
             world_model=world_model_content,
             utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
@@ -233,15 +236,12 @@ class Baselines:
         domain_content = self.load_file(self.domain_file_name)
         world_model_content = self.load_file(self.world_model_load_name)
 
-        formatted_state = json.dumps(state, indent=4)
-        formatted_replay = json.dumps(replay_buffer, indent=4)
-        formatted_previous_actions = json.dumps(previous_actions, indent=4)
-
         prompt = self._make_langchain_prompt(REFINE_PROMPT,
             actions_set=self.actions_set,
-            state_format=formatted_state,
-            previous_guessed_actions=formatted_previous_actions,
-            replay_buffer=formatted_replay,
+            state_format=engine.state_format,
+            starting_state=state,
+            previous_guessed_actions=previous_actions,
+            replay_buffer=replay_buffer,
             domain_file=domain_content,
             world_model=world_model_content,
             utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
