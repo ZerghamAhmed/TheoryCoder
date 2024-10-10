@@ -1,0 +1,16 @@
+{
+    "0": ["move_to baba_obj_1 flag_obj_1"],
+    "1": ["form_rule flag_word_1 is_word_2 win_word_1", "move_to baba_obj_1 flag_obj_1"],
+    "2": ["push_to win_word_1 [4,5]", "push_to is_word_1 [4,6]"],
+    "3": ["move_to flag_obj_1 baba_obj_1"],
+    "4": ["form_rule rock_word_1 is_word_3 flag_word_2", "move_to baba_obj_1 flag_obj_1"],
+    "5": ["break_rule rock_word_1 is_word_2 rock_word_2", "move_to baba_obj_1 flag_obj_1"],
+    "6": ["move_to baba_obj_1 flag_obj_1"],
+    "7": ["move_to baba_obj_1 flag_obj_1"],
+    "8": ["break_rule wall_word_1 is_word_1 stop_word_1", "move_to baba_obj_1 flag_obj_1"],
+    "9": ["break_rule skull_word_1 is_word_1 kill_word_1", "move_to baba_obj_1 flag_obj_1"],
+    "10": ["break_rule goop_word_1 is_word_3 sink_word_1", "move_to baba_obj_1 flag_obj_1"],
+    "11": ["push_to rock_obj_2 [8,4]", "push_to rock_obj_1 [8,5]", "move_to baba_obj_1 flag_obj_1"],
+    "12": ["break_rule baba_word_1 is_word_2 melt_word_1", "move_to baba_obj_1 flag_obj_1"],
+    "13": ["form_rule keke_word_1 is_word_1 you_word_1", "move_to keke_obj_1 flag_obj_1"]
+}
