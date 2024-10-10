@@ -1,0 +1,7 @@
+To win the level, Baba needs to reach the Flag located at position `[5, 5]`. Starting from position `[2, 2]`, the following action sequence guides Baba around obstacles and pushes rocks when necessary to reach the Flag.
+
+**Action Sequence:**
+
+```Python
+["left", "up", "up", "up", "up", "up", "right", "right", "right", "right", "right", "down", "down", "left"]
+```

@@ -1,0 +1,25 @@
+To solve the level, we'll follow the high-level plan:
+
+1. **Break the "Baba Is Melt" rule** by pushing the `is_word` out of alignment.
+2. **Move Baba to the Flag** to win the game.
+
+Here are the step-by-step actions:
+
+1. **Move Right**: From `(5,4)` to `(6,4)`.
+2. **Move Right**: From `(6,4)` to `(7,4)`.
+3. **Move Right**: From `(7,4)` to `(8,4)`.
+4. **Push `is_word` Left**: Move Left from `(8,4)` to `(7,4)`, pushing `is_word` to `(6,4)`. This breaks the "Baba Is Melt" rule.
+5. **Move Up**: From `(8,4)` to `(8,5)`.
+6. **Move Up**: From `(8,5)` to `(8,6)` (crossing the lava safely since Baba is no longer Melt).
+7. **Move Up**: From `(8,6)` to `(8,7)`.
+8. **Move Up**: From `(8,7)` to `(8,8)`.
+9. **Move Left**: From `(8,8)` to `(7,8)`.
+10. **Move Left**: From `(7,8)` to `(6,8)`.
+11. **Move Left**: From `(6,8)` to `(5,8)`.
+12. **Move Left**: From `(5,8)` to `(4,8)` where the Flag is located.
+
+By following these actions, Baba reaches the Flag and wins the level.
+
+```Python
+["right", "right", "right", "left", "up", "up", "up", "up", "left", "left", "left", "left"]
+```

@@ -1,0 +1,14 @@
+To achieve the high-level plan and win the level, we need to:
+
+1. Move Baba from its initial position (2,6) to reach and push rock_obj_2 at (8,3) north into the goop at (8,4), which will remove both the rock and the goop.
+2. Then, maneuver Baba to get behind rock_obj_1 at (7,3) and push it east to (8,3).
+3. Push rock_obj_1 north to (8,5) through (8,4), sinking it into the goop at (8,5) and clearing the path.
+4. Finally, move Baba to the flag at (7,7) to win the game.
+
+Here is the sequence of actions to accomplish this:
+
+```Python
+["down", "down", "down", "down", "right", "right", "right", "right",
+ "right", "right", "up", "down", "left", "left", "up", "right", 
+ "down", "right", "up", "up", "up", "up", "left", "up"]
+```

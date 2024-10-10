@@ -1,0 +1,5 @@
+```Python
+
+["down", "down", "down", "down", "right", "right", "right", "right", "up", "down", "left", "up", "up", "up", "up", "up", "up", "right", "right", "down"]
+
+```
