@@ -13,7 +13,7 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
 )
 import re
-
+import ast 
 
 INITIAL_REQUEST_PROMPT = """
 You are an AI agent that must come up with actions that need to be taken to win the game. 
@@ -86,7 +86,7 @@ PREVIOUS ACTION SEQUENCE PREDICTION:
 
 REPLAY BUFFER:
 
-{replay_buffer}
+{replay_buffer_summary}
 
 HIGH-LEVEL DOMAIN FILE:
 
@@ -113,6 +113,16 @@ explanation:
 Example explanation.
 
 """
+
+import ast
+import json
+import re
+from pathlib import Path
+from copy import deepcopy
+from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate
+from langchain.chat_models import ChatOpenAI
+from games import BabaIsYou
+from predicates import rule_formed
 
 
 class Baselines:
@@ -143,6 +153,7 @@ class Baselines:
             }
         }
         self.actions = []  # Track executed actions
+        self.initial_state = None  # Store the initial state of the level
 
     def _make_langchain_prompt(self, text, **kwargs):
         """Create the Langchain prompt with given template and variables."""
@@ -185,22 +196,39 @@ class Baselines:
         if status == "initial":
             # Initial guess
             sub_dir = "initial"
-            filename = f"prompt.txt" if file_type == "prompt" else \
-                       f"actions.txt" if file_type == "actions" else \
-                       f"response.txt"
+            if file_type == "prompt":
+                filename = "prompt.txt"
+            elif file_type == "actions":
+                filename = "actions.txt"
+            elif file_type == "response":
+                filename = "response.txt"
+            else:
+                raise ValueError("Invalid file_type. Must be 'prompt', 'actions', or 'response'.")
             sub_dir_path = level_dir / sub_dir
         elif status == "won":
             # Win outcome
             sub_dir = "won"
-            filename = f"won_actions.txt" if file_type == "actions" else \
-                       f"won_response.txt"
+            if file_type == "actions":
+                filename = "actions.txt"
+            elif file_type == "response":
+                filename = "response.txt"
+            else:
+                raise ValueError("Invalid file_type for 'won' status. Must be 'actions' or 'response'.")
             sub_dir_path = level_dir / sub_dir
         elif status == "lost":
-            # Refinement steps
-            sub_dir = f"lost_refinement_{step}"
-            filename = f"prompt.txt" if file_type == "prompt" else \
-                       f"actions.txt" if file_type == "actions" else \
-                       f"response.txt"
+            # Refinement steps or initial loss without refinement
+            if self.refine_enabled and step > 0:
+                sub_dir = f"lost_refinement_{step}"
+            else:
+                sub_dir = "lost"
+            if file_type == "prompt":
+                filename = "prompt.txt"
+            elif file_type == "actions":
+                filename = "actions.txt"
+            elif file_type == "response":
+                filename = "response.txt"
+            else:
+                raise ValueError("Invalid file_type. Must be 'prompt', 'actions', or 'response'.")
             sub_dir_path = level_dir / sub_dir
         else:
             raise ValueError("Invalid status. Must be 'initial', 'won', or 'lost'.")
@@ -217,7 +245,8 @@ class Baselines:
         domain_content = self.load_file(self.domain_file_name)
         world_model_content = self.load_file(self.world_model_load_name)
 
-        prompt = self._make_langchain_prompt(INITIAL_REQUEST_PROMPT,
+        prompt = self._make_langchain_prompt(
+            text=INITIAL_REQUEST_PROMPT,  # Reference to external prompt
             actions_set=self.actions_set,
             state_format=engine.state_format,
             current_state=state,
@@ -229,25 +258,28 @@ class Baselines:
         # Save the initial prompt
         self.save_file(level_id, status="initial", step=0, file_type="prompt", content=prompt.to_string())
 
+        # Store the initial state for future refinements
+        if self.initial_state is None:
+            self.initial_state = deepcopy(state)
+
         return prompt
 
-    def refine_prompt(self, state, previous_actions, replay_buffer, level_id, refinement_step):
+    def refine_prompt(self, previous_actions, replay_buffer_summary, level_id, refinement_step):
         """Generate and save the refinement request prompt."""
         domain_content = self.load_file(self.domain_file_name)
         world_model_content = self.load_file(self.world_model_load_name)
 
-        prompt = self._make_langchain_prompt(REFINE_PROMPT,
+        prompt = self._make_langchain_prompt(
+            text=REFINE_PROMPT,  # Reference to external prompt
             actions_set=self.actions_set,
             state_format=engine.state_format,
-            starting_state=state,
+            starting_state=self.initial_state,  # Use the stored initial state
             previous_guessed_actions=previous_actions,
-            replay_buffer=replay_buffer,
+            replay_buffer_summary=replay_buffer_summary,  # Ensure correct keyword
             domain_file=domain_content,
             world_model=world_model_content,
             utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
         )
-
-        breakpoint()
 
         # Save the refinement prompt
         self.save_file(level_id, status="lost", step=refinement_step, file_type="prompt", content=prompt.to_string())
@@ -259,42 +291,30 @@ class Baselines:
         # Step the game engine with the given action
         engine.step(action)
 
-        # Deep copy observations before and after the action
-        state = deepcopy(engine.get_obs())
-        state = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in state.items()}
+        # Deep copy the current state after the action
+        state_after_action = deepcopy(engine.get_obs())
+        state_after_action = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in state_after_action.items()}
 
         # Identify controllables based on "is you" rule
         controllables = {
-            entity for entity in state
-            if rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'you_word')
+            entity for entity in state_after_action
+            if rule_formed(state_after_action, f'{entity[:-4]}_word', 'is_word', 'you_word')
         }
 
         # Add controllables to the state dictionary
-        state['controllables'] = list(controllables)
+        state_after_action['controllables'] = list(controllables)
 
         # Append the action to the actions list
         self.actions.append(action)
 
-        # Update the replay buffer with (state, action, next_state)
-        # Assuming `engine.get_obs()` now returns the next state after the action
-        # If `state` is the current state before the action, then `next_state` is after
-        # Since we have only one `get_obs()`, we'll treat `state` as the current state after action
-        # To get the previous state, you might need to store it before stepping
-        # For simplicity, let's assume `state_before_action` is accessible
-        # Here, since we don't have it, we'll store only the current state
-        # Adjust as necessary based on your engine's capabilities
-
-        # For accurate state-action-next_state, you need to track state before action
-        # Here, we'll assume that `state_before_action` was already stored in `self.replay_buffers[-1][0]`
-        # If `self.replay_buffers` is empty, we cannot append a proper tuple
+        # Determine the previous state
         if self.replay_buffers:
-            state_before_action = self.replay_buffers[-1][2]  # Last next_state
+            previous_state = self.replay_buffers[-1][2]  # Last next_state
         else:
-            # If replay_buffers is empty, assume the initial state
-            state_before_action = state
+            previous_state = self.initial_state  # Use the stored initial state
 
         # Append the transition to replay_buffers
-        self.replay_buffers.append((state_before_action, action, state))
+        self.replay_buffers.append((previous_state, action, state_after_action))
 
         # Check for win/loss
         if engine.won:
@@ -305,10 +325,109 @@ class Baselines:
             return "lost"
         return None  # Continue the loop if neither win nor loss
 
+    def _get_state_deltas_str(self, state0, state1):
+        """
+        Highlight the changes in state resulting from last action.
+        """
+        def _stringify(x, k=100):
+            if hasattr(x, '__len__'):
+                # Add ellipsis for entries of x beyond length k
+                if len(x) > k:
+                    return str(sorted(x[:k]))[:-1] + '...'
+                else:
+                    return str(sorted(x))
+            else:
+                return str(x)
+
+        string = ''
+        # Get set of unique keys between state0 and state1
+        all_keys = set(state1.keys()).union(set(state0.keys()))
+
+        for key in all_keys:
+            val0 = state0.get(key)
+            val1 = state1.get(key)
+
+            # Handle cases where val0 or val1 are None
+            if val0 is None:
+                string += f'"{key}": Added in the next state: {_stringify(val1)}\n'
+                continue  # Skip further processing if val0 is None
+            if val1 is None:
+                string += f'"{key}": Removed in the next state.\n'
+                continue  # Skip further processing if val1 is None
+
+            # Now that val0 and val1 are not None, proceed to compare them
+            if not self._eq(val1, val0):
+                cond1 = (hasattr(val1, '__len__') and len(val1) > 2)
+                cond2 = (hasattr(val0, '__len__') and len(val0) > 2)
+                if cond1 or cond2:
+                    # For long lists of coordinates, summarize by stating what
+                    # was added or removed
+                    added = []
+                    removed = []
+                    if not hasattr(val1, '__len__'):
+                        added.append(val1)
+                    else:
+                        for x in val1:
+                            if x not in val0:
+                                added.append(x)
+                    if not hasattr(val0, '__len__'):
+                        removed.append(val0)
+                    else:
+                        for x in val0:
+                            if x not in val1:
+                                removed.append(x)
+                    string += f'"{key}": Added: {added}\n'
+                    string += f'"{key}": Removed: {removed}\n'
+                else:
+                    string += f'"{key}": {_stringify(val0)} --> {_stringify(val1)}\n'
+
+        return string
+
+    def _make_observation_summary(self, state0, action, state1):
+        """
+        Create a single observation summary without prediction errors.
+        """
+        summary_changes = self._get_state_deltas_str(state0, state1)
+        return (
+            f"Initial state: {state0}\n"
+            f"Action: {action}\n"
+            f"Next state: {state1}\n"
+            f"Summary of changes:\n{summary_changes}"
+        )
+
+    def _make_observation_summaries(self, replay_buffers):
+        """
+        Create a summary of the replay buffer transitions.
+        """
+        summaries = []
+        for obs in replay_buffers:
+            state0, action, state1 = obs
+            summary = self._make_observation_summary(state0, action, state1)
+            summaries.append(summary)
+        return "\n\n".join(summaries)
+
+    def _eq(self, x, y):
+        """
+        Recursively convert lists to tuples and compare for equality.
+        """
+        def deep_convert_to_tuple(v):
+            if isinstance(v, list):
+                return tuple(deep_convert_to_tuple(i) for i in v)
+            return v
+
+        x_converted = deep_convert_to_tuple(x)
+        y_converted = deep_convert_to_tuple(y)
+        return x_converted == y_converted
+
     def run(self, engine, level_id):
         """Run the initial request to get action sequence from LLM and evaluate it."""
         self.engine = engine  # Assign engine to self
-        state = self.format_state(deepcopy(engine.get_obs()))  # Format the initial state
+
+        # Reset the engine and get the initial state
+        engine.reset()
+        initial_obs = engine.get_obs().copy()
+        state = self.format_state(initial_obs)
+        self.initial_state = deepcopy(state)
 
         if not self.refine_enabled:
             # Perform Initial Guess
@@ -325,8 +444,9 @@ class Baselines:
             actions = self.extract_actions(response)
             print(f"Extracted actions for initial guess: {actions}")
 
-            # Save the initial actions
-            self.save_file(level_id, status="initial", step=0, file_type="actions", content=json.dumps(actions, indent=4))
+            # Save the initial actions in compact format
+            actions_str = str(actions)  # Convert list to compact string
+            self.save_file(level_id, status="initial", step=0, file_type="actions", content=actions_str)
 
             # Execute initial actions
             for action in actions:
@@ -334,23 +454,19 @@ class Baselines:
                 outcome = self.step_env(engine, action)
 
                 if outcome == "won":
-                    # Save actions and response already done
                     print(f"Level {level_id} won with initial actions.")
+                    # Actions and response already saved
                     return True
                 elif outcome == "lost":
                     print(f"Level {level_id} lost with initial actions.")
-                    # Save the lost outcome
-                    # This has already been handled in step_env
-                    break
-                # If outcome is None, continue executing remaining actions
+                    break  # Proceed to refinement if enabled
 
             # After executing all actions, check if the game is completed without win/loss
             if not engine.won and not engine.lost:
                 print(f"Level {level_id} completed without win/loss.")
                 # Treat 'completed' as 'lost'
-                # Save the 'completed' outcome as 'lost'
                 self.save_file(level_id, status="lost", step=0, file_type="response", content=response)
-                self.save_file(level_id, status="lost", step=0, file_type="actions", content=json.dumps(actions, indent=4))
+                self.save_file(level_id, status="lost", step=0, file_type="actions", content=actions_str)
 
             # Proceed to Refinement if enabled
             if self.refine_enabled and (engine.lost or not engine.won):
@@ -365,6 +481,13 @@ class Baselines:
         """Refine actions if agent loses or fails to win the game."""
         for refinement_step in range(1, self.max_refinements + 1):
             print(f"Starting refinement step {refinement_step} for level {level_id}...")
+
+            # Reset the engine to the initial state
+            engine.reset()
+            initial_obs = engine.get_obs().copy()
+            state = self.format_state(initial_obs)
+            self.initial_state = deepcopy(state)
+
             # Determine the previous actions file
             if refinement_step == 1:
                 previous_actions_file = self.save_dir / f"level_{level_id}" / "initial/actions.txt"
@@ -376,18 +499,29 @@ class Baselines:
                 break
 
             with open(previous_actions_file, 'r') as f:
-                previous_actions = json.load(f)
+                try:
+                    previous_actions = ast.literal_eval(f.read())
+                except (SyntaxError, ValueError) as e:
+                    print(f"Error loading previous actions from {previous_actions_file}: {e}")
+                    break
 
             # Execute previous actions to update the replay buffer
             print(f"Re-executing previous actions from {previous_actions_file} to update replay buffer...")
             for action in previous_actions:
                 outcome = self.step_env(engine, action)
-                if outcome == "won" or outcome == "lost":
+                if outcome in ["won", "lost"]:
                     break  # Stop executing if won or lost during replay
 
+            # Generate the replay buffer summary
+            replay_buffer_summary = self._make_observation_summaries(self.replay_buffers)
+
             # Generate the refinement prompt
-            current_state = self.format_state(deepcopy(engine.get_obs()))
-            prompt = self.refine_prompt(current_state, previous_actions, self.replay_buffers, level_id, refinement_step)
+            prompt = self.refine_prompt(
+                previous_actions=previous_actions,
+                replay_buffer_summary=replay_buffer_summary,  # Corrected keyword
+                level_id=level_id,
+                refinement_step=refinement_step
+            )
 
             print(f"Sending refinement request {refinement_step} for level {level_id}...")
 
@@ -402,8 +536,9 @@ class Baselines:
             actions = self.extract_actions(response)
             print(f"Extracted actions for refinement {refinement_step}: {actions}")
 
-            # Save the refined actions
-            self.save_file(level_id, status="lost", step=refinement_step, file_type="actions", content=json.dumps(actions, indent=4))
+            # Save the refined actions in compact format
+            actions_str = str(actions)  # Convert list to compact string
+            self.save_file(level_id, status="lost", step=refinement_step, file_type="actions", content=actions_str)
 
             # Execute refined actions
             for action in actions:
@@ -416,14 +551,13 @@ class Baselines:
                 elif outcome == "lost":
                     print(f"Level {level_id} lost at refinement step {refinement_step}.")
                     break  # Proceed to next refinement step if any
-                # If outcome is None, continue executing remaining actions
 
             # After executing all refined actions, check if the game is completed without win/loss
             if not engine.won and not engine.lost:
                 print(f"Level {level_id} completed without win/loss at refinement step {refinement_step}.")
                 # Treat 'completed' as 'lost'
                 self.save_file(level_id, status="lost", step=refinement_step, file_type="response", content=response)
-                self.save_file(level_id, status="lost", step=refinement_step, file_type="actions", content=json.dumps(actions, indent=4))
+                self.save_file(level_id, status="lost", step=refinement_step, file_type="actions", content=actions_str)
 
         print(f"Max refinements reached for level {level_id}.")
         return False
@@ -436,9 +570,9 @@ class Baselines:
             if code_block_match:
                 # Extract the actions from the code block
                 code_block = code_block_match[0].strip()
-                actions = eval(code_block)
+                actions = ast.literal_eval(code_block)
                 # Ensure only valid actions (right, left, up, down) are returned
-                actions = [action for action in actions if action in ['right', 'left', 'up', 'down']]
+                actions = [action for action in actions if action in self.actions_set]
                 return actions
             else:
                 raise ValueError("No properly formatted Python code block found.")
