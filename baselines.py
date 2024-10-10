@@ -173,7 +173,7 @@ class Baselines:
         self.save_dir = Path(save_dir).resolve()
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
-        self.language_model = 'gpt-4o-mini-2024-07-18'  # Update as needed
+        self.language_model = 'o1-preview'  # Update as needed
         self.chat = ChatOpenAI(model_name=self.language_model, temperature=1.0)
         self.query_lm = lambda prompt: self.chat.invoke(prompt.to_messages()).content
 
@@ -319,12 +319,12 @@ class Baselines:
         prompt = self._make_langchain_prompt(
             text=INITIAL_REQUEST_PROMPT,  # Defined externally
             actions_set=self.actions_set,
-            state_format="dict",
+            state_format=engine.state_format,
             initial_state=state,
             plan=plan,
             domain_file=domain_content,
             world_model=world_model_content,
-            utils=self.utils
+            utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
         )
 
         # Save the initial prompt
@@ -347,14 +347,14 @@ class Baselines:
         prompt = self._make_langchain_prompt(
             text=REFINE_PROMPT,  # Defined externally
             actions_set=self.actions_set,
-            state_format="dict",
+            state_format=engine.state_format,
             initial_state=self.initial_state,
             plan=plan,
             previous_guessed_actions=previous_actions,
             replay_buffer_summary=replay_buffer_summary,
             domain_file=domain_content,
             world_model=world_model_content,
-            utils=self.utils
+            utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
         )
 
         # Save the refinement prompt
@@ -660,7 +660,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 1)]")  # Example format
+    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 2)]")  # Example format
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel.py')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')
@@ -668,7 +668,7 @@ if __name__ == "__main__":
     parser.add_argument('--plans-json-path', type=str, default='plans.json', help="Path to the JSON file containing plans for each level.")
     parser.add_argument('--refine', action='store_true', help="Enable refinement if the LLM's action sequence leads to a loss")
     parser.add_argument('--max-refinements', type=int, default=2, help="Maximum number of refinement steps allowed")
-    parser.add_argument('--save-dir', type=str, default='experiment_results', help="Directory to save the results")
+    parser.add_argument('--save-dir', type=str, default='o1_preview', help="Directory to save the results")
 
     args = parser.parse_args()
     levels = eval(args.levels)
