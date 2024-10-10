@@ -163,7 +163,7 @@ from predicates import rule_formed
 
 class Baselines:
     def __init__(self, episode_length, world_model_load_name, domain_file_name, predicates_file_name,
-                 refine=False, max_refinements=2, save_dir="experiment_results", plans_json_path="plans.json"):
+                 refine=False, max_refinements=5, save_dir="experiment_results", plans_json_path="plans.json"):
         self.episode_length = episode_length
         self.world_model_load_name = world_model_load_name
         self.domain_file_name = domain_file_name
@@ -517,7 +517,7 @@ class Baselines:
             for action in previous_actions:
                 outcome = self.step_env(action)
                 if outcome in ["won", "lost"]:
-                    break  # Stop executing if won or lost during replay
+                    break  # Stop executing if won during replay w/ previous actions
 
             # Generate the replay buffer summary
             replay_buffer_summary = self._make_observation_summaries(self.replay_buffers)
@@ -660,14 +660,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 2)]")  # Example format
+    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 11)]")  # Example format
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel.py')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')
     parser.add_argument('--predicates-file-name', type=str, default='predicates.py')
     parser.add_argument('--plans-json-path', type=str, default='plans.json', help="Path to the JSON file containing plans for each level.")
     parser.add_argument('--refine', action='store_true', help="Enable refinement if the LLM's action sequence leads to a loss")
-    parser.add_argument('--max-refinements', type=int, default=2, help="Maximum number of refinement steps allowed")
+    parser.add_argument('--max-refinements', type=int, default=5, help="Maximum number of refinement steps allowed")
     parser.add_argument('--save-dir', type=str, default='o1_preview', help="Directory to save the results")
 
     args = parser.parse_args()
