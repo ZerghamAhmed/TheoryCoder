@@ -16,15 +16,28 @@ import re
 import ast 
 
 INITIAL_REQUEST_PROMPT = """
-You are an AI agent that must come up with actions that need to be taken to win the game. 
-You are given a model of the game in the form of a python program that captures the logic and mechanics of the game. 
-You are given the possible actions you can take, the format of the state, the current state, 
-a high-level PDDL domain file which gives you information about the high-level plans and mechanics of the domain, 
-and a low-level python transition function which gives you detailed information about the mechanics of the domain. 
-Please return the action sequence that will result in winning the level. If you have an explanation give it separately.
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. 
+
+The most important information you are given is the high-level plan output by your PDDL planner. 
+If you carry out this high-level plan you will win the level. But of course, you will need to figure out the corresponding 
+low-level action movements since this plan is high-level.
+
+You are also given several other information that may help you come up with the list of actions or provide hints on
+how you can convert the high-level plan into the low-level action list. 
+
+You are given a world model of the game in the form of a python program that captures the logic and low-level mechanics of the game. 
+It specifically captures the state transition resulting from taking the action (right, left, up, or down).
+
+You are given your current state that you start from in the level. You are also given the high-level PDDL planner domain file 
+which can help you understand your high-level plans and where they are coming from.
+
+So using the information please return the action sequence that will result in winning the level. 
+If you have an explanation give it separately.
 Make sure to just have a sepearte section with your actions as demonstrated in the response format.
 
-ACTION SPACE:
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
 
 {actions_set}
 
@@ -32,15 +45,19 @@ STATE FORMAT:
 
 {state_format}
 
-CURRENT STATE:
+INITIAL STATE:
 
-{current_state}
+{initial_state}
 
-HIGH-LEVEL DOMAIN FILE:
+HIGH-LEVEL PLAN TO WIN:
+
+{plan}
+
+DOMAIN FILE:
 
 {domain_file}
 
-CURRENT LOW-LEVEL WORLD MODEL:
+WORLD MODEL:
 
 {world_model}
 
@@ -59,16 +76,29 @@ RESPONSE FORMAT (just a random example list, make sure your answer is returned w
 """
 
 REFINE_PROMPT = """
-You are an AI agent that must come up with actions that need to be taken to win the game. 
-You are given a model of the game in the form of a python program that captures the logic and mechanics of the game. 
-You are given the possible actions you can take, the format of the state, the current state, 
-a high-level PDDL domain file which gives you information about the high-level plans and mechanics of the domain, 
-and a low-level python transition function which gives you detailed information about the mechanics of the domain. 
-Please return the action sequence that will result in winning the level. 
-You previously returned the following action sequence but did not win the game. 
-Your state transition information is given below and may help you understand how to provide a corrected action sequence.
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. 
 
-ACTION SPACE:
+The most important information you are given is the high-level plan output by your PDDL planner. 
+If you carry out this high-level plan you will win the level. But of course, you will need to figure out the corresponding 
+low-level action movements since this plan is high-level.
+
+You are also given several other information that may help you come up with the list of actions or provide hints on
+how you can convert the high-level plan into the low-level action list. 
+
+You are given a world model of the game in the form of a python program that captures the logic and low-level mechanics of the game. 
+It specifically captures the state transition resulting from taking the action (right, left, up, or down).
+
+You are given your current state that you start from in the level. You are also given the high-level PDDL planner domain file 
+which can help you understand your high-level plans and where they are coming from.
+
+You previously attemped this level and returned the following action sequence but did not win the game. 
+Your state transition information is given below and may help you understand how to provide a corrected action sequence.
+Please provide your corrected action sequence that will result in winning the level. 
+Also for your explanation, you should mention why your previous predicted action sequence did not win the game.
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
 
 {actions_set}
 
@@ -78,7 +108,11 @@ STATE FORMAT:
 
 INITIAL STATE FOR LEVEL:
 
-{starting_state}
+{initial_state}
+
+HIGH-LEVEL PLAN TO WIN:
+
+{plan}
 
 PREVIOUS ACTION SEQUENCE PREDICTION:
 
@@ -88,11 +122,11 @@ REPLAY BUFFER:
 
 {replay_buffer_summary}
 
-HIGH-LEVEL DOMAIN FILE:
+DOMAIN FILE:
 
 {domain_file}
 
-CURRENT LOW-LEVEL WORLD MODEL:
+WORLD MODEL:
 
 {world_model}
 
@@ -113,36 +147,38 @@ explanation:
 Example explanation.
 
 """
-
-import ast
 import json
-import re
 from pathlib import Path
 from copy import deepcopy
-from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate
+import os
+from langchain.prompts import HumanMessagePromptTemplate
 from langchain.chat_models import ChatOpenAI
+from langchain.prompts.chat import ChatPromptTemplate
+import re
+import ast
+
+# Assume that BabaIsYou and rule_formed are defined in their respective modules
 from games import BabaIsYou
 from predicates import rule_formed
 
-
 class Baselines:
     def __init__(self, episode_length, world_model_load_name, domain_file_name, predicates_file_name,
-                 refine=False, max_refinements=2, save_dir="experiment_results"):
+                 refine=False, max_refinements=2, save_dir="experiment_results", plans_json_path="plans.json"):
         self.episode_length = episode_length
         self.world_model_load_name = world_model_load_name
         self.domain_file_name = domain_file_name
         self.predicates_file_name = predicates_file_name
-        self.refine_enabled = refine  # Control refinement
-        self.max_refinements = max_refinements  # Maximum number of refinements allowed
-        self.save_dir = Path(save_dir).resolve()  # Absolute path for saving results
-        self.save_dir.mkdir(parents=True, exist_ok=True)  # Create the directory if it doesn't exist
+        self.refine_enabled = refine
+        self.max_refinements = max_refinements
+        self.save_dir = Path(save_dir).resolve()
+        self.save_dir.mkdir(parents=True, exist_ok=True)
 
-        self.language_model = 'gpt-4o-mini'  # Update as needed
-        self.chat = ChatOpenAI(model_name=self.language_model, temperature=1.0)  # Correct model initialization
-        self.query_lm = lambda prompt: self.chat.invoke(prompt.to_messages()).content  # Use invoke as per deprecation
+        self.language_model = 'gpt-4o-mini-2024-07-18'  # Update as needed
+        self.chat = ChatOpenAI(model_name=self.language_model, temperature=1.0)
+        self.query_lm = lambda prompt: self.chat.invoke(prompt.to_messages()).content
 
-        self.tape = []  # Store all interactions
-        self.replay_buffers = []  # Replay buffer to store state transitions
+        self.tape = []
+        self.replay_buffers = []
         self.actions_set = ["up", "down", "left", "right"]
         self.utils = {
             'directions': {
@@ -152,8 +188,32 @@ class Baselines:
                 'down': [0, -1],
             }
         }
-        self.actions = []  # Track executed actions
-        self.initial_state = None  # Store the initial state of the level
+        self.actions = []
+        self.initial_state = None
+        self.engine = None
+
+        self.plans = self.load_plans(plans_json_path)
+
+    def load_plans(self, plans_json_path):
+        """Load the plans from the specified JSON file."""
+        try:
+            with open(plans_json_path, 'r') as f:
+                plans = json.load(f)
+            print(f"Loaded plans from {plans_json_path}")
+            return plans
+        except FileNotFoundError:
+            print(f"Plans JSON file not found at {plans_json_path}. Proceeding without plans.")
+            return {}
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON from {plans_json_path}: {e}. Proceeding without plans.")
+            return {}
+
+    def get_plan_for_level(self, level_id):
+        """Retrieve the plan for the specified level."""
+        level_key = str(level_id)
+        plan = self.plans.get(level_key, [])
+        print(f"Retrieved plan for level {level_id}: {plan}")
+        return plan
 
     def _make_langchain_prompt(self, text, **kwargs):
         """Create the Langchain prompt with given template and variables."""
@@ -170,8 +230,6 @@ class Baselines:
     def format_state(self, state):
         """Convert state tuples to lists and add controllables."""
         state = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in state.items()}
-
-        # Add controllables based on "is you" rule
         controllables = {
             entity for entity in state
             if rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'you_word')
@@ -191,10 +249,9 @@ class Baselines:
         - content (str): Content to save in the file.
         """
         level_dir = self.save_dir / f"level_{level_id}"
-        level_dir.mkdir(parents=True, exist_ok=True)  # Ensure level directory exists
+        level_dir.mkdir(parents=True, exist_ok=True)
 
         if status == "initial":
-            # Initial guess
             sub_dir = "initial"
             if file_type == "prompt":
                 filename = "prompt.txt"
@@ -206,7 +263,6 @@ class Baselines:
                 raise ValueError("Invalid file_type. Must be 'prompt', 'actions', or 'response'.")
             sub_dir_path = level_dir / sub_dir
         elif status == "won":
-            # Win outcome
             sub_dir = "won"
             if file_type == "actions":
                 filename = "actions.txt"
@@ -216,7 +272,6 @@ class Baselines:
                 raise ValueError("Invalid file_type for 'won' status. Must be 'actions' or 'response'.")
             sub_dir_path = level_dir / sub_dir
         elif status == "lost":
-            # Refinement steps or initial loss without refinement
             if self.refine_enabled and step > 0:
                 sub_dir = f"lost_refinement_{step}"
             else:
@@ -233,34 +288,53 @@ class Baselines:
         else:
             raise ValueError("Invalid status. Must be 'initial', 'won', or 'lost'.")
 
-        sub_dir_path.mkdir(parents=True, exist_ok=True)  # Ensure subdirectory exists
+        sub_dir_path.mkdir(parents=True, exist_ok=True)
         file_path = sub_dir_path / filename
 
         with open(file_path, 'w') as f:
             f.write(content)
         print(f"Saved {file_type} to {file_path}")
 
+    def reset(self):
+        """Reset the engine and clear the replay buffer."""
+        if self.engine:
+            self.engine.reset()
+            self.replay_buffers = []
+            self.actions = []
+            print("Engine reset and replay buffer cleared.")
+            # Capture and print the initial state
+            initial_obs = self.engine.get_obs().copy()
+            state = self.format_state(initial_obs)
+            self.initial_state = deepcopy(state)
+            print(f"Initial state: {self.initial_state}")
+        else:
+            print("Engine not set. Cannot reset.")
+
     def initial_request_prompt(self, state, level_id):
         """Generate and save the initial request prompt."""
         domain_content = self.load_file(self.domain_file_name)
         world_model_content = self.load_file(self.world_model_load_name)
+        plan = self.get_plan_for_level(level_id)
 
         prompt = self._make_langchain_prompt(
-            text=INITIAL_REQUEST_PROMPT,  # Reference to external prompt
+            text=INITIAL_REQUEST_PROMPT,  # Defined externally
             actions_set=self.actions_set,
-            state_format=engine.state_format,
-            current_state=state,
+            state_format="dict",
+            initial_state=state,
+            plan=plan,
             domain_file=domain_content,
             world_model=world_model_content,
-            utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
+            utils=self.utils
         )
 
         # Save the initial prompt
         self.save_file(level_id, status="initial", step=0, file_type="prompt", content=prompt.to_string())
+        print(f"Initial prompt saved for level {level_id}.")
 
         # Store the initial state for future refinements
         if self.initial_state is None:
             self.initial_state = deepcopy(state)
+            print(f"Initial state set for level {level_id}: {self.initial_state}")
 
         return prompt
 
@@ -268,62 +342,57 @@ class Baselines:
         """Generate and save the refinement request prompt."""
         domain_content = self.load_file(self.domain_file_name)
         world_model_content = self.load_file(self.world_model_load_name)
+        plan = self.get_plan_for_level(level_id)
 
         prompt = self._make_langchain_prompt(
-            text=REFINE_PROMPT,  # Reference to external prompt
+            text=REFINE_PROMPT,  # Defined externally
             actions_set=self.actions_set,
-            state_format=engine.state_format,
-            starting_state=self.initial_state,  # Use the stored initial state
+            state_format="dict",
+            initial_state=self.initial_state,
+            plan=plan,
             previous_guessed_actions=previous_actions,
-            replay_buffer_summary=replay_buffer_summary,  # Ensure correct keyword
+            replay_buffer_summary=replay_buffer_summary,
             domain_file=domain_content,
             world_model=world_model_content,
-            utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
+            utils=self.utils
         )
 
         # Save the refinement prompt
         self.save_file(level_id, status="lost", step=refinement_step, file_type="prompt", content=prompt.to_string())
+        print(f"Refinement prompt saved for refinement step {refinement_step} of level {level_id}.")
 
         return prompt
 
-    def step_env(self, engine, action):
-        """Step the game engine, store the transition in the replay buffer."""
-        # Step the game engine with the given action
-        engine.step(action)
-
-        # Deep copy the current state after the action
-        state_after_action = deepcopy(engine.get_obs())
-        state_after_action = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in state_after_action.items()}
-
-        # Identify controllables based on "is you" rule
-        controllables = {
-            entity for entity in state_after_action
-            if rule_formed(state_after_action, f'{entity[:-4]}_word', 'is_word', 'you_word')
-        }
-
-        # Add controllables to the state dictionary
-        state_after_action['controllables'] = list(controllables)
-
-        # Append the action to the actions list
-        self.actions.append(action)
-
-        # Determine the previous state
+    def step_env(self, action):
+        """Execute an action in the environment and update the replay buffer with detailed logging."""
+        # Capture previous state
         if self.replay_buffers:
             previous_state = self.replay_buffers[-1][2]  # Last next_state
         else:
-            previous_state = self.initial_state  # Use the stored initial state
+            previous_state = self.initial_state
 
-        # Append the transition to replay_buffers
-        self.replay_buffers.append((previous_state, action, state_after_action))
+        # Execute the action
+        self.engine.step(action)
+
+        # Capture next state
+        state_after_action = deepcopy(self.engine.get_obs())
+        state_after_action = self.format_state(state_after_action)
+
+        # Append the transition to replay buffer
+        self.replay_buffers.append((deepcopy(previous_state), action, deepcopy(state_after_action)))
+
+        # Update actions list
+        self.actions.append(action)
 
         # Check for win/loss
-        if engine.won:
+        if self.engine.won:
             print("Agent won!")
             return "won"
-        elif engine.lost:
+        elif self.engine.lost:
             print("Agent lost.")
             return "lost"
-        return None  # Continue the loop if neither win nor loss
+        return None  # Continue
+
 
     def _get_state_deltas_str(self, state0, state1):
         """
@@ -419,78 +488,16 @@ class Baselines:
         y_converted = deep_convert_to_tuple(y)
         return x_converted == y_converted
 
-    def run(self, engine, level_id):
-        """Run the initial request to get action sequence from LLM and evaluate it."""
-        self.engine = engine  # Assign engine to self
-
-        # Reset the engine and get the initial state
-        engine.reset()
-        initial_obs = engine.get_obs().copy()
-        state = self.format_state(initial_obs)
-        self.initial_state = deepcopy(state)
-
-        if not self.refine_enabled:
-            # Perform Initial Guess
-            prompt = self.initial_request_prompt(state, level_id)
-            print(f"Sending initial request for level {level_id}...")
-
-            response = self.query_lm(prompt)
-            print(f"Received response for initial guess: {response}")
-
-            # Save the initial response
-            self.save_file(level_id, status="initial", step=0, file_type="response", content=response)
-
-            # Extract action set from response
-            actions = self.extract_actions(response)
-            print(f"Extracted actions for initial guess: {actions}")
-
-            # Save the initial actions in compact format
-            actions_str = str(actions)  # Convert list to compact string
-            self.save_file(level_id, status="initial", step=0, file_type="actions", content=actions_str)
-
-            # Execute initial actions
-            for action in actions:
-                print(f"Executing action: {action}")
-                outcome = self.step_env(engine, action)
-
-                if outcome == "won":
-                    print(f"Level {level_id} won with initial actions.")
-                    # Actions and response already saved
-                    return True
-                elif outcome == "lost":
-                    print(f"Level {level_id} lost with initial actions.")
-                    break  # Proceed to refinement if enabled
-
-            # After executing all actions, check if the game is completed without win/loss
-            if not engine.won and not engine.lost:
-                print(f"Level {level_id} completed without win/loss.")
-                # Treat 'completed' as 'lost'
-                self.save_file(level_id, status="lost", step=0, file_type="response", content=response)
-                self.save_file(level_id, status="lost", step=0, file_type="actions", content=actions_str)
-
-            # Proceed to Refinement if enabled
-            if self.refine_enabled and (engine.lost or not engine.won):
-                self.refine(engine, level_id)
-            return False
-        else:
-            # Perform Refinements only
-            self.refine(engine, level_id)
-            return False
-
-    def refine(self, engine, level_id):
-        """Refine actions if agent loses or fails to win the game."""
+    def refine(self, level_id):
+        """Handle refinement steps."""
         for refinement_step in range(1, self.max_refinements + 1):
             print(f"Starting refinement step {refinement_step} for level {level_id}...")
 
-            # Reset the engine to the initial state
-            engine.reset()
-            initial_obs = engine.get_obs().copy()
-            state = self.format_state(initial_obs)
-            self.initial_state = deepcopy(state)
+            self.reset()
 
             # Determine the previous actions file
             if refinement_step == 1:
-                previous_actions_file = self.save_dir / f"level_{level_id}" / "initial/actions.txt"
+                previous_actions_file = self.save_dir / f"level_{level_id}" / "initial" / "actions.txt"
             else:
                 previous_actions_file = self.save_dir / f"level_{level_id}" / f"lost_refinement_{refinement_step - 1}" / "actions.txt"
 
@@ -505,23 +512,29 @@ class Baselines:
                     print(f"Error loading previous actions from {previous_actions_file}: {e}")
                     break
 
-            # Execute previous actions to update the replay buffer
+            # Execute previous actions to populate replay buffer
             print(f"Re-executing previous actions from {previous_actions_file} to update replay buffer...")
             for action in previous_actions:
-                outcome = self.step_env(engine, action)
+                outcome = self.step_env(action)
                 if outcome in ["won", "lost"]:
                     break  # Stop executing if won or lost during replay
 
             # Generate the replay buffer summary
             replay_buffer_summary = self._make_observation_summaries(self.replay_buffers)
+            print(f"Replay buffer summary for refinement step {refinement_step}:\n{replay_buffer_summary}")
 
             # Generate the refinement prompt
             prompt = self.refine_prompt(
                 previous_actions=previous_actions,
-                replay_buffer_summary=replay_buffer_summary,  # Corrected keyword
+                replay_buffer_summary=replay_buffer_summary,
                 level_id=level_id,
                 refinement_step=refinement_step
             )
+
+            # Clear the replay buffer after generating the prompt
+            self.replay_buffers = []
+            self.actions = []
+            print("Replay buffer cleared for next refinement.")
 
             print(f"Sending refinement request {refinement_step} for level {level_id}...")
 
@@ -537,13 +550,13 @@ class Baselines:
             print(f"Extracted actions for refinement {refinement_step}: {actions}")
 
             # Save the refined actions in compact format
-            actions_str = str(actions)  # Convert list to compact string
+            actions_str = str(actions)
             self.save_file(level_id, status="lost", step=refinement_step, file_type="actions", content=actions_str)
 
             # Execute refined actions
             for action in actions:
                 print(f"Executing refined action: {action}")
-                outcome = self.step_env(engine, action)
+                outcome = self.step_env(action)
 
                 if outcome == "won":
                     print(f"Level {level_id} won at refinement step {refinement_step}.")
@@ -553,7 +566,7 @@ class Baselines:
                     break  # Proceed to next refinement step if any
 
             # After executing all refined actions, check if the game is completed without win/loss
-            if not engine.won and not engine.lost:
+            if not self.engine.won and not self.engine.lost:
                 print(f"Level {level_id} completed without win/loss at refinement step {refinement_step}.")
                 # Treat 'completed' as 'lost'
                 self.save_file(level_id, status="lost", step=refinement_step, file_type="response", content=response)
@@ -561,6 +574,64 @@ class Baselines:
 
         print(f"Max refinements reached for level {level_id}.")
         return False
+
+    def run(self, engine, level_id):
+        """Run the initial request to get action sequence from LLM and evaluate it."""
+        self.engine = engine  # Assign engine to self
+
+        # Reset the engine and get the initial state
+        self.reset()
+
+        # If refinement is disabled, perform initial guess only
+        if not self.refine_enabled:
+            # Perform Initial Guess
+            prompt = self.initial_request_prompt(self.initial_state, level_id)
+            print(f"Sending initial request for level {level_id}...")
+
+            response = self.query_lm(prompt)
+            print(f"Received response for initial guess: {response}")
+
+            # Save the initial response
+            self.save_file(level_id, status="initial", step=0, file_type="response", content=response)
+
+            # Extract action set from response
+            actions = self.extract_actions(response)
+            print(f"Extracted actions for initial guess: {actions}")
+
+            # Save the initial actions in compact format
+            actions_str = str(actions)
+            self.save_file(level_id, status="initial", step=0, file_type="actions", content=actions_str)
+
+            # Execute initial actions
+            for action in actions:
+                print(f"Executing action: {action}")
+                outcome = self.step_env(action)
+
+                if outcome == "won":
+                    print(f"Level {level_id} won with initial actions.")
+                    # Actions and response already saved
+                    return True
+                elif outcome == "lost":
+                    print(f"Level {level_id} lost with initial actions.")
+                    break  # Proceed to refinement if enabled
+
+            # After executing all actions, check if the game is completed without win/loss
+            if not self.engine.won and not self.engine.lost:
+                print(f"Level {level_id} completed without win/loss.")
+                # Treat 'completed' as 'lost'
+                self.save_file(level_id, status="lost", step=0, file_type="response", content=response)
+                self.save_file(level_id, status="lost", step=0, file_type="actions", content=actions_str)
+
+            # Proceed to Refinement if enabled
+            if self.refine_enabled and (self.engine.lost or not self.engine.won):
+                refinement_success = self.refine(level_id)
+                if refinement_success:
+                    return True
+            return False
+        else:
+            # Perform Refinements only
+            refinement_success = self.refine(level_id)
+            return refinement_success
 
     def extract_actions(self, response):
         """Extract the action list from the LLM response."""
@@ -580,18 +651,21 @@ class Baselines:
             print(f"Error extracting actions: {e}")
             return []  # Return empty list if extraction fails
 
+# Example usage (assuming prompts are defined externally):
+# INITIAL_REQUEST_PROMPT = "Your initial prompt here..."
+# REFINE_PROMPT = "Your refinement prompt here..."
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 0)]")  # Changed to level 0 for consistency
+    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 1)]")  # Example format
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel.py')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')
     parser.add_argument('--predicates-file-name', type=str, default='predicates.py')
-    parser.add_argument('--json-reporter-path', type=str, default='KekeCompetition-main/Keke_JS/reports/TBRL_BABA_REPORT.json')
+    parser.add_argument('--plans-json-path', type=str, default='plans.json', help="Path to the JSON file containing plans for each level.")
     parser.add_argument('--refine', action='store_true', help="Enable refinement if the LLM's action sequence leads to a loss")
     parser.add_argument('--max-refinements', type=int, default=2, help="Maximum number of refinement steps allowed")
     parser.add_argument('--save-dir', type=str, default='experiment_results', help="Directory to save the results")
@@ -610,6 +684,7 @@ if __name__ == "__main__":
             predicates_file_name=args.predicates_file_name,
             refine=args.refine,
             max_refinements=args.max_refinements,
-            save_dir=args.save_dir  # Pass the save directory
+            save_dir=args.save_dir,
+            plans_json_path=args.plans_json_path
         )
         agent.run(engine, level_id)
