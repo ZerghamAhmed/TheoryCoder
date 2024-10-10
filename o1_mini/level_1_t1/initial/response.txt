@@ -1,0 +1,3 @@
+```Python
+["up", "up", "up", "right", "right", "right", "right", "right"]
+```
