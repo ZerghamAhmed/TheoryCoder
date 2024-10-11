@@ -1,0 +1,15 @@
+```Python
+["right", "right", "right", "right", "up", "up", "up", "up", "down", "down", "down", "down", "right"]
+```
+
+**Explanation:**
+
+1. **Move Right x4**: Move `baba_obj` from position `(2,4)` to `(6,4)` to reach the `flag_word` located at `(6,5)`.
+
+2. **Move Up x4**: Push the `flag_word` upward from `(6,5)` to `(6,8)`, aligning it with the `is_word` at `(7,8)` and the `win_word` at `(8,8)` to form the rule **"FLAG IS WIN"**.
+
+3. **Move Down x4**: Return `baba_obj` back down to `(6,4)`.
+
+4. **Move Right x1**: Move to `(7,4)`, where the `flag_obj` is located.
+
+By forming "FLAG IS WIN" and touching the `flag_obj`, we win the level.

@@ -1,0 +1,17 @@
+To win the level, you need to form the rule "BABA IS WIN" by moving the word blocks accordingly. Here's the sequence of actions:
+
+```Python
+["up", "up", "up", "left", "left", "down", "down"]
+```
+
+**Explanation:**
+
+1. **up**: Move Baba up to position [5,5].
+2. **up**: Move Baba up to position [5,6].
+3. **up**: Move Baba up to position [5,7], pushing the "IS" word up to [5,8].
+4. **left**: Move Baba left to [4,7], pushing the "BABA" word left to [3,7].
+5. **left**: Move Baba left to [3,7], pushing the "BABA" word left to [2,7].
+6. **down**: Move Baba down to [2,6], pushing the "BABA" word down to [2,6].
+7. **down**: Move Baba down to [2,5], pushing the "BABA" word down to [2,5], overlapping with the "IS" word at [2,5] and the "WIN" word at [2,4].
+
+By forming the vertical rule "BABA IS WIN" at column x=2 (positions [2,6], [2,5], [2,4]), you trigger the win condition. While doing this, you temporarily break the "BABA IS YOU" rule, but since "BABA IS WIN" is formed simultaneously, you win the game before losing control of Baba.

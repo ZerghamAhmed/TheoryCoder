@@ -1,0 +1,5 @@
+```Python
+
+["left", "left", "left", "right", "up", "up", "up", "up", "right", "right"]
+
+```
