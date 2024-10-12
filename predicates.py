@@ -386,6 +386,10 @@ def get_unbreakable_rules(state):
 
 from itertools import product
 
+from itertools import product
+
+from itertools import product
+
 def rule_formable(state, word1, word2, word3):
     """
     Check if the rule composed of word1, word2, word3 is formable.
@@ -417,15 +421,12 @@ def rule_formable(state, word1, word2, word3):
         'kill_word',
     }
     
-    # print(f"Checking formability of rule: ({word1}, {word2}, {word3})")
-
     # Step 1: Check if the rule is already formed
     if rule_formed(state, word1, word2, word3):
-        # print(f"Rule ({word1}, {word2}, {word3}) is already formed.")
         return False  # Rule is already formed; cannot be formed again
     
     # Step 2: If word1 is an end word or 'is_word', it cannot form a new rule
-    if word1 in end_words or word1 == "is_word":
+    if word1 in end_words or word1 == "is_word" or word3 == "is_word":
         return False
 
     # Step 3: Get the coordinates of the words in the state
@@ -434,21 +435,20 @@ def rule_formable(state, word1, word2, word3):
     coords3 = state.get(word3, [])
     
     if len(coords1) == 0 or len(coords2) == 0 or len(coords3) == 0:
-        # print(f"Rule ({word1}, {word2}, {word3}) is invalid because one or more words have no available instances.")
         return False  # If any word has no coordinates, the rule cannot be formed
 
-    # Step 4: Find all formed rules and identify unbreakable rules
+    # Step 4: Find all unbreakable rules and track their word instances (coordinates)
     def find_unbreakable_rules(state):
         """
-        Find all unbreakable rules on the map.
+        Find all unbreakable rules on the map and return the word instances (coordinates) involved.
         
         Args:
             state (dict): The current game state.
         
         Returns:
-            list: A list of unbreakable rules (triplets of words and coordinates).
+            set: A set of (word, coord) tuples that represent the instances in unbreakable rules.
         """
-        unbreakable_rules = []
+        unbreakable_instances = set()
         word_entities = [entity for entity in state.keys() if entity.endswith('_word')]
         
         # Loop over all possible combinations of subject, predicate, and object
@@ -457,25 +457,53 @@ def rule_formable(state, word1, word2, word3):
                 for obj in word_entities:
                     if rule_formed(state, subj, pred, obj):
                         if not rule_breakable(state, subj, pred, obj):
-                            # print(f"Unbreakable rule found: {subj} {pred} {obj}")
-                            unbreakable_rules.append({'subject': subj, 'object': obj})
-        # breakpoint()
-        return unbreakable_rules
+                            # Add the specific word instances (coordinates) involved in unbreakable rules
+                            for coord1, coord2, coord3 in product(state.get(subj, []), state.get(pred, []), state.get(obj, [])):
+                                if are_adjacent((coord1, coord2, coord3)):  # Ensure they are adjacent
+                                    unbreakable_instances.add((subj, tuple(coord1)))
+                                    unbreakable_instances.add((obj, tuple(coord3)))
+        return unbreakable_instances
 
-    # Step 5: Check if word1 and word3 are part of any unbreakable rule
-    unbreakable_rules = find_unbreakable_rules(state)
-    for rule in unbreakable_rules:
-        if (word1 == rule['subject'] or word3 == rule['object']) or (word1 == rule['object'] or word3 == rule['subject']):
-            # print(f"Rule ({word1}, {word2}, {word3}) is invalid because {word1} and {word3} are part of an unbreakable rule.")
-            return False
+    # Step 5: Check if any specific instances of word1 or word3 are part of any unbreakable rule
+    unbreakable_instances = find_unbreakable_rules(state)
+    
+    # Allow only the instances that are not part of an unbreakable rule
+    for coord1, coord3 in product(coords1, coords3):
+        if (word1, tuple(coord1)) in unbreakable_instances or (word3, tuple(coord3)) in unbreakable_instances:
+            continue  # Skip this instance if it's part of an unbreakable rule
+        # Valid instance found, break out of loop and form the rule.
+        break
+    else:
+        return False  # No valid instances, rule cannot be formed
 
-    # Step 6: Ensure that no word instance is reused within the same rule
+    # Step 6: Prevent rules like 'baba_word is_word baba_word' if only one instance of the word exists
+    if (len(coords1) == 1 and word1 == word3) or (len(coords3) == 1 and word1 == word3):
+        return False  # If word1 and word3 are the same and only one instance, block the rule
+    
+    # Step 7: Ensure that no word instance is reused within the same rule
     for coord1, coord2, coord3 in product(coords1, coords2, coords3):
         # Check if any of the coordinates are the same (i.e., word reuse in the same rule)
         if coord1 == coord2 or coord1 == coord3 or coord2 == coord3:
-            # print(f"Rule ({word1}, {word2}, {word3}) is invalid because the same word instance is reused.")
             return False  # Invalid because the same instance of a word is reused
+        
+    # if word1 == "rock_word":
+    #         breakpoint()
 
-    # Step 7: If no reuse is found and word1/word3 are not part of an unbreakable rule, the rule is formable
-    # print(f"Rule ({word1}, {word2}, {word3}) is formable.")
+    if not pushable_word(state, word1) and not pushable_word(state, word2) and pushable_word(state, word3):
+        # if word1 == "rock_word":
+            # breakpoint()
+        return False
+    # # Generate all possible triplets of coordinates, ensuring each word is used once
+    # for triplet in product(coords1, coords2, coords3):
+    #     if are_adjacent(list(triplet)):
+    #         return False
+        
+    # for key in state.keys():
+    #     if key == "rock_obj":
+    #         for triplet in product(coords1, coords2, coords3):
+    #             breakpoint()
+    #             if are_adjacent(list(triplet)):
+    #                 breakpoint()
+
+    # If all checks pass, the rule is formable
     return True
