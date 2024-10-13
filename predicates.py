@@ -485,25 +485,9 @@ def rule_formable(state, word1, word2, word3):
         # Check if any of the coordinates are the same (i.e., word reuse in the same rule)
         if coord1 == coord2 or coord1 == coord3 or coord2 == coord3:
             return False  # Invalid because the same instance of a word is reused
-        
-    # if word1 == "rock_word":
-    #         breakpoint()
 
     if not pushable_word(state, word1) and not pushable_word(state, word2) and pushable_word(state, word3):
-        # if word1 == "rock_word":
-            # breakpoint()
         return False
-    # # Generate all possible triplets of coordinates, ensuring each word is used once
-    # for triplet in product(coords1, coords2, coords3):
-    #     if are_adjacent(list(triplet)):
-    #         return False
-        
-    # for key in state.keys():
-    #     if key == "rock_obj":
-    #         for triplet in product(coords1, coords2, coords3):
-    #             breakpoint()
-    #             if are_adjacent(list(triplet)):
-    #                 breakpoint()
 
-    # If all checks pass, the rule is formable
     return True
+
