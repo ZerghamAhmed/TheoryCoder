@@ -50,6 +50,10 @@ RESPONSE FORMAT (just a random example list, make sure your answer is returned w
 
 ```
 
+explanation:
+
+Example explanation.
+
 """
 
 REFINE_PROMPT = """
@@ -614,7 +618,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 4)]")  # Example format
+    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 13)]")  # Example format
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel.py')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')
