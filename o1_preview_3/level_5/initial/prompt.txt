@@ -1,13 +1,13 @@
 Human: 
 You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
 These actions can only come from the action space given below. You are given an example of what your response 
-format for this list of actions should look like. 
+format for this list of actions should look like. You will also need to provide your reasoning for why this will allow you to win.
 
 You are given your current state that you start from in the level. 
 
 So using the information please return the action sequence that will result in winning the level. 
-If you have an explanation give it separately.
-Make sure to just have a sepearte section with your actions as demonstrated in the response format.
+Make sure to give your explanation, also
+make sure to just have a sepearte section with your actions as demonstrated in the response format.
 
 ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
 
@@ -43,4 +43,8 @@ RESPONSE FORMAT (just a random example list, make sure your answer is returned w
 ["right", "left", "up", "down"]
 
 ```
+
+explanation:
+
+Example explanation.
 
