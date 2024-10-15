@@ -1,0 +1,263 @@
+Human: 
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. 
+
+You are given your current state that you start from in the level. 
+
+You previously attemped this level and returned the following action sequence but did not win the game. 
+Your state transition information from the replay buffer is given below and may help you understand how to provide a corrected action sequence.
+You are also given a history of previous action sequences you tried and why they did NOT lead to winning. This may also help you decide the correct actions.
+
+Please provide your corrected action sequence that will result in winning the level. 
+Also for your explanation, you should mention why your previous predicted action sequence did not win the game.
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
+['up', 'down', 'left', 'right']
+
+STATE FORMAT:
+
+\{
+    <object 1>: [(x, y)],  # some object class and its location
+    <object 2>: [(x, y), ...],  # some other object class and its locations
+    ...  # etc.
+    'lost': <bool>,  # Whether game has been lost yet
+    'won': <bool>,  # Whether game has been won yet
+\}
+
+INITIAL STATE FOR LEVEL:
+
+{'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 4], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'is_word': [[2, 4], [2, 1], [7, 1]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'baba_obj': [[5, 4]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+
+PREVIOUS ACTION SEQUENCE PREDICTION:
+
+['left', 'left', 'left', 'right', 'right', 'up', 'up', 'up', 'up', 'right']
+
+LATEST PREVIOUS ACTION SEQUENCE REPLAY BUFFER:
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 4], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'is_word': [[2, 4], [2, 1], [7, 1]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'baba_obj': [[5, 4]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 4], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'is_word': [[2, 4], [2, 1], [7, 1]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 4]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[5, 4]] --> [[4, 4]]
+"empty": Added: [[5, 4]]
+"empty": Removed: [[4, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 4], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'is_word': [[2, 4], [2, 1], [7, 1]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 4]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 4], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'is_word': [[2, 4], [2, 1], [7, 1]], 'stop_word': [[2, 3]], 'baba_obj': [[3, 4]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[4, 4]] --> [[3, 4]]
+"empty": Added: [[4, 4]]
+"empty": Removed: [[3, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 4], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'is_word': [[2, 4], [2, 1], [7, 1]], 'stop_word': [[2, 3]], 'baba_obj': [[3, 4]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'baba_obj': [[2, 4]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[3, 4]] --> [[2, 4]]
+"empty": Added: [[3, 4]]
+"empty": Removed: [[1, 4]]
+"is_word": Added: [[1, 4]]
+"is_word": Removed: [[2, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'baba_obj': [[2, 4]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'baba_obj': [[3, 4]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[2, 4]] --> [[3, 4]]
+"empty": Added: [[2, 4]]
+"empty": Removed: [[3, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'baba_obj': [[3, 4]], 'you_word': [[3, 1]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 4]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[3, 4]] --> [[4, 4]]
+"empty": Added: [[3, 4]]
+"empty": Removed: [[4, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 4]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 5]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[4, 4]] --> [[4, 5]]
+"empty": Added: [[4, 4]]
+"empty": Removed: [[4, 5]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 5]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6], [4, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 6]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[4, 5]] --> [[4, 6]]
+"wall_obj": Added: []
+"wall_obj": Removed: []
+"empty": Added: [[4, 5]]
+"empty": Removed: []
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6], [4, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 6]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 6], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 7]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[4, 6]] --> [[4, 7]]
+"wall_obj": Added: []
+"wall_obj": Removed: [[4, 6]]
+"empty": Added: [[4, 6]]
+"empty": Removed: [[4, 7]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 6], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 7]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 8]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[4, 7]] --> [[4, 8]]
+"empty": Added: [[4, 7]]
+"empty": Removed: [[4, 8]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[4, 8]], 'flag_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'won': False, 'lost': False, 'controllables': ['baba_obj']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'empty': [[1, 8], [1, 7], [1, 5], [1, 3], [1, 2], [2, 8], [2, 7], [2, 4], [2, 2], [3, 8], [3, 7], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 7], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 8], [6, 7], [6, 5], [6, 4], [6, 3], [6, 2], [7, 8], [7, 7], [7, 5], [7, 4], [7, 3], [7, 2], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2]], 'wall_obj': [[1, 6], [2, 6], [3, 6], [5, 6], [6, 6], [7, 6], [8, 6]], 'is_word': [[1, 4], [2, 1], [7, 1]], 'baba_word': [[1, 1]], 'wall_word': [[2, 5]], 'stop_word': [[2, 3]], 'you_word': [[3, 1]], 'baba_obj': [[5, 8]], 'flag_word': [[6, 1]], 'win_word': [[8, 1]], 'flag_obj': [[5, 8]], 'won': True, 'lost': False, 'controllables': ['baba_obj']}
+Summary of changes:
+"baba_obj": [[4, 8]] --> [[5, 8]]
+"won": False --> True
+"empty": Added: [[4, 8]]
+"empty": Removed: []
+
+
+PREVIOUS ACTIONS AND WHY THEY DID NOT LEAD TO WINNING:
+
+Actions taken: ['left', 'left', 'left', 'right', 'right', 'right', 'up', 'up', 'up', 'up']
+Explanation: **Explanation:**
+
+In the previous action sequence, after moving left three times to push the `is_word` out of the `wall is stop` rule, you moved **down** and pushed the `stop_word` out of position. This unnecessary move could have caused unintended interactions and did not contribute to winning the game.
+
+By pushing the `stop_word` downwards, you may have accidentally altered the game's rules or blocked your own path, preventing you from reaching the flag.
+
+**Corrected Action Sequence:**
+
+1. **left**: Move Baba from `[5, 4]` to `[4, 4]`.
+2. **left**: Move Baba from `[4, 4]` to `[3, 4]`.
+3. **left**: Move Baba from `[3, 4]` to `[2, 4]`, pushing the `is_word` from `[2, 4]` to `[1, 4]` and breaking the `wall is stop` rule.
+4. **right**: Move Baba back to `[3, 4]`.
+5. **right**: Move Baba to `[4, 4]`.
+6. **right**: Move Baba to `[5, 4]`.
+7. **up**: Move Baba to `[5, 5]`.
+8. **up**: Move Baba to `[5, 6]`. Since the `wall is stop` rule is broken, Baba can pass through the wall.
+9. **up**: Move Baba to `[5, 7]`.
+10. **up**: Move Baba to `[5, 8]`, where the `flag_obj` is located.
+
+By following this sequence, you break the `wall is stop` rule without disrupting other important words or objects. This allows Baba to pass through the wall and reach the flag to win the level.
+
+Actions taken: ['left', 'left', 'left', 'up', 'up', 'right', 'up', 'up', 'right', 'right']
+Explanation: **Explanation:**
+
+In the previous action sequence, after moving **left** three times to push the `is_word` out of the `wall is stop` rule, you moved **right** three times to return to your original position. This was unnecessary and wasted valuable moves. By returning to the starting position, you did not make progress toward reaching the flag.
+
+**Corrected Action Sequence:**
+
+1. **left**: Move Baba from `[5, 4]` to `[4, 4]`.
+2. **left**: Move Baba from `[4, 4]` to `[3, 4]`.
+3. **left**: Move Baba from `[3, 4]` to `[2, 4]`, pushing the `is_word` from `[2, 4]` to `[1, 4]` and breaking the `wall is stop` rule.
+4. **up**: Move Baba to `[2, 5]`.
+5. **up**: Move Baba to `[2, 6]`. Since the `wall is stop` rule is broken, Baba can pass through the wall.
+6. **right**: Move Baba to `[3, 6]`.
+7. **up**: Move Baba to `[3, 7]`.
+8. **up**: Move Baba to `[3, 8]`.
+9. **right**: Move Baba to `[4, 8]`.
+10. **right**: Move Baba to `[5, 8]`, where the `flag_obj` is located.
+
+By proceeding directly toward the flag after breaking the `wall is stop` rule, you avoid unnecessary movements and efficiently reach the flag to win the level.
+
+Actions taken: ['left', 'left', 'left', 'right', 'up', 'up', 'up', 'up', 'right', 'right']
+Explanation: **Explanation:**
+
+The previous action sequence did not lead to winning the game because of an unintended interaction with the `wall_word`. Here's what happened:
+
+1. **Left x3**: You moved Baba left three times from `[5, 4]` to `[2, 4]`, pushing the `is_word` from `[2, 4]` to `[1, 4]` and breaking the `wall is stop` rule. This was correct.
+
+2. **Up x2**: From `[2, 4]`, you moved up to `[2, 5]` and then to `[2, 6]`. However, at `[2, 5]`, there is a `wall_word`. By moving up, you pushed the `wall_word` upwards to `[2, 6]` and then to `[2, 7]`. This accidental movement reformed the `wall is stop` rule vertically:
+   - `wall_word` at `[2, 7]`
+   - `is_word` at `[1, 4]`
+   - `stop_word` at `[2, 3]`
+
+   This unintentionally reactivated the `wall is stop` rule, preventing Baba from passing through the wall.
+
+3. **Right, Up x2, Right x2**: The subsequent moves couldn't rectify the situation because the wall became impassable again due to the reformed rule.
+
+**Corrected Action Sequence:**
+
+To avoid this issue, the corrected action sequence prevents pushing the `wall_word` by not moving up from `[2, 4]`. Instead, we move right first to avoid interacting with any important words:
+
+1. **left**: Move Baba from `[5, 4]` to `[4, 4]`.
+2. **left**: Move Baba to `[3, 4]`.
+3. **left**: Move Baba to `[2, 4]`, pushing the `is_word` to `[1, 4]` and breaking the `wall is stop` rule.
+4. **right**: Move Baba back to `[3, 4]`.
+5. **up**: Move Baba to `[3, 5]`.
+6. **up**: Move Baba to `[3, 6]`. Since the rule is broken, Baba can pass through the wall.
+7. **up**: Move Baba to `[3, 7]`.
+8. **up**: Move Baba to `[3, 8]`.
+9. **right**: Move Baba to `[4, 8]`.
+10. **right**: Move Baba to `[5, 8]`, where the `flag_obj` is located.
+
+By moving right before going up, we avoid pushing any words that could unintentionally reform the game's rules. This path allows Baba to pass through the wall and reach the flag without obstruction.
+
+**Summary:**
+
+- **Avoid pushing the `wall_word`**: Do not move up from `[2, 4]` to prevent pushing the `wall_word`.
+- **Move right before going up**: This ensures we bypass any objects that could interfere with the rules.
+- **Proceed upwards through the wall**: With the `wall is stop` rule broken, Baba can traverse the wall unhindered.
+- **Reach the flag to win the game**: Moving right at the end brings Baba to the flag's location at `[5, 8]`.
+
+By following this corrected action sequence, you can successfully win the level.
+
+Actions taken: ['left', 'left', 'left', 'right', 'right', 'up', 'up', 'up', 'up', 'right']
+Explanation: **Explanation:**
+
+In your previous action sequence, after moving left three times to push the `is_word` out of the `wall is stop` rule, you moved **up** from position `[2, 4]`. This caused you to push the `wall_word` at `[2, 5]` upwards, unintentionally reforming the `wall is stop` rule vertically. This reactivated the wall's stopping property, preventing Baba from passing through the wall to reach the flag.
+
+**Why the Previous Action Sequence Did Not Win:**
+
+- **Unintended Interaction with `wall_word`**: By moving up from `[2, 4]`, you pushed the `wall_word` upwards, recreating the `wall is stop` rule.
+- **Wall Became Impassable Again**: With the `wall is stop` rule reformed, Baba could no longer pass through the wall, blocking your path to the flag.
+
+**Corrected Action Sequence Explanation:**
+
+1. **left**: Move Baba from `[5, 4]` to `[4, 4]`.
+2. **left**: Move Baba to `[3, 4]`.
+3. **left**: Move Baba to `[2, 4]`, pushing the `is_word` to `[1, 4]` and breaking the `wall is stop` rule.
+4. **right**: Move Baba back to `[3, 4]`.
+5. **right**: Move Baba to `[4, 4]`.
+6. **up**: Move Baba to `[4, 5]`.
+7. **up**: Move Baba to `[4, 6]` (through the now non-stopping wall).
+8. **up**: Move Baba to `[4, 7]`.
+9. **up**: Move Baba to `[4, 8]`.
+10. **right**: Move Baba to `[5, 8]`, where the `flag_obj` is located.
+
+By avoiding moving up from `[2, 4]`, you prevent pushing the `wall_word` and avoid unintentionally reforming the game's rules. This allows Baba to pass through the wall unhindered and reach the flag to win the level.
+
+
+UTILS:
+
+{'directions': {'left': [-1, 0], 'right': [1, 0], 'up': [0, 1], 'down': [0, -1]}}
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag, explanations should be outside it):
+
+```Python
+
+["right", "left", "up", "down"]
+
+```
+
+explanation:
+
+Example explanation.
+
