@@ -1,0 +1,42 @@
+```Python
+["left", "left", "left", "down", "down", "right", "right", "right"]
+```
+
+**Explanation:**
+
+Starting from the initial state, our goal is to reach the flag to win the level. However, there is a wall blocking Baba from reaching the flag, and the wall cannot be passed because of the rule "WALL IS STOP". Since we cannot alter the "WALL IS STOP" rule due to its inaccessibility, we need to find another way to reach the flag.
+
+The solution involves changing control from Baba to Keke, who is located on the other side of the wall near the flag. Here's how we can do it:
+
+1. **Move Baba to the "KEKE" word tile:**
+   - **Action:** `["left", "left", "left"]`
+   - Baba moves from `[6,4]` to `[3,4]`, reaching the "KEKE" word tile.
+
+2. **Push the "KEKE" word down to overwrite "YOU" in the "BABA IS YOU" rule:**
+   - **Action:** `["down", "down"]`
+   - Baba pushes the "KEKE" word from `[3,4]` down to `[3,2]`, overwriting the "YOU" word.
+   - This changes the horizontal rule from "BABA IS YOU" to "KEKE IS YOU".
+
+3. **Control switches to Keke:**
+   - Since "KEKE IS YOU" is now the active rule, control shifts from Baba to Keke.
+   - Baba becomes an uncontrollable object.
+
+4. **Move Keke to the flag to win the game:**
+   - **Action:** `["right", "right", "right"]`
+   - Keke starts at `[3,7]` and moves right to `[6,7]`, where the flag is located.
+   - Upon touching the flag, and with the rule "FLAG IS WIN" in effect, the level is won.
+
+**Why this works:**
+
+- **Changing Control to Keke:**
+  - By replacing "YOU" with "KEKE" in the "BABA IS YOU" rule, we effectively create the new rule "KEKE IS YOU". This means we now control Keke instead of Baba.
+  - The action of pushing "KEKE" over "YOU" is permissible, as words can overwrite each other in the game.
+
+- **Bypassing the Wall:**
+  - Keke is located above the wall at `[3,7]`, so we don't need to pass through it.
+  - Controlling Keke allows us to reach the flag without altering the "WALL IS STOP" rule.
+
+- **Winning the Level:**
+  - With the rule "FLAG IS WIN" still in place, touching the flag with Keke immediately wins the level.
+
+This sequence of actions efficiently changes the rules to our advantage and allows us to win the level by manipulating the words and taking control of a character who can reach the goal.
