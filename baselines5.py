@@ -383,42 +383,68 @@ class Baselines:
                 print(f"Agent lost during execution of actions: {actions}")
                 break
         return temp_replay_buffer
+    
+    def generate_action_replay_buffer_pairs(self, level_id, current_step):
+        """
+        Generate tuples of previous actions and corresponding replay buffers.
+        Reset the engine and replay buffer for each action sequence.
+        """
+        action_replay_pairs = []
 
-    def format_previous_actions_and_replay(self, level_id, current_step):
+        for step in range(1, current_step):
+            # Load the previous actions from the saved file
+            actions_file_path = self.save_dir / f"level_{level_id}" / f"lost_refinement_{step}" / "actions.txt"
+            if not actions_file_path.exists():
+                print(f"Actions file for refinement step {step} not found. Skipping.")
+                continue
+
+            with open(actions_file_path, 'r') as f:
+                actions = ast.literal_eval(f.read())
+
+            # Reset the game engine to the initial state before executing actions
+            self.engine.reset()
+            self.replay_buffers = []  # Clear the replay buffer
+
+            # Execute the actions to generate the replay buffer
+            for action in actions:
+                self.step_env(action)  # This will populate the replay buffer
+
+            # Create a summary of the replay buffer
+            replay_buffer_summary = self._make_observation_summaries(self.replay_buffers)
+
+            # Add the actions and replay buffer summary as a tuple
+            action_replay_pairs.append((actions, replay_buffer_summary))
+
+        return action_replay_pairs
+    
+    def format_actions_and_replay_buffers(self, action_replay_pairs):
         """
-        Format the previous actions and their corresponding replay buffers as tuples.
+        Format the action-replay buffer pairs as a string for the prompt.
         """
-        all_previous_actions = self.load_all_previous_actions(level_id, current_step)
         formatted_pairs = []
-        
-        for idx, actions in enumerate(all_previous_actions, 1):
-            if not actions:
-                continue  # Skip empty action sequences
-            print(f"Executing previous actions {idx}: {actions}")
-            replay_buffer = self.execute_actions_and_capture_replay(actions, level_id)
-            
-            # Format the tuple
-            formatted_pair = f"**Previous Action {idx} and its replay buffer:**\n\nActions:\n{actions}\n\nReplay Buffer:\n"
-            for entry in replay_buffer:
-                formatted_pair += f"{entry['summary']}\n"
-            
+
+        for idx, (actions, replay_buffer) in enumerate(action_replay_pairs, 1):
+            formatted_pair = f"**Previous Actions {idx} and its replay buffer:**\n\nActions:\n{actions}\n\nReplay Buffer:\n"
+            formatted_pair += f"{replay_buffer}\n"
             formatted_pairs.append(formatted_pair)
-        
-        return "\n\n".join(formatted_pairs).strip()
+
+        return "\n".join(formatted_pairs)
+
 
     def refine_prompt(self, level_id, refinement_step):
-        """Generate and save the refinement request prompt with actions and replay buffers formatted."""
+        # Generate action-replay buffer pairs
+        action_replay_pairs = self.generate_action_replay_buffer_pairs(level_id, refinement_step)
         
-        # Format previous actions and corresponding replay buffers
-        previous_actions_and_replay = self.format_previous_actions_and_replay(level_id, refinement_step)
-        
+        # Format the action-replay buffer pairs for the prompt
+        formatted_action_replay_pairs = self.format_actions_and_replay_buffers(action_replay_pairs)
+
         # Generate the refinement prompt
         prompt = self._make_langchain_prompt(
-            text=REFINE_PROMPT,  # Updated REFINE_PROMPT
+            text=REFINE_PROMPT,
             actions_set=self.actions_set,
             state_format=self.engine.state_format,
             initial_state=self.initial_state,
-            action_replay_tuples=previous_actions_and_replay,
+            action_replay_tuples=formatted_action_replay_pairs,  # Insert formatted pairs
             utils=self.utils
         )
 
@@ -553,6 +579,19 @@ class Baselines:
         y_converted = deep_convert_to_tuple(y)
         return x_converted == y_converted
 
+    def find_latest_refinement(self, level_id):
+        """Find the latest refinement step in the folder."""
+        level_dir = self.save_dir / f"level_{level_id}"
+        refinements = [d for d in level_dir.iterdir() if d.is_dir() and 'lost_refinement' in d.name]
+        
+        if refinements:
+            # Extract the refinement step numbers from the folder names
+            refinement_steps = [int(d.name.split('_')[-1]) for d in refinements if d.name.split('_')[-1].isdigit()]
+            if refinement_steps:
+                return max(refinement_steps)  # Return the highest refinement step
+        return 0  # No refinements exist yet
+
+
     def run(self, engine, level_id):
         """Run the initial request to get action sequence from LLM and evaluate it."""
         self.engine = engine  # Assign engine to self
@@ -602,8 +641,11 @@ class Baselines:
             return False  # End if no refinement
 
         else:
-            # Refinement enabled, proceed directly to refinement
-            for refinement_step in range(1, self.max_refinements + 1):
+            # Refinement enabled, pick up from the latest refinement step
+            latest_refinement = self.find_latest_refinement(level_id)
+            print(f"Resuming from refinement step {latest_refinement + 1}...")
+
+            for refinement_step in range(latest_refinement + 1, self.max_refinements + 1):
                 print(f"Starting refinement step {refinement_step} for level {level_id}...")
 
                 # Generate the refinement prompt with all previous actions and replay buffers
@@ -648,6 +690,7 @@ class Baselines:
             print(f"Max refinements reached for level {level_id}.")
             return False
 
+
     def extract_actions(self, response):
         """Extract the action list from the LLM response."""
         try:
@@ -678,7 +721,7 @@ if __name__ == "__main__":
     parser.add_argument('--predicates-file-name', type=str, default='predicates.py')
     parser.add_argument('--plans-json-path', type=str, default='plans.json', help="Path to the JSON file containing plans for each level.")
     parser.add_argument('--refine', action='store_true', help="Enable refinement if the LLM's action sequence leads to a loss")
-    parser.add_argument('--max-refinements', type=int, default=5, help="Maximum number of refinement steps allowed")
+    parser.add_argument('--max-refinements', type=int, default=6, help="Maximum number of refinement steps allowed")
     parser.add_argument('--save-dir', type=str, default='o1_preview_4', help="Directory to save the results")
 
     args = parser.parse_args()
