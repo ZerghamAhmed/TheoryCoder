@@ -1,1 +1,1 @@
-# PRISM-LLM-Agent
+# PRISM-Agent
