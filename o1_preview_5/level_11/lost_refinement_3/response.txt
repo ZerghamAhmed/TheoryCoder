@@ -1,0 +1,48 @@
+```Python
+["down", "down", "down", "down", "right", "right", "right", "right", 
+"up", "right", "up", "down", "right", "up", "left", "down", "left", 
+"up", "up", "up", "up", "up", "up"]
+```
+
+**Explanation:**
+
+To win the level, we need to move Baba (our controllable character) to the flag at position `[7, 7]` without sinking into the goop, which is currently set to "sink" objects that touch it (`GOOP IS SINK`). Since the path to the flag is blocked by goop, we'll use the rocks (`ROCK IS PUSH`) to clear a path through the goop by sinking the rocks into it.
+
+Here's a step-by-step breakdown of the action sequence:
+
+1. **Move Down x4:**  
+   Navigate Baba down from `[2, 6]` to `[2, 2]` to reach the bottom row, avoiding goop obstacles on the right.
+
+2. **Move Right x4:**  
+   Move Baba right from `[2, 2]` to `[6, 2]` along the bottom row, approaching the area where the rocks are located.
+
+3. **Move Up:**  
+   Go up to `[6, 3]`, preparing to interact with the first rock.
+
+4. **Move Right:**  
+   Move right to `[7, 3]`, where the first rock is located.
+
+5. **Push First Rock Up:**  
+   Push the rock up into the goop at `[7, 4]`. This action sinks both the rock and the goop at that position, clearing the space.
+
+6. **Move Down and Around to Second Rock:**  
+   - Move down to `[7, 3]` (we are already here after pushing the rock).
+   - Move down again to `[7, 2]`.
+   - Move right to `[8, 2]`.
+
+7. **Push Second Rock Left:**  
+   - Move up to `[8, 3]`, where the second rock is.
+   - Push the second rock left to `[7, 3]`.
+
+8. **Push Second Rock Up Twice:**  
+   - Move down to `[7, 2]`.
+   - Move up to `[7, 3]`.
+   - Push the second rock up to `[7, 4]` (now clear after sinking the first rock and goop).
+   - Push the rock up again to `[7, 5]`, sinking it into the next goop tile and clearing more of the path.
+
+9. **Move Up to the Flag:**  
+   - Move up from `[7, 4]` to `[7, 5]` (now empty).
+   - Continue moving up through `[7, 6]`.
+   - Reach `[7, 7]`, where the flag is located.
+
+By using the rocks to eliminate the goop tiles at `[7, 4]` and `[7, 5]`, we've safely created a path for Baba to reach the flag without sinking. Touching the flag, which is set to "win" (`FLAG IS WIN`), completes the level.

@@ -1,0 +1,47 @@
+```Python
+
+["right", "right", "down", "down", "right", "right", "up", "up", "up", "right", "down", "down", "down", "left", "down", "down", "down", "right", "right", "up", "up", "up", "down", "down", "down", "left"]
+
+```
+
+Explanation:
+
+Starting at position `[2, 5]`, we aim to create the rule `ROCK IS WIN` horizontally at y=5 (row 5), so that we can touch the rock object and win the level.
+
+1. **Move Right Twice**: `["right", "right"]`  
+   We move to position `[4, 5]`, reaching the `rock_word` at `[4, 3]`.
+
+2. **Move Down Twice**: `["down", "down"]`  
+   Now at `[4, 3]`, we're beside the `rock_word`.
+
+3. **Push `rock_word` Right Twice**: `["right", "right"]`  
+   We push the `rock_word` to the right, positioning it at `[6, 3]` for alignment.
+
+4. **Move Up Thrice**: `["up", "up", "up"]`  
+   Ascend to `[6, 6]` to reach the `is_word` at `[7, 8]`.
+
+5. **Move Right**: `["right"]`  
+   At `[7, 6]`, we're below the `is_word`.
+
+6. **Push `is_word` Down Thrice**: `["down", "down", "down"]`  
+   We push the `is_word` down to `[7, 5]`, aligning it horizontally with `rock_word`.
+
+7. **Move Left**: `["left"]`  
+   Return to column x=6 to position ourselves for the next step.
+
+8. **Move Down Thrice**: `["down", "down", "down"]`  
+   Descend to `[6, 3]` to prepare for moving towards the `win_word`.
+
+9. **Move Right Twice**: `["right", "right"]`  
+   Move to `[8, 3]`, close to the `win_word` at `[8, 8]`.
+
+10. **Move Up Thrice**: `["up", "up", "up"]`  
+    Ascend to `[8, 6]`, reaching the `win_word`.
+
+11. **Push `win_word` Down Thrice**: `["down", "down", "down"]`  
+    We push the `win_word` down to `[8, 5]`, completing the `ROCK IS WIN` phrase horizontally at y=5.
+
+12. **Move Left**: `["left"]`  
+    Return to position `[7, 5]`, where the `rock_obj` is located.
+
+By forming the rule `ROCK IS WIN` and touching the `rock_obj`, which is now a win condition, we successfully win the level.

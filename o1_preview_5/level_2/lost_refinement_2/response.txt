@@ -1,0 +1,28 @@
+```Python
+["left", "left", "left", "down", "down", "right", "up", "right", "up", "up"]
+```
+
+**Explanation:**
+
+1. **Move Left thrice**: `left`, `left`, `left`
+   - Baba moves from `[5, 4]` to `[2, 4]`, reaching the position of the `win_word`.
+2. **Push `win_word` Down twice**: `down`, `down`
+   - Baba pushes the `win_word` from `[2, 4]` to `[2, 2]`.
+3. **Move Right**: `right`
+   - Baba moves to `[3, 2]`, alongside the `win_word`.
+4. **Push `win_word` Right**: `up`
+   - Baba pushes the `win_word` from `[2, 2]` to `[2, 3]`.
+5. **Move Right**: `right`
+   - Baba moves to `[3, 3]`.
+6. **Push `win_word` Up**: `up`
+   - Baba pushes the `win_word` from `[3, 3]` to `[3, 4]`.
+7. **Move Up twice**: `up`, `up`
+   - Baba moves to `[3, 6]`, avoiding the problematic row `y=7`.
+
+By following these steps, Baba pushes the `win_word` into position to form the vertical phrase `BABA IS WIN`:
+
+- `BABA` at `[4, 7]`
+- `IS` at `[4, 6]`
+- `WIN` at `[4, 5]`
+
+This changes the game rule to `BABA IS WIN`, allowing Baba to win the level without moving into the `y=7` row that previously caused the game to be lost.

@@ -1,0 +1,7 @@
+```Python
+["left", "left", "left", "down", "left", "up", "right", "right", "right"]
+```
+
+explanation:
+
+We start by moving left three times to push the 'keke_word' left from position [3,4] to [1,4]. Then we move down to align 'keke_word' with 'is_word'. Next, we push 'keke_word' left and up to replace 'baba_word' at [1,2], changing the sentence from "BABA IS YOU" to "KEKE IS YOU". This transfers control from 'baba_obj' to 'keke_obj'. Finally, we move 'keke_obj' right three times to reach the 'flag_obj' at [6,7]. This allows us to win the level because controlling 'keke_obj' lets us bypass the wall and touch the flag.

@@ -1,0 +1,29 @@
+```Python
+["left", "left", "left", "right", "right", "right", "up", "up", "up", "up"]
+```
+
+explanation:
+
+We start by controlling 'baba_obj' at position [5,4] with the goal of reaching the 'flag_obj' at position [5,8]. However, there is a horizontal wall at y=6 blocking the direct path upward, and since "WALL IS STOP" is active, we cannot pass through it.
+
+To overcome this obstacle, we need to break the "WALL IS STOP" rule. Here's how the actions achieve this:
+
+1. **Move Left Three Times**: 
+   - **First Left**: Move from [5,4] to [4,4].
+   - **Second Left**: Move from [4,4] to [3,4].
+   - **Third Left**: Move from [3,4] to [2,4], pushing the 'is_word' from [2,4] to [1,4]. This breaks the vertical alignment of "WALL IS STOP" at x=2, thus deactivating the rule.
+
+2. **Move Right Three Times**:
+   - **First Right**: Move back to [3,4].
+   - **Second Right**: Move to [4,4].
+   - **Third Right**: Return to [5,4], our original x-position.
+
+3. **Move Up Four Times**:
+   - **First Up**: Move from [5,4] to [5,5].
+   - **Second Up**: Move to [5,6], passing through the wall since "WALL IS STOP" is no longer active.
+   - **Third Up**: Move to [5,7].
+   - **Fourth Up**: Reach [5,8], where the 'flag_obj' is located.
+
+Since "FLAG IS WIN" is active (from the horizontal alignment of 'flag_word' at [6,1], 'is_word' at [7,1], and 'win_word' at [8,1]), touching the flag at [5,8] wins the game.
+
+This sequence effectively breaks the rule preventing us from passing through walls and allows us to reach the goal.

@@ -1,0 +1,31 @@
+```Python
+
+["up", "up", "right", "right", "down", "right", "down", "down", "right", "up"]
+
+```
+
+**Explanation:**
+
+Starting from our initial position at `[2,5]`, we need to break the rule "Skull is Kill" to safely reach the flag. Here's the step-by-step reasoning:
+
+1. **First Move Up Twice (`"up", "up"`):**
+   - We move up to `[2,6]` and then to `[2,7]`. At `[2,7]`, there's the `'is_word'`. By moving up again, we push the `'is_word'` to `[2,8]`, effectively breaking the "Skull is Kill" rule because the sentence is now incomplete.
+
+2. **Move Towards the Flag:**
+   - **Right Twice (`"right", "right"`):**
+     - We move right to `[3,7]` (where `'kill_word'` is) and then to `[4,7]`.
+   - **Down (`"down"`):**
+     - We move down to `[4,6]`.
+   - **Right (`"right"`):**
+     - We move right to `[5,6]`, entering the area with skulls. Since "Skull is Kill" has been broken, skulls no longer harm us.
+   - **Down Twice (`"down", "down"`):**
+     - We move down to `[5,5]` and then to `[5,4]`, continuing through the skulls.
+   - **Right (`"right"`):**
+     - We move right to `[6,4]`.
+   - **Up (`"up"`):**
+     - Finally, we move up to `[6,5]`, where the `'flag_obj'` is located.
+
+3. **Winning the Game:**
+   - Stepping onto the flag triggers the win condition because "Flag is Win" is still in effect. By breaking "Skull is Kill" and reaching the flag, we successfully complete the level.
+
+This sequence allows us to safely navigate through hazards by altering the game rules to our advantage and reaching the goal.

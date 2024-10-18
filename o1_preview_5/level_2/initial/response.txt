@@ -1,0 +1,38 @@
+```Python
+['up', 'up', 'up', 'down', 'down', 'down', 'left', 'left', 'left', 'right', 'right', 'right', 'up', 'up', 'up']
+```
+
+**Explanation:**
+
+1. **Move Up thrice**:  
+   - Starting from position `[5, 4]`, moving up three times takes `baba_obj` to `[5, 7]`.
+   - This pushes the `you_word` at `[6, 7]` to the right, moving it to `[7, 7]`.
+   - This creates an empty space at `[6, 7]` for the `win_word`.
+
+2. **Move Down thrice**:  
+   - Moving down three times brings `baba_obj` back to the initial position `[5, 4]`.
+   - This prepares `baba_obj` to push the `win_word` towards the empty space.
+
+3. **Move Left thrice**:  
+   - Moving left three times takes `baba_obj` to `[2, 4]`, reaching the `win_word`.
+   - Each left move pushes the `win_word` one step to the right:
+     - `win_word` moves from `[2, 4]` to `[3, 4]`, `[4, 4]`, and finally `[5, 4]`.
+
+4. **Move Right thrice**:  
+   - Moving right three times, `baba_obj` pushes the `win_word` from `[5, 4]` to `[6, 4]`.
+   - The `win_word` is now aligned below the empty space at `[6, 7]`.
+
+5. **Move Up thrice**:  
+   - Moving up three times, `baba_obj` pushes the `win_word` upwards from `[6, 4]` to `[6, 7]`.
+   - With each move, `win_word` occupies `[6, 5]`, `[6, 6]`, and finally `[6, 7]`.
+
+**Result:**
+
+- The phrase **"BABA IS WIN"** is formed horizontally at row 7 with:
+  - `baba_word` at `[4, 7]`
+  - `is_word` at `[5, 7]`
+  - `win_word` at `[6, 7]`
+
+- Since `baba_obj` is `YOU` (from the existing "BABA IS YOU") and now `BABA IS WIN`, the game conditions for winning are met.
+
+- **Victory is achieved** by following this sequence of actions.

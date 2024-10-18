@@ -1,0 +1,50 @@
+Human: 
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. You will also need to provide your reasoning for why this will allow you to win.
+
+You are given your current state that you start from in the level. 
+
+So using the information please return the action sequence that will result in winning the level. 
+Make sure to give your explanation, also
+make sure to just have a sepearte section with your actions as demonstrated in the response format.
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
+['up', 'down', 'left', 'right']
+
+STATE FORMAT:
+
+\{
+    <object 1>: [(x, y)],  # some object class and its location
+    <object 2>: [(x, y), ...],  # some other object class and its locations
+    ...  # etc.
+    'lost': <bool>,  # Whether game has been lost yet
+    'won': <bool>,  # Whether game has been won yet
+\}
+
+INITIAL STATE:
+
+{'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'empty': [[1, 7], [1, 6], [1, 5], [1, 4], [1, 3], [1, 2], [2, 7], [2, 5], [2, 4], [2, 2], [3, 7], [3, 6], [3, 5], [3, 4], [3, 3], [3, 2], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [4, 2], [4, 1], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 2], [5, 1], [6, 7], [6, 6], [6, 5], [6, 4], [6, 3], [6, 2], [7, 7], [7, 5], [7, 4], [7, 2], [8, 7], [8, 6], [8, 5], [8, 4], [8, 3], [8, 2]], 'grass_word': [[1, 1]], 'is_word': [[2, 8], [2, 1], [7, 8], [7, 1]], 'baba_obj': [[2, 6]], 'grass_obj': [[2, 3]], 'win_word': [[3, 8], [3, 1]], 'flag_word': [[6, 8]], 'love_word': [[6, 1]], 'flag_obj': [[7, 6]], 'love_obj': [[7, 3]], 'you_word': [[8, 8], [8, 1]], 'won': False, 'lost': False, 'controllables': ['love_obj', 'flag_obj']}
+
+UTILS:
+
+directions = {
+    'left': [-1, 0],
+    'right': [1, 0],
+    'up': [0, 1],
+    'down': [0, -1],
+}
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag):
+
+```Python
+
+["right", "left", "up", "down"]
+
+```
+
+explanation:
+
+Example explanation.
+

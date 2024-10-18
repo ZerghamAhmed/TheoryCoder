@@ -1,0 +1,21 @@
+```Python
+["down", "down", "up", "right", "right", "right", "right", "right", "up"]
+```
+
+**Explanation:**
+
+1. **Break the "ROCK IS ROCK" rule:**
+   - Move **down** twice to push the `ROCK_WORD` at position `[2, 3]` down to `[2, 2]`.
+   - This disrupts the horizontal rule "ROCK IS ROCK" formed by `ROCK_WORD` `[2,3]`, `IS_WORD` `[3,3]`, and `ROCK_WORD` `[4,3]`.
+   - By breaking this rule, the conflicting rule "ROCK IS FLAG" (formed by `ROCK_WORD` `[6,1]`, `IS_WORD` `[7,1]`, and `FLAG_WORD` `[8,1]`) becomes active.
+
+2. **Transform the Rock into a Flag:**
+   - With "ROCK IS FLAG" now active, the `ROCK_OBJ` at position `[7, 5]` transforms into a `FLAG_OBJ`.
+
+3. **Reach the Flag to Win:**
+   - Move **up** to return to position `[2, 4]`.
+   - Move **right** five times to reach position `[7, 4]`. All these positions are empty and free of obstacles.
+   - Move **up** to position `[7, 5]`, where the `FLAG_OBJ` is now located.
+   - Since "FLAG IS WIN" is active (formed by `FLAG_WORD` `[6,8]`, `IS_WORD` `[7,8]`, and `WIN_WORD` `[8,8]`), touching the flag results in winning the level.
+
+This sequence of actions effectively modifies the game rules to create a win condition and then executes the necessary moves to achieve victory.

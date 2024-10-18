@@ -1,0 +1,31 @@
+```Python
+["left", "left", "left", "right", "right", "right", "up", "up", "up", "right", "down", "down", "down"]
+```
+
+Explanation:
+
+To win the level, we need to create the rule **"BABA IS WIN"** so that controlling Baba (the player character) will result in an immediate win upon satisfying the win condition. Currently, the rule **"BABA IS YOU"** is in place, allowing us to control Baba, but we need to modify the rules to make Baba also the win condition.
+
+Here's the step-by-step strategy:
+
+1. **Move Left thrice**: `["left", "left", "left"]`
+   - This brings **Baba** (at position `[5, 4]`) to the position `[2, 4]`, overlapping with the `WIN` word.
+   - Baba pushes the `WIN` word to the right, setting up for moving it towards the existing `IS` and `BABA` words.
+
+2. **Move Right thrice**: `["right", "right", "right"]`
+   - Baba pushes the `WIN` word from `[2, 4]` to `[5, 4]`.
+   - Now, the `WIN` word is directly below `IS` (at `[5, 7]`).
+
+3. **Move Up thrice**: `["up", "up", "up"]`
+   - Baba moves from `[5, 4]` to `[5, 7]`, pushing the `WIN` word upward.
+   - The `WIN` word moves from `[5, 4]` to `[5, 7]`, aligning it with `BABA` and `IS` to form the vertical rule **"BABA IS WIN"**.
+
+4. **Move Right once**: `["right"]`
+   - Baba moves to `[6, 7]`, stepping away from the rule to avoid interference.
+   - This ensures that the rule remains intact and allows the game to recognize the new rule.
+
+5. **Move Down thrice**: `["down", "down", "down"]`
+   - Baba moves down back to `[6, 4]`, which doesn't affect any rules.
+   - Since the rule **"BABA IS WIN"** is now active, and Baba is on the game board, the game recognizes that the win condition is met.
+
+By forming **"BABA IS WIN"**, we change the properties of Baba so that controlling Baba (since **"BABA IS YOU"** still exists) results in an immediate win when we complete the move sequence. The game checks for win conditions after each move, and with the rule in place, the game is won without needing to reach any specific location.

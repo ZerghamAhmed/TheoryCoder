@@ -1,0 +1,15 @@
+```Python
+["right", "up", "up", "up", "right", "right", "right", "right", "right", "down", "left", "left", "left", "left", "left"]
+```
+
+Explanation:
+
+To win the level, we need to form the phrase **"BABA IS YOU"** and **"BABA IS WIN"** simultaneously. Currently, **"BABA IS YOU"** is already formed horizontally at positions `[('baba_word', [1,8]), ('is_word', [2,8]), ('you_word', [3,8])]`. We can achieve **"BABA IS WIN"** by placing the `win_word` below the `you_word` so that both "YOU" and "WIN" words are aligned vertically, effectively stacking them. Here's how the action sequence accomplishes this:
+
+1. **"right"**: Move Baba from `[2,5]` to `[3,5]` towards the `you_word`.
+2. **"up", "up", "up"**: Move Baba up to `[3,8]`, aligning with the `you_word`.
+3. **"right" x5**: Move Baba to the `win_word` at `[8,8]`.
+4. **"down"**: Push the `win_word` down to `[8,7]`.
+5. **"left" x5**: Push the `win_word` left to `[3,7]`, directly beneath the `you_word` at `[3,8]`.
+
+By stacking `win_word` under `you_word`, we create both "BABA IS YOU" and "BABA IS WIN" simultaneously. This means Baba is still controllable and is now also the win condition. As a result, we win the level immediately after the rules are updated without losing control of Baba.
