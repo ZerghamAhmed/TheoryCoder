@@ -385,37 +385,51 @@ class Baselines:
         return temp_replay_buffer
     
     def generate_action_replay_buffer_pairs(self, level_id, current_step):
-        """
-        Generate tuples of previous actions and corresponding replay buffers.
-        Reset the engine and replay buffer for each action sequence.
-        """
         action_replay_pairs = []
 
-        for step in range(1, current_step):
-            # Load the previous actions from the saved file
-            actions_file_path = self.save_dir / f"level_{level_id}" / f"lost_refinement_{step}" / "actions.txt"
+        for step in range(1, current_step + 1):  # Include current_step
+            if step == 1:
+                # Load actions from 'initial' directory for first refinement
+                actions_file_path = self.save_dir / f"level_{level_id}" / "initial" / "actions.txt"
+            else:
+                # Load actions from refinement directories for subsequent refinements
+                actions_file_path = self.save_dir / f"level_{level_id}" / f"lost_refinement_{step-1}" / "actions.txt"  # Load the previous step's actions
+
+            # Debugging print to confirm file path
+            print(f"Looking for actions file at: {actions_file_path}")
+
             if not actions_file_path.exists():
-                print(f"Actions file for refinement step {step} not found. Skipping.")
+                print(f"Actions file not found at {actions_file_path}. Skipping.")
                 continue
 
-            with open(actions_file_path, 'r') as f:
-                actions = ast.literal_eval(f.read())
+            # Load actions if the file exists
+            try:
+                with open(actions_file_path, 'r') as f:
+                    actions = ast.literal_eval(f.read())  # Safely read the list of actions
+                print(f"Loaded actions for refinement step {step}: {actions}")
+            except Exception as e:
+                print(f"Error loading actions from {actions_file_path}: {e}")
+                actions = []
 
-            # Reset the game engine to the initial state before executing actions
+            # Reset the game engine and replay actions to generate replay buffer
             self.engine.reset()
-            self.replay_buffers = []  # Clear the replay buffer
-
-            # Execute the actions to generate the replay buffer
+            self.replay_buffers = []  # Clear the buffer
             for action in actions:
-                self.step_env(action)  # This will populate the replay buffer
+                outcome = self.step_env(action)
+                print(f"Executed action '{action}', outcome: {outcome}")
 
-            # Create a summary of the replay buffer
+                if outcome == "won":
+                    print("Agent won! Exiting.")
+                    return True
+
             replay_buffer_summary = self._make_observation_summaries(self.replay_buffers)
-
-            # Add the actions and replay buffer summary as a tuple
             action_replay_pairs.append((actions, replay_buffer_summary))
 
         return action_replay_pairs
+
+
+
+
     
     def format_actions_and_replay_buffers(self, action_replay_pairs):
         """
@@ -434,9 +448,19 @@ class Baselines:
     def refine_prompt(self, level_id, refinement_step):
         # Generate action-replay buffer pairs
         action_replay_pairs = self.generate_action_replay_buffer_pairs(level_id, refinement_step)
+
+        # If agent won during replay generation, exit early
+        if action_replay_pairs is True:
+            print(f"Agent won during replay generation. Exiting refinement process for level {level_id}.")
+            return None
+        
+
         
         # Format the action-replay buffer pairs for the prompt
         formatted_action_replay_pairs = self.format_actions_and_replay_buffers(action_replay_pairs)
+
+        history_section = formatted_action_replay_pairs if formatted_action_replay_pairs else "No previous history."
+
 
         # Generate the refinement prompt
         prompt = self._make_langchain_prompt(
@@ -444,14 +468,14 @@ class Baselines:
             actions_set=self.actions_set,
             state_format=self.engine.state_format,
             initial_state=self.initial_state,
-            action_replay_tuples=formatted_action_replay_pairs,  # Insert formatted pairs
+            action_replay_tuples=history_section,  # Insert formatted pairs
             utils=self.utils
         )
 
         # Save the refinement prompt
         self.save_file(level_id, status="lost", step=refinement_step, file_type="prompt", content=prompt.to_string())
         print(f"Refinement prompt saved for refinement step {refinement_step} of level {level_id}.")
-        breakpoint()
+        # breakpoint()
         return prompt
 
     def step_env(self, action):
@@ -651,6 +675,11 @@ class Baselines:
                 # Generate the refinement prompt with all previous actions and replay buffers
                 prompt = self.refine_prompt(level_id, refinement_step)
 
+                # If prompt is None, it means the agent has already won, exit the loop
+                if prompt is None:
+                    print(f"Refinement process exited early for level {level_id} after winning.")
+                    return True
+
                 print(f"Sending refinement request {refinement_step} for level {level_id}...")
 
                 # Query the LLM for refined actions
@@ -691,6 +720,7 @@ class Baselines:
             return False
 
 
+
     def extract_actions(self, response):
         """Extract the action list from the LLM response."""
         try:
@@ -714,15 +744,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 8)]")  # Example format
+    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 13)]")  # Example format
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel.py')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')
     parser.add_argument('--predicates-file-name', type=str, default='predicates.py')
     parser.add_argument('--plans-json-path', type=str, default='plans.json', help="Path to the JSON file containing plans for each level.")
     parser.add_argument('--refine', action='store_true', help="Enable refinement if the LLM's action sequence leads to a loss")
-    parser.add_argument('--max-refinements', type=int, default=6, help="Maximum number of refinement steps allowed")
-    parser.add_argument('--save-dir', type=str, default='o1_preview_4', help="Directory to save the results")
+    parser.add_argument('--max-refinements', type=int, default=5, help="Maximum number of refinement steps allowed")
+    parser.add_argument('--save-dir', type=str, default='o1_preview_5', help="Directory to save the results")
 
     args = parser.parse_args()
     levels = eval(args.levels)
