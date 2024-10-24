@@ -9,6 +9,8 @@ The levels you start out with will be simpler but you will be adding on more and
 So try to make the transition model general and avoid hardcoding anything from the state dictionary keys. Feel free to infer the types of interactions that will occur in later levels. 
 Do not feel like you need to build the transition model for just this replay buffer. 
 For example, make sure you use each of the categorizations i.e. overlappables, pushables, controllables, etc in your initial world model.
+
+Do not assume the win condition is always the same for future levels.
  
 
 CURRENT STATE:
