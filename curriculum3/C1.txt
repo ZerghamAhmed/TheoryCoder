@@ -1,0 +1,148 @@
+You are an AI agent that must come up with a transition model of the game you are playing. 
+
+A BFS low-level planner that will use your synthesized transition model to find the low-level actions that will allow you to win levels of the game.
+
+You are also given state transition after executing random actions that will help as well.
+Note that if there is no change returned after doing that action, it means that moving was prevented somehow such as by an obstacle. 
+
+The levels you start out with will be simpler but you will be adding on more and more as time progresses. 
+So try to make the transition model general and avoid hardcoding anything from the state dictionary keys. Feel free to infer the types of interactions that will occur in later levels. 
+Do not feel like you need to build the transition model for just this replay buffer. 
+For example, make sure you use each of the categorizations i.e. overlappables, pushables, controllables, etc in your initial world model.
+
+Do not assume the win condition is always the same for future levels.
+ 
+
+CURRENT STATE:
+
+{'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 4]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+
+ACTION SPACE:
+
+['up', 'down', 'left', 'right']
+
+Replay Buffer (last 10 transitions):
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'is_word': [[2, 8], [7, 8]], 'baba_obj': [[2, 4]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 4]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[2, 4]] --> [[1, 4]]
+Your prediction errors:
+"baba_obj": predicted: [[2, 4]]
+"baba_obj": actual: [[1, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 4]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 4]] --> [[1, 5]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 4]]
+"baba_obj": actual: [[1, 5]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 6]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 5]] --> [[1, 6]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 5]]
+"baba_obj": actual: [[1, 6]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 6]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 6]] --> [[1, 5]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 6]]
+"baba_obj": actual: [[1, 5]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 6]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 5]] --> [[1, 6]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 5]]
+"baba_obj": actual: [[1, 6]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 6]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 6]] --> [[1, 5]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 6]]
+"baba_obj": actual: [[1, 5]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 4]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 5]] --> [[1, 4]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 5]]
+"baba_obj": actual: [[1, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 4]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 4]] --> [[1, 5]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 4]]
+"baba_obj": actual: [[1, 5]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 5]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'baba_obj': [[1, 4]], 'is_word': [[2, 8], [7, 8]], 'you_word': [[3, 8]], 'flag_word': [[6, 8]], 'flag_obj': [[7, 4]], 'win_word': [[8, 8]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'flag_word', 'you_word', 'win_word', 'baba_word']}
+Summary of changes:
+"baba_obj": [[1, 5]] --> [[1, 4]]
+Your prediction errors:
+"baba_obj": predicted: [[1, 5]]
+"baba_obj": actual: [[1, 4]]
+
+UTILS:
+
+directions = {
+        'left': [-1, 0],
+        'right': [1, 0],
+        'up': [0, 1],
+        'down': [0, -1]
+    }
+
+RESPONSE FORMAT:
+
+```python
+
+# make sure to include these import statements
+from predicates import *
+from copy import deepcopy
+from games import BabaIsYou
+from babareport import BabaReportUpdater
+from utils import directions
+
+def transition_model(state, action):
+
+
+	Return State
+
+```
