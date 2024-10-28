@@ -164,21 +164,3 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
 	console.log(`listening on localhost: ${PORT} ...`);	
 });
-
-// // Socket connection handler
-// io.on('connection', (socket) => {
-//     console.log('A user connected!');  // Log when a user connects
-
-//     // Process user input and update the game map
-//     socket.on('step-map', (dat) => {
-//         console.log("Received user input: ", dat.step);  // Log the received input
-
-//         try {
-//             let updatedGameState = guijs.updateMap(dat.step);  // Call updateMap with user input
-//             console.log("Updated game state: ", updatedGameState);  // Log the updated game state
-//             io.emit('new-map', updatedGameState);  // Send updated map back to client
-//         } catch (error) {
-//             console.error("Error updating map: ", error);  // Log any errors
-//         }
-//     });
-// });

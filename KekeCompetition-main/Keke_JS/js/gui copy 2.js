@@ -27,23 +27,18 @@ function initMap(ascii_map){
 	game_state = simjs.getGamestate();
 }
 
+
 // UPDATE THE ASCII MAP BY FEEDING THE SOLUTION THROUGH
 function updateMap(step){
-    console.log("Updating map with step: ", step);  // Log the step received
-    let res = simjs.nextMove(action_trans[step], game_state);
+	let res = simjs.nextMove(action_trans[step],game_state);
 
-    // Update state and map
-    game_state = res['next_state'];
-    ascii_map = simjs.doubleMap2Str(game_state['obj_map'], game_state['back_map']);
-    console.log("Updated map: ", ascii_map);  // Log the updated ASCII map
+	//update state and map
+	game_state = res['next_state'];
+	ascii_map = simjs.doubleMap2Str(game_state['obj_map'],game_state['back_map']);
 
-    // Check for terminal win state
-    return { 'ascii_map': ascii_map, "won": res['won'] };
+	//check for terminal win state
+	return {'ascii_map':ascii_map, "won":res['won']};
 }
-
-module.exports = {
-    updateMap: function(step) { return updateMap(step); }
-};
 
 
 //////////////////////////      MAIN FUNCTIONS      ////////////////////////////

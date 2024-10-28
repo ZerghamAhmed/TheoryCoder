@@ -47,37 +47,6 @@ function init(){
 }
 
 
-////////// NEW FUNCTION TO CAPTURE USER INPUT AND SEND TO SERVER //////////
-
-
-// Listen for user keyboard input and send it to the server
-document.addEventListener('keydown', function(event) {
-    let step;
-    if (event.key === 'ArrowUp') step = 'u';          // Move up
-    else if (event.key === 'ArrowDown') step = 'd';   // Move down
-    else if (event.key === 'ArrowLeft') step = 'l';   // Move left
-    else if (event.key === 'ArrowRight') step = 'r';  // Move right
-
-    if (step) {
-        console.log("Key pressed: ", step);  // Log to check if keys are captured
-        // Send the key action to the server to update the game state
-        socket.emit('step-map', { step: step });
-    }
-});
-
-// Function to display the updated map
-socket.on('new-map', function(data) {
-    console.log("Updated ASCII map received from server:", data.ascii_map);  // Log the updated map
-    if (data.won) {
-        console.log("Congratulations, you won!");
-    }
-});
-
-// Check if the socket connection is established
-socket.on('connect', function() {
-    console.log('Connected to the server!');  // Check if the client connects to the server
-});
-
 ////////    LEVEL TABLE MODIFICATIONS    ///////
 
 // CLEARS THE LEVEL TABLE OF ALL DATA

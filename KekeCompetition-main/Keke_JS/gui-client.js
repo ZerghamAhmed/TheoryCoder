@@ -122,22 +122,23 @@ function makeImgHash(){
 
 
 // RECIEVE NEW MAP DATA
-socket.on('new-map', function(dat){
-	ascii_map = dat['ascii_map'];
-	map2d = parseMap(ascii_map);
-	won = dat['won'];
+socket.on('new-map', function(dat) {
+    console.log("Received updated map from server:", dat.ascii_map);  // Add logging to check updated map
+    ascii_map = dat['ascii_map'];
+    map2d = parseMap(ascii_map);
+    won = dat['won'];
 
-	canUpdate = true;
-	sentReq = false;
+    canUpdate = true;
+    sentReq = false;
 
-	//finish game
-	if(won){
-		wonGame = true;
-		clearInterval(kt);
-		kt = 0;
-		stopRun(document.getElementById("togBtn"));
-	}
-})
+    // Finish game if won
+    if (won) {
+        wonGame = true;
+        clearInterval(kt);
+        kt = 0;
+        stopRun(document.getElementById("togBtn"));
+    }
+});
 
 //RECIEVE MAP KEY DICTIONARY
 socket.on('ret-map-key',function(mk){
@@ -183,6 +184,33 @@ function parseMap(ms){
 	}
 	return newMap;
 }
+
+// HOTKEY BUTTONS - Add arrow key controls for movement
+window.addEventListener("keydown", function(e) {
+    let step = null;
+    if (e.keyCode == 38) {  // ArrowUp
+        step = 'u';  // Move up
+    } else if (e.keyCode == 40) {  // ArrowDown
+        step = 'd';  // Move down
+    } else if (e.keyCode == 37) {  // ArrowLeft
+        step = 'l';  // Move left
+    } else if (e.keyCode == 39) {  // ArrowRight
+        step = 'r';  // Move right
+    }
+
+    if (step) {
+        updateMap(step);  // Call the existing function to send the step to the server
+    }
+}, false);
+
+// UPDATE THE ASCII MAP BY FEEDING THE SOLUTION THROUGH
+function updateMap(step) {
+    console.log("Sending step to server: ", step);  // Add logging to check if it's emitting correctly
+    socket.emit('step-map', { 'step': step });
+    canUpdate = false;
+}
+
+
 
 //////////////////////////      MAIN FUNCTIONS      ////////////////////////////
 
