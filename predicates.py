@@ -32,6 +32,9 @@ def rule_formed(state, word1, word2, word3):
 
     if not coords1 or not coords2 or not coords3:
         return False
+    
+    if word2 != 'is_word':
+        return False
 
     # Generate all possible triplets of coordinates, ensuring each word is used once
     for triplet in product(coords1, coords2, coords3):
@@ -64,6 +67,7 @@ def overlapping(state, entity1, index1, entity2, index2):
         return tuple(coords1[index1]) == tuple(coords2[index2])
 
     return False
+    
 
 
 def at(state, entity, loc, index=None):
@@ -491,3 +495,15 @@ def rule_formable(state, word1, word2, word3):
 
     return True
 
+def overlapable(state, entity):
+    """
+    Check if the given entity is overlapable.
+
+    Args:
+        state (dict): The current game state.
+        entity (str): The entity to check (e.g., "baba_obj", "flag_obj").
+
+    Returns:
+        bool: True if the entity ends with '_obj', False otherwise.
+    """
+    return entity.endswith('_obj')
