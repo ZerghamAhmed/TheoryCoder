@@ -1,0 +1,17 @@
+```Python
+
+["right", "right", "up", "up", "up", "left", "left"]
+
+```
+
+explanation:
+
+To win the level, we need to reach the flag with our controllable character. Initially, the walls block us because of the rule **"wall_word is_word stop_word"**. To bypass this, we can break this rule by moving the **"is_word"** out of alignment. Here’s how:
+
+1. **Actions "right", "right"**: Move `baba_obj` from `[6,4]` to `[7,4]`, then to `[8,4]`. At `[8,4]`, we push the **"is_word"** left to `[7,4]`, breaking the rule **"wall_word is_word stop_word"**.
+   
+2. **Actions "up", "up", "up"**: With the walls no longer stopping us, we move up through the now non-solid walls from `[8,4]` to `[8,7]`.
+
+3. **Actions "left", "left"**: Move left from `[8,7]` to `[6,7]`, overlapping with the **"flag_obj"** at `[6,7]`.
+
+Since **"flag_word is_word win_word"** is still in effect and `baba_obj` is still **You**, overlapping with **"flag_obj"** results in winning the game. This sequence successfully allows us to win the level without losing control of our character.
