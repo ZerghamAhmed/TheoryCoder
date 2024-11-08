@@ -659,9 +659,9 @@ def transition_model(state, action):
 
 ```
 
-EXAMPLES OF INCORRECT RESPONSES (DO NOT DO THIS)
+EXAMPLES OF INCORRECT RESPONSES (DO NOT DO THIS, your code's purpose is to update latent states!!)
 
-# 1008: 
+# 1008 THIS RESPONSE IS INCORRECT: 
     if x for index in range(len(next_state['entity']))):
         index = next((i for i, pos in enumerate(next_state['entity']) if pos == new_position), None)
         if entity is not None:
@@ -673,7 +673,7 @@ EXAMPLES OF INCORRECT RESPONSES (DO NOT DO THIS)
                 next_state['var'][var] = var
 
 
-EXAMPLE OF CORRECT RESPONSE (DO THIS)
+EXAMPLE OF CORRECT RESPONSE (DO THIS, your code should be SIMPLE since you are only updating latent states)
 
 # 1008 example
           # # func_example true:
