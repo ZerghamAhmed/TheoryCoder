@@ -416,11 +416,14 @@ from utils import directions
 def transition_model(state, action):
 
         # current code do not modify
+        
 
 
        # 1007
         if x:
-          then do y or update state's latent variables to add
+          then do y or update state's latent variables by ONLY using functions from the predicates.py file
+          # also in your modification do NOT ever use.state.get to retrieve the latent state
+            
 
         Return State
 
