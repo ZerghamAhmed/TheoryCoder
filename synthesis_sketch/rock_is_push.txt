@@ -621,6 +621,8 @@ directions = {
     }
 
 
+RESPONSE FORMAT (make sure to include your code in markup tags):
+note : your code MUST ONLY be of the format and syntax as I described below, it should just be a simple if clause
 
 
 ```Python
@@ -635,6 +637,7 @@ def transition_model(state, action):
         # current code do not modify
         
 
+        # end of current code do not modify
 
        # 1008
         if x:
