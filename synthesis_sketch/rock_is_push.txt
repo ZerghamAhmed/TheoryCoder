@@ -102,7 +102,6 @@ Summary of changes:
 
 "baba_obj": [4, 2] --> [4, 3]
 "rock_obj": [4, 3] --> [4, 4]
-'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'rock_word is_word push_word']
 
 
 
