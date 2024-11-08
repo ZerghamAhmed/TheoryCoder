@@ -638,10 +638,11 @@ def transition_model(state, action):
 
        # 1007
         if x:
-          then do y or update state's latent variables by ONLY using functions from the predicates.py file
+          then do y or update state's latent variables by ONLY using functions (func_example) from the predicates.py file
           # also in your modification do NOT ever use.state.get to retrieve the latent state and do NOT ever use state['latent_state'] 
           # ONLY use a function from the predicates.py to check this condition and or add to the latent variables
-            
+          # you can use though if func_example then state['latent_state'].append(x)
+
 
         Return State
 
