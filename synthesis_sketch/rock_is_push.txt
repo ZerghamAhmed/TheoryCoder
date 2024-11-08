@@ -7,10 +7,9 @@ You will also be given utilities, typically functions or variables you can use i
 
 In order to craft the world model you explored your environment with an EXPLORATION PLAN, The changes that resulted in the state and your predication error as a result of this exploration plan is shown. The EXPLORATORY PLAN below is NOT an action.
 
-Please fix your world model to make it work for all the cases and make it be able to return the correct state for the transition. 
+When exploring interactions, you noticed specific latent_states, appear in certain states and correlate with state changes. You noticed that after such states occur, certain objects might take on new attributes or classifications within the state.
 
-Try to make your world model as general as possible and account for possible cases that may arise in the future! 
-
+Your current model should capture the behavior of objects like pushables, overlappables, etc. in response to these latent changes, ensuring it adapts based on the game’s state.
 Notes:
 
 Also DO NOT make changes to "won" in the state dictionary since that will happen outside of the world model.
