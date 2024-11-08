@@ -658,3 +658,27 @@ def transition_model(state, action):
         Return State
 
 ```
+
+EXAMPLES OF INCORRECT RESPONSES (DO NOT DO THIS)
+
+# 1008: 
+    if x for index in range(len(next_state['entity']))):
+        index = next((i for i, pos in enumerate(next_state['entity']) if pos == new_position), None)
+        if entity is not None:
+            entity = [var[0] + var[0], var4[1] + var3[1]]
+            if not function(next_state, entity) and not any(
+                at(var, var, var) for var in next_state['var']
+            ):
+                # Move the rock if there's no obstacle
+                next_state['var'][var] = var
+
+
+EXAMPLE OF CORRECT RESPONSE (DO THIS)
+
+# 1008 example
+          # # func_example true:
+                state[latent_state].remove(entity)
+
+        # 1008 example
+          # # func_example true:
+                state[latent_state].append(entity)
