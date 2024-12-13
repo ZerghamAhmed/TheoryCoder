@@ -146,6 +146,7 @@ from langchain.prompts.chat import ChatPromptTemplate
 import re
 import ast
 from groq import Groq
+import time
 
 class Baselines:
     def __init__(self, episode_length, world_model_load_name, domain_file_name, predicates_file_name,
@@ -480,9 +481,11 @@ class Baselines:
 
         
         # Format the action-replay buffer pairs for the prompt
-        formatted_action_replay_pairs = self.format_actions_and_replay_buffers(action_replay_pairs)
+        formatted_action_replay_pairs = self.format_actions_and_replay_buffers(action_replay_pairs[-1])
 
         self.history_section = formatted_action_replay_pairs if formatted_action_replay_pairs else "No previous history."
+
+        # breakpoint()
 
 
         # Generate the refinement prompt
@@ -840,6 +843,8 @@ class Baselines:
                     self.save_file(level_id, status="lost", step=refinement_step, file_type="response", content=response)
                     self.save_file(level_id, status="lost", step=refinement_step, file_type="actions", content=actions_str)
 
+                print("SLEEPING")
+                time.sleep(61)  
             print(f"Max refinements reached for level {level_id}.")
             return False
 
