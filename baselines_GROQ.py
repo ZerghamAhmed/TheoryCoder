@@ -149,7 +149,7 @@ from groq import Groq
 
 class Baselines:
     def __init__(self, episode_length, world_model_load_name, domain_file_name, predicates_file_name,
-                 refine=False, max_refinements=5, save_dir="experiment_results", plans_json_path="plans.json"):
+                 refine=False, max_refinements=5, save_dir="experiment_results", plans_json_path="plans.json", groq=None):
         self.episode_length = episode_length
         self.world_model_load_name = world_model_load_name
         self.domain_file_name = domain_file_name
@@ -159,7 +159,7 @@ class Baselines:
         self.save_dir = Path(save_dir).resolve()
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
-        self.language_model = 'o1-preview'  # Update as needed
+        self.language_model = 'vj'  # Update as needed
         self.chat = ChatOpenAI(model_name=self.language_model, temperature=1.0)
         self.query_lm = lambda prompt: self.chat.invoke(prompt.to_messages()).content
 
@@ -179,7 +179,7 @@ class Baselines:
         self.engine = None
 
         self.plans = self.load_plans(plans_json_path)
-        self.groq = Groq  
+        self.groq = groq  
 
     def load_plans(self, plans_json_path):
         """Load the plans from the specified JSON file."""
@@ -651,16 +651,43 @@ class Baselines:
             if self.groq:
                 print(f"Running with Groq for level {level_id}...")
                 prompt_content = f"""
-                Prompt content with relevant parameters filled:
+                You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+                These actions can only come from the action space given below. You are given an example of what your response 
+                format for this list of actions should look like. You will also need to provide your reasoning for why this will allow you to win.
 
-                ACTION SPACE:
+                You are given your current state that you start from in the level. 
+
+                So using the information please return the action sequence that will result in winning the level. 
+                Make sure to give your explanation, also
+                make sure to just have a sepearte section with your actions as demonstrated in the response format.
+
+                ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
                 {self.actions_set}
 
+                STATE FORMAT:
+
+                {self.engine.state_format}
+
                 INITIAL STATE:
+
                 {self.initial_state}
 
                 UTILS:
+
                 {self.utils}
+
+                RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag):
+
+                ```Python
+
+                ["right", "left", "up", "down"]
+
+                ```
+
+                explanation:
+
+                Example explanation.
                 """
                 response = self.groq_query(prompt_content)
             else:
@@ -804,7 +831,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 10)]")  # Example format
+    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 0)]")  # Example format
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel.py')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')
@@ -812,7 +839,7 @@ if __name__ == "__main__":
     parser.add_argument('--plans-json-path', type=str, default='plans.json', help="Path to the JSON file containing plans for each level.")
     parser.add_argument('--refine', action='store_true', help="Enable refinement if the LLM's action sequence leads to a loss")
     parser.add_argument('--max-refinements', type=int, default=5, help="Maximum number of refinement steps allowed")
-    parser.add_argument('--save-dir', type=str, default='o1_preview_5', help="Directory to save the results")
+    parser.add_argument('--save-dir', type=str, default='groq_baselines', help="Directory to save the results")
     parser.add_argument('--groq', action='store_true', help="Use Groq-specific querying instead of standard LM querying")
 
     args = parser.parse_args()
