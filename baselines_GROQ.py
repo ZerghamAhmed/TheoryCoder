@@ -160,6 +160,8 @@ class Baselines:
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
         self.language_model = 'vj'  # Update as needed
+        #["mixtral-8x7b-32768", "llama3-8b-8192", "gemma-7b-it", "gemma2-9b-it"]
+        self.groq_model = "llama3-8b-8192"
         self.chat = ChatOpenAI(model_name=self.language_model, temperature=1.0)
         self.query_lm = lambda prompt: self.chat.invoke(prompt.to_messages()).content
 
@@ -177,6 +179,7 @@ class Baselines:
         self.actions = []
         self.initial_state = None
         self.engine = None
+        self.history_section = None
 
         self.plans = self.load_plans(plans_json_path)
         self.groq = groq  
@@ -218,7 +221,7 @@ class Baselines:
         messages = [{"role": "user", "content": prompt_content}]
         chat_completion = client.chat.completions.create(
             messages=messages,
-            model="llama3-8b-8192"
+            model=self.groq_model
         )
         response = chat_completion.choices[0].message.content.strip()
         return response
@@ -479,7 +482,7 @@ class Baselines:
         # Format the action-replay buffer pairs for the prompt
         formatted_action_replay_pairs = self.format_actions_and_replay_buffers(action_replay_pairs)
 
-        history_section = formatted_action_replay_pairs if formatted_action_replay_pairs else "No previous history."
+        self.history_section = formatted_action_replay_pairs if formatted_action_replay_pairs else "No previous history."
 
 
         # Generate the refinement prompt
@@ -488,7 +491,7 @@ class Baselines:
             actions_set=self.actions_set,
             state_format=self.engine.state_format,
             initial_state=self.initial_state,
-            action_replay_tuples=history_section,  # Insert formatted pairs
+            action_replay_tuples=self.history_section,  # Insert formatted pairs
             utils=self.utils
         )
 
@@ -750,16 +753,50 @@ class Baselines:
                 if self.groq:
                     print(f"Running with Groq for level {level_id}...")
                     prompt_content = f"""
-                    Prompt content with relevant parameters filled:
+                    You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+                    These actions can only come from the action space given below. You are given an example of what your response 
+                    format for this list of actions should look like. 
 
-                    ACTION SPACE:
+                    You are given your current state that you start from in the level. 
+
+                    You previously attemped this level and returned the following action sequences but did not win the game. 
+                    The history of your previous action sequence predictions and the corresponding replay buffer for that sequence is given 
+                    under history.
+
+                    Please provide your corrected action sequence that will result in winning the level. 
+                    Do not forget to give your explanation for why this is now correct. 
+
+                    ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
                     {self.actions_set}
 
-                    INITIAL STATE:
+                    STATE FORMAT:
+
+                    {self.engine.state_format}
+
+                    INITIAL STATE FOR LEVEL:
+
                     {self.initial_state}
 
+                    HISTORY:
+
+                    {self.history_section}
+
                     UTILS:
+
                     {self.utils}
+
+                    RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag, explanations should be outside it):
+
+                    ```Python
+
+                    ["right", "left", "up", "down"]
+
+                    ```
+
+                    explanation:
+
+                    Example explanation.
                     """
                     response = self.groq_query(prompt_content)
                 else:
@@ -770,7 +807,7 @@ class Baselines:
 
 
                 # Query the LLM for refined actions
-                response = self.query_lm(prompt)
+                # response = self.query_lm(prompt)
                 print(f"Received response for refinement {refinement_step}: {response}")
 
                 # Save the refinement response
