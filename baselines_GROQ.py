@@ -160,8 +160,8 @@ class Baselines:
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
         self.language_model = 'vj'  # Update as needed
-        #["mixtral-8x7b-32768", "llama3-8b-8192", "gemma-7b-it", "gemma2-9b-it"]
-        self.groq_model = "llama3-8b-8192"
+        #["mixtral-8x7b-32768", "llama3-8b-8192", "gemma-7b-it", "gemma2-9b-it", llama-3.3-70b-versatile]
+        self.groq_model = "llama-3.3-70b-versatile"
         self.chat = ChatOpenAI(model_name=self.language_model, temperature=1.0)
         self.query_lm = lambda prompt: self.chat.invoke(prompt.to_messages()).content
 
