@@ -26,6 +26,10 @@ from worldmodeltracker import save_world_model
 from predicates import rule_formed
 import utils
 from baselines import *
+from preprocessing import *
+import openai
+from groq import Groq
+
 
 
 
@@ -38,7 +42,12 @@ You are also given state transition after executing random actions that will hel
 Note that if there is no change returned after doing that action, it means that moving was prevented somehow such as by an obstacle. 
 
 The levels you start out with will be simpler but you will be adding on more and more as time progresses. 
-So try to make the transition model general and avoid hardcoding anything from the state dictionary keys.
+So try to make the transition model general and avoid hardcoding anything from the state dictionary keys. Feel free to infer the types of interactions that will occur in later levels. 
+Do not feel like you need to build the transition model for just this replay buffer. 
+For example, make sure you use each of the categorizations i.e. overlappables, pushables, controllables, etc in your initial world model.
+
+Do not assume the win condition is always the same for future levels.
+ 
 
 CURRENT STATE:
 
@@ -51,6 +60,10 @@ ACTION SPACE:
 Replay Buffer (last {num_random_actions} transitions):
 
 {errors_from_world_model}
+
+UTILS:
+
+{utils}
 
 
 RESPONSE FORMAT:
@@ -254,8 +267,10 @@ class PRISMAgent:
         # language_model='gpt-3.5-turbo',
         domain_file_name='domain.pddl',  # Added this for PDDL file path
         predicates_file_name='predicates.py',
+        query_mode='groq',  # Options: 'langchain_openai', 'openai_direct', 'groq'
+        groq_model="llama3-8b-8192",  # Specify the Groq model
         # language_model='gpt-4-turbo-preview',
-        temperature=1.0,
+        temperature=0.7,
         episode_length=20,
         do_revise_model=False,
         sparse_interactions=True,  # Only run subset of world model
@@ -299,6 +314,9 @@ class PRISMAgent:
         # Ablations
         self.do_revise_model = do_revise_model
 
+
+        self.query_mode = query_mode
+
         # Free model parameters
         self.sparse_interactions = sparse_interactions
         self.observation_memory_size = observation_memory_size
@@ -316,6 +334,16 @@ class PRISMAgent:
         self.debug_model_prompt = debug_model_prompt
         self.initialize_world_model_prompt = initialize_world_model_prompt
         self.revise_world_model_prompt = revise_world_model_prompt
+
+        # Initialize query clients based on query_mode
+        if query_mode == 'langchain_openai':
+            self.llm_client = ChatOpenAI(model_name=language_model, temperature=temperature)
+        elif query_mode == 'openai_direct':
+            self.llm_client = openai
+        elif query_mode == 'groq':
+            self.llm_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        else:
+            raise ValueError(f"Unsupported query_mode: {query_mode}")
 
         # I/O
         self.world_model_save_name = '_model_tmp'
@@ -338,8 +366,10 @@ class PRISMAgent:
             model_name=self.language_model,
             temperature=temperature
         )
-        self.query_lm = lambda prompt: chat(prompt.to_messages()).content
+        # self.query_lm = lambda prompt: chat(prompt.to_messages()).content
         self.episode_length = episode_length
+        self.groq_model = groq_model
+
 
         # Record episodes
         self.tape = [{}]
@@ -363,6 +393,51 @@ class PRISMAgent:
         self._load_predicates(self.predicates_file_name)
         
         self.load_utils()
+
+        # Add new runtime variables to track exploratory plans
+        self.runtime_vars['exploratory_plans'] = []
+        self.runtime_vars['unsatisfied_preconditions'] = []
+
+    def query_lm(self, prompt):
+        """
+        Query the LLM based on the selected query mode.
+        Supports LangChain OpenAI, OpenAI direct API, and Groq.
+        """
+        # if not isinstance(prompt, str):
+        #     raise ValueError("Prompt must be a string.")
+
+        if self.query_mode == 'langchain_openai':
+            # Query using LangChain OpenAI
+            chat_prompt = HumanMessagePromptTemplate.from_template(prompt)
+            return self.llm_client.invoke(chat_prompt.to_messages()).content
+
+        elif self.query_mode == "openai_direct":
+            # Ensure the prompt is correctly formatted for the OpenAI API
+            messages = [{"role": "user", "content": prompt.to_string()}]
+
+            # Use the OpenAI client to send the request
+            completion = self.llm_client.chat.completions.create(
+                model=self.language_model,
+                messages=messages,
+                temperature=self.temperature,
+                seed=42,  # Add the seed for reproducibility
+            )
+            # Return the generated response
+            return completion.choices[0].message.content.strip()
+
+        elif self.query_mode == 'groq':
+            # Query using Groq API
+            messages = [{"role": "user", "content": prompt.to_string()}]  # Format for Groq
+            response = self.llm_client.chat.completions.create(
+                messages=messages,
+                model=self.groq_model
+            )
+            return response.choices[0].message.content.strip()
+
+        else:
+            raise ValueError(f"Unsupported query_mode: {self.query_mode}")
+
+
 
     def load_utils(self):
         # Load the 'directions' from utils.py as a string
@@ -1077,7 +1152,8 @@ class PRISMAgent:
                 'current_state': self.runtime_vars['observations'][-1],
                 'num_random_actions': num_actions,
                 'errors_from_world_model': '\n\n'.join(examples),
-                'actions_set': self.engine.actions_set
+                'actions_set': self.engine.actions_set,
+                'utils':"directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
             }
         )
 
@@ -1235,6 +1311,8 @@ class PRISMAgent:
                 importlib.reload(worldmodel)
                 importlib.reload(planner)
                 importlib.reload(levelrunner)
+                importlib.reload(utils)
+
                 
                 for subplan in self.plans.get(str(self.current_level), []):
                     # breakpoint()
@@ -1421,12 +1499,13 @@ class PRISMAgent:
             file.write(new_code)
 
     def extract_code_from_response(self, response):
-        # Use a regular expression to extract the Python code within ```python ``` tags
-        code_match = re.search(r'```Python(.*?)```', response, re.DOTALL)
+        # Use a regular expression to extract the Python code within ```python ``` tags (case-insensitive)
+        code_match = re.search(r'```python(.*?)```', response, re.DOTALL | re.IGNORECASE)
         if code_match:
             return code_match.group(1).strip()
         else:
             return None
+
 
     def reset(self, keep_model=True):
         self.engine.reset()
@@ -1635,6 +1714,196 @@ class PRISMAgent:
 
         return subplans
 
+    def prune_exploratory_plans(self, plans):
+        """
+        Deduplicate exploratory plans by removing entity indices.
+
+        Args:
+            plans (list): List of exploratory plans (e.g., 'push_to baba_obj_1 rock_obj_1 flag_obj_1').
+
+        Returns:
+            list: Deduplicated plans (e.g., 'push_to baba_obj rock_obj flag_obj').
+        """
+        deduplicated = set()  # Use a set to ensure uniqueness
+        for plan in plans:
+            # Remove indices using regex
+            pruned_plan = re.sub(r'_\d+', '', plan)
+            deduplicated.add(pruned_plan)
+
+        return list(deduplicated)  # Convert back to a list
+
+    
+    def enumerate_possible_subplans(self, state):
+        """
+        Enumerate all possible subplans based on the current state by grounding operators with entities.
+        Includes:
+        - form_rule for word entities.
+        - move_to for object entities.
+        - break_rule for existing rules.
+
+        Args:
+            state (dict): The current game state.
+
+        Returns:
+            list: A list of possible subplans.
+        """
+        subplans = []
+
+        # Extract entity types from state
+        words = [key for key in state if key.endswith('_word')]
+        objects = [key for key in state if key.endswith('_obj')]
+
+        # 1. Generate subplans for form_rule (only applicable to word entities)
+        for word1 in words:
+            for word2 in words:
+                for word3 in words:
+                    if word1 != word2 and word2 != word3 and word1 != word3:
+                        subplans.append(f"form_rule {word1} {word2} {word3}")
+        
+        for word1 in words:
+            for word2 in words:
+                for word3 in words:
+                    if word1 != word2 and word2 != word3:
+                        subplans.append(f"break_rule {word1} {word2} {word3}")
+
+        # 2. Generate subplans for move_to (only applicable to object entities)
+        for obj1 in objects:
+            for i, coords1 in enumerate(state[obj1]):
+                for obj2 in objects:
+                    for j, coords2 in enumerate(state[obj2]):
+                        if obj1 != obj2 or i != j:  # Avoid self-referencing moves
+                            subplans.append(f"move_to {obj1}_{i+1} {obj2}_{j+1}")
+
+        # Generate subplans for push_to
+        for pusher in objects:
+            if not rule_formed(state, f"{pusher[:-4]}_word", "is_word", "you_word"):  # Ensure pusher is controllable
+                continue  # Skip objects that are not pushers
+
+            for i, coords_pusher in enumerate(state[pusher]):  # Enumerate pusher instances
+                for obj in objects:
+                    if not rule_formed(state, f"{obj[:-4]}_word", "is_word", "push_word"):  # Ensure object is pushable
+                        continue  # Skip objects that are not pushable
+
+                    for j, coords_obj in enumerate(state[obj]):  # Enumerate pushed object instances
+                        for target in objects:  # Potential targets
+                            if target == obj or target == pusher:  # Avoid self-referencing or invalid targets
+                                continue
+
+                            for k, coords_target in enumerate(state[target]):  # Enumerate target instances
+                                if coords_pusher == coords_target:  # Avoid pusher overlapping with the target
+                                    continue
+
+                                # Add the subplan with indices
+                                subplans.append(f"push_to {pusher}_{i+1} {obj}_{j+1} {target}_{k+1}")
+        return subplans
+
+    
+    def is_valid_rule(self, rule):
+        """
+        Validate a rule based on predefined constraints.
+
+        Args:
+            rule (str): A rule string like 'form_rule baba_word is_word you_word'.
+
+        Returns:
+            bool: True if the rule is valid, False otherwise.
+        """
+        parts = rule.split()
+        if len(parts) != 4 or parts[0] != "form_rule":
+            return False  # Rule must follow the format 'form_rule X is Y'
+
+        _, word1, word2, word3 = parts
+
+        # Rules cannot start with these words
+        invalid_start_words = {"win_word", "you_word", "is_word"}
+        if word1 in invalid_start_words:
+            return False
+
+        # Rules cannot have two consecutive words
+        if word2.endswith("_word") and word3.endswith("_word"):
+            return False
+
+        # Rules must follow the form 'X is Y'
+        valid_end_words = {"you_word", "win_word", "kill_word", "push_word", "stop_word"}
+        if word2 != "is_word" or (word3 not in valid_end_words and not word3.endswith("_word")):
+            return False
+
+        return True
+
+
+    def filter_exploratory_plans(self, plans):
+        """
+        Filter exploratory plans to include only valid rules.
+
+        Args:
+            plans (list): List of exploratory plan strings.
+
+        Returns:
+            list: Filtered list of valid exploratory plans.
+        """
+        return [plan for plan in plans if self.is_valid_rule(plan)]
+
+    
+
+    def propose_exploratory_plans(self, state, domain_file):
+        """
+        Generate exploratory plans based on satisfied preconditions in the current state.
+        """
+        exploratory_plans = []
+
+        # Enumerate possible subplans
+        possible_subplans = self.enumerate_possible_subplans(state)
+        # breakpoint()
+
+        # Load operators from domain file
+        for subplan in possible_subplans:
+            try:
+                operator = operator_extractor(domain_file, subplan)
+                preconditions = operator['preconditions']
+                effects = operator['effects']
+
+                # Check if preconditions are satisfied
+                precondition_results = checker(state, preconditions, operator)
+                effects_results = checker(state, effects, operator)
+
+                if precondition_results:
+                    # If preconditions are satisfied, add the subplan to exploratory plans
+                    exploratory_plans.append(subplan)
+            except ValueError as e:
+                print(f"Error processing subplan {subplan}: {e}")
+
+        self.runtime_vars['exploratory_plans'] = exploratory_plans
+        return exploratory_plans
+
+    def execute_exploratory_plans(self, exploratory_plans, state, domain_file):
+        """
+        Execute the proposed exploratory plans, accumulate successfully executed plans, and update the state.
+        """
+        successful_plans = []  # Track successful exploratory plans
+
+        for subplan in exploratory_plans:
+            try:
+                actions, new_state = actor(domain_file, subplan, state, max_iterations=None)
+                print(f"Executed exploratory subplan: {subplan}")
+                print(f"Actions: {actions}")
+                print(f"Resulting state: {new_state}")
+
+                # Check if actions were successfully executed
+                if actions and actions != ["no-op"]:
+                    successful_plans.append(subplan)
+
+                # Log the transition to replay buffer
+                self._update_replay_buffers((state, subplan, new_state))
+
+                # Update the state
+                state = new_state
+
+            except Exception as e:
+                print(f"Failed to execute subplan {subplan}: {e}")
+
+        print(f"Successful exploratory plans: {successful_plans}")
+        return state, successful_plans
+
 
     def execute_random_actions(self, num_actions=10):
         """Execute random actions and store the resulting transitions in the replay buffer."""
@@ -1718,9 +1987,6 @@ class PRISMAgent:
     def run(self, engine, max_revisions=1):
         self.engine = engine
         self.current_level = self.engine.level_id  # Or any other method to determine the level
-
-        # self.initialize_global_collision_tracking()s
-        # self.load_global_observed_collisions()
         revision_count = 0
 
         while revision_count <= max_revisions:
@@ -1729,21 +1995,25 @@ class PRISMAgent:
             first_letters = ''
             model_was_revised = False
 
+            # Extract the original state immediately after reset
+            initial_state = deepcopy(self.engine.get_obs())
+            initial_state = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in initial_state.items()}
+
             if self.is_world_model_empty() and self.do_revise_model:
                 # If the world model is empty, use the default action set
                 print("World model is empty, executing random actions.")
                 num_actions = 10
                 plan = self.execute_random_actions(num_actions=num_actions)  # Adjust the number as needed
                 print(plan)
-                # breakpoint()
-                # ['right', 'up', 'up', 'up', 'left', 'right', 'up', 'down', 'left', 'up']
-                # self._initialize_world_model()
+                print("World model was empty, revised the model. Moving to next iteration.")
+                for action in plan:
+                    self.step_env(action)
+                self._initialize_world_model(num_actions)
             else:
                 # If the world model is not empty, proceed with the hierarchical planner
                 mode = self._sample_planner_mode()  # Determine planner mode (explore/exploit)
                 plan = self._hierarchical_planner(mode) 
-            # breakpoint()
-            # plan = ["right"]
+    
             for action in plan:
                 self.step_env(action)
                 first_letters += action[0]  # Collect the first letters of each action
@@ -1752,107 +2022,41 @@ class PRISMAgent:
                 if self.engine.won:
                     self.tape[-1]['exit_condition'] = 'won'
                     self._update_solution(self.current_level, first_letters)
-                    # observed_collisions = self.check_collisions_in_replay_buffer()
-                    # self.check_collisions_in_replay_buffer()
                     print(first_letters)
-                    breakpoint()
+                    # breakpoint()
                     return True
 
-                # Check if the agent lost (e.g., died or failed critically)
-                if self.engine.lost:
-                    self.tape[-1]['exit_condition'] = 'lost'
-                    # model_was_revised = True
-                    self._update_solution(self.current_level, first_letters)
-                    print("AGENT LOST")
-                    self._revise_world_model()
-                    breakpoint()
-                    return True
-                
-                # was originally break
-
-                # Check if the agent lost (e.g., died or failed critically)
+                # # Check if the agent lost (e.g., died or failed critically)
                 # if self.engine.lost:
-                #     print("Agent lost. Revising the model...")
                 #     self.tape[-1]['exit_condition'] = 'lost'
-                #     revision_count += 1
+                #     self._update_solution(self.current_level, first_letters)
+                #     print("AGENT LOST")
                 #     self._revise_world_model()
-                #     continue  # Move to the next iteration of the while loop
-
-            # # If the plan failed to achieve a win but didn't result in a loss
-            # if not self.engine.won or self.engine.lost:
-            #     self.tape[-1]['exit_condition'] = 'failed'
-            #     model_was_revised = True
-                # breakpoint()
-
-            if self.is_world_model_empty() and self.do_revise_model:
-                revision_count += 1
-                self._initialize_world_model(num_actions)
-                print("World model was empty, revised the model. Moving to next iteration.")
-                continue
+                #     breakpoint()
+                #     return True
+                
+            # if self.is_world_model_empty() and self.do_revise_model:
+            #     revision_count += 1
+            #     self._initialize_world_model(num_actions)
+            #     print("World model was empty, revised the model. Moving to next iteration.")
+            #     continue
 
             # Handle model revision if necessary
-            if model_was_revised and not self.is_world_model_empty() and self.do_revise_model:
-
-                 # Collision check before model revision
-                observed_collisions = self.check_collisions_in_replay_buffer()
-                unobserved_collisions = self.get_unobserved_collisions(observed_collisions)
-
-                # reset replay buffer
-                self.reset(keep_model=True)
-                self._update_solution(self.current_level, first_letters)
-
-                state = deepcopy(self.engine.get_obs())
-                state = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in state.items()}
-
-                # get collisions to test by controlled entity   
-                 # Determine controllable entities (objects corresponding to "is you" rule)
-                controllables = {
-                    entity for entity in state
-                    if rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'you_word')
-                }
-
-                state['controllables'] = controllables
-
-
-
-                # Prune unobserved collisions to those involving controllable entities
-                # Prune unobserved collisions to those involving controllable entities
-                collisions_to_test = set()
-                for collision in unobserved_collisions:
-                    if any(entity in controllables for entity in collision):
-                        # Ensure controllable entity is first
-                        controllable_entity = next((entity for entity in collision if entity in controllables), None)
-                        if controllable_entity:
-                            ordered_collision = self.reorder_collision_pair(controllable_entity, *collision)
-                            collisions_to_test.add(ordered_collision)
-
-                # take collision rules and make list of formatted subplans 
-                 # Generate subplans for the pruned collisions
-                subplans = self.generate_subplans_for_collisions(state, collisions_to_test)
-
+            if not self.is_world_model_empty() and self.do_revise_model:
                 # breakpoint()
+                exploratory_plans = self.propose_exploratory_plans(initial_state, self.domain_file)
+                print(exploratory_plans)
+                final_plans = self.prune_exploratory_plans(exploratory_plans)
+                print("pruned", final_plans)
+                breakpoint()
+                if exploratory_plans:
+                    print("Generated exploratory plans:", exploratory_plans)
+                    state, successful_plans = self.execute_exploratory_plans(exploratory_plans, initial_state, self.domain_file)
+                final_plans = self.prune_exploratory_plans(successful_plans)
+                self.runtime_vars['exploratory_plans'] = final_plans
 
-                # hardcoded to see vary
-                # subplans = ["move_to baba_obj_1 flag_word_1"]
-                # subplans = ["form_rule rock_word_1 is_word_3 flag_word_2"]
-                # subplans = ["move_to baba_obj_1 goop_obj_1"]
-                # breakpoint()
-                subplans = ["push_to rock_obj_1 goop_obj_24"]
-
-
-
-                # breakpoint()
-
-                # breakpoint()
-                failed_subplans = []
-                won_subplans = []
-
-                # replay_buffer_exploratory = []
-                exploratory_examples = []
-                counts_debugging = []
-
-                # breakpoint()
-                # Execute each subplan using the hierarchical planner
+                breakpoint()
+                subplans = []
                 for subplan in subplans:
                     self.reset(keep_model=True)
                     # self.engine.reset()
@@ -1862,42 +2066,14 @@ class PRISMAgent:
                     # use this plan to get D for model revision 
                     if plan == None or plan == ["no-op"]:
                         print(f"plan was none for {subplan}")
-                        failed_subplans.append(subplan)
                         breakpoint()
                     
                     else:
-                        won_subplans.append(subplan)
                         breakpoint()
                         for action in plan:
 
-                            
-                            # if action == None:
-                            #     breakpoint()
-
                             self.step_env(action)
 
-                        # breakpoint()
-
-                        # METHOD 1 formulate new prompt
-                        
-                        # latest_example = self.replay_buffers[-1]
-                        # self.reset(keep_model=True)
-                        # self._update_replay_buffers(latest_example)
-                        # self.replay_buffers = [self.replay_buffers[-1]]  # This ensures it's still a list of tuples
-                        # # breakpoint()
-                        # example, count = self._choose_synthesis_examples()
-                        # counts_debugging.append(count)
-                        # exploratory_examples.append(example)
-
-                        # METHOD 2 same model revision prompt
-
-                        # self.replay_buffers = [self.replay_buffers[-1]]  # This ensures it's still a list of tuples
-                        # breakpoint()
-                        # example, count = self._choose_synthesis_examples()
-                        # counts_debugging.append(count)
-                    # breakpoint()
-                    exploratory_examples.append(self.replay_buffers[-1])
-                    self.replay_buffers = exploratory_examples
 
                     # Perform model revision after every collision attempt
                     print(f"Revising the model after subplan: {subplan}")
@@ -1911,19 +2087,6 @@ class PRISMAgent:
                         print("Max model revisions reached. Exiting.")
                         break
                     print(f"Model revised {revision_count} times. Re-running.")
-            # self.replay_buffers = self.replay_buffer_exploratory
-
-                # breakpoint()
-
-                        
-
-                    # You can add additional checks or logic after each subplan execution
-                # check rule formation to see what entity is controlled
-                # plan = self._hierarchical_planner(mode) 
-
-                # use this plan to get D for model revision
-
-                # breakpoint()
 
                 # self._revise_world_model()
                 
@@ -1951,6 +2114,7 @@ if __name__ == '__main__':
     parser.add_argument('--predicates-file-name', type=str, default='predicates')
     parser.add_argument('--json-reporter-path', type=str, default='KekeCompetition-main/Keke_JS/reports/TBRL_BABA_REPORT.json')
     parser.add_argument('--learn-model', action='store_true')
+    parser.add_argument('--query-mode', type=str, default='groq')
     args = parser.parse_args()
 
     levels = eval(args.levels)
@@ -1970,7 +2134,7 @@ if __name__ == '__main__':
             domain_file_name=args.domain_file_name, 
             do_revise_model=args.learn_model,
             plans_file_name=plan_file_name,  # Pass the specific plan file
-
+            query_mode=args.query_mode
         )
         agent.run(engine)
 
