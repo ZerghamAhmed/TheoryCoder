@@ -29,6 +29,8 @@ from baselines import *
 from preprocessing import *
 import openai
 from groq import Groq
+from experiment_logger import ExperimentLogger
+from time import strftime, gmtime
 
 
 
@@ -147,6 +149,40 @@ def transition_model(state, action):
 ```
 """
 
+prune_exploration_prompt = """You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
+will be a python program that captures the logic and mechanics of the game. There has been an execution error in your world model.
+
+You need to carry out an exploratory goal that will help you understand what your model is missing.
+
+You are given the following suggestion for exploratory plans. Which one of this is the most likely one that you should carry out?
+
+Think about the current state of the game and the current world model you have. Also include an explanation.
+
+SUGGESTED EXPLORATORY PLANS: 
+
+{suggested_exploratory_plans}
+
+CURRENT STATE:
+
+{current_state}
+
+CURRENT WORLD MODEL:
+
+{world_model_str}
+
+RESPONSE FORMAT (make sure to include your code in Python markup tags):
+
+```Python
+
+# just an example DO NOT ouput this
+[move_to agent_1 place_2]
+
+```
+
+Explanation: Example explanation of why you chose this plan.
+
+"""
+
 debug_model_prompt = """You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
 will be a python program that captures the logic and mechanics of the game. There has been an execution error in your world model.
 
@@ -218,33 +254,6 @@ def extract_function_names(file_content):
     function_names = set(match.group(1).strip() for match in matches)
     return function_names
 
-def update_tracking_data(current_entities, current_collisions):
-        data = load_tracking_data('tracking_data.json')
-        
-        # Update observed entities
-        new_entities = set(current_entities) - set(data['observed_entities'])
-        data['observed_entities'].extend(new_entities)
-
-        # Update observed collisions
-        new_collisions = set(current_collisions) - set(data['observed_collisions'])
-        data['observed_collisions'].extend(new_collisions)
-        
-        # Save the updated data back to the file
-        save_tracking_data('tracking_data.json', data)
-
-def load_tracking_data(file_path):
-        try:
-            with open(file_path, 'r') as file:
-                data = json.load(file)
-        except FileNotFoundError:
-            data = {"observed_entities": [], "observed_collisions": []}
-        return data
-
-def save_tracking_data(file_path, data):
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
-
-
 class PRISMAgent:
     """
     Theory-based RL agent.
@@ -278,6 +287,8 @@ class PRISMAgent:
         planner_explore_prob=0,
         max_replans=1,
         plans_file_name='plans.json',  # Default to a generic file if not specified
+        base_dir=None,  # Added for experiment logging
+        experiment_name=None  # Added for experiment logging
     ):
 
         self.runtime_vars = {
@@ -306,10 +317,6 @@ class PRISMAgent:
         except FileNotFoundError:
             self.world_model_version = 0
 
-
-        # Load global collisions from file, hardcoded it for now but make it cmd flag
-        self.global_collision_file = 'global_collisions.json'
-        self.global_collisions = self.load_global_collisions(self.global_collision_file)
 
         # Ablations
         self.do_revise_model = do_revise_model
@@ -398,6 +405,12 @@ class PRISMAgent:
         self.runtime_vars['exploratory_plans'] = []
         self.runtime_vars['unsatisfied_preconditions'] = []
 
+        # Initialize experiment logger
+        self.logger = ExperimentLogger(base_dir or os.getcwd(), experiment_name)
+
+        # Initialize level statistics
+        self.level_statistics = {}
+
     def query_lm(self, prompt):
         """
         Query the LLM based on the selected query mode.
@@ -413,7 +426,7 @@ class PRISMAgent:
 
         elif self.query_mode == "openai_direct":
             # Ensure the prompt is correctly formatted for the OpenAI API
-            messages = [{"role": "user", "content": prompt.to_string()}]
+            messages = [{"role": "user", "content": prompt}]
 
             # Use the OpenAI client to send the request
             completion = self.llm_client.chat.completions.create(
@@ -427,7 +440,7 @@ class PRISMAgent:
 
         elif self.query_mode == 'groq':
             # Query using Groq API
-            messages = [{"role": "user", "content": prompt.to_string()}]  # Format for Groq
+            messages = [{"role": "user", "content": prompt}]  # Format for Groq
             response = self.llm_client.chat.completions.create(
                 messages=messages,
                 model=self.groq_model
@@ -746,44 +759,8 @@ class PRISMAgent:
                 return actions, None
         else:
             return None, 'Exception: No code found inside Python tags.'
-
-    def _call_model_debug_TB(self, rule_key, state, action, max_retries=5):
-        for i in range(max_retries):
-            try:
-                preds = self.runtime_vars['interaction_rules'][rule_key].forward(state, action)
-                return preds
-            except Exception as e:
-                # from ipdb import set_trace; set_trace()
-                prompt = self._make_langchain_prompt(
-                    self.infer_interaction_rule_prompt + self.debug_model_prompt,
-                    **{
-                        'state_format': self.engine.state_format,
-                        'actions_set': self.engine.actions_set,
-                        'operators': self.runtime_vars['operators'].replace('{', '{{').replace('}', '}}'),
-                        'predicates': self.runtime_vars['predicates'].replace('{', '{{').replace('}', '}}'),
-                        'interaction_rules': '',  # TODO: Insert other rules into context?
-                        'interaction_rule': self.runtime_vars['interaction_rules_str'][rule_key],
-                        'observations': 'IGNORE',
-                        'state': state,
-                        'action': action,
-                        'error': e,
-                        'utils': self.runtime_vars['utils']
-                    }
-                )
-                print(f'DEBUG ITER {i}')
-                print(f'ERROR: {e}')
-                # resp = self.query_lm(prompt)
-                resp = 'hi'
-                self.tape[-1]['debug_model_prompt'] = prompt.to_messages()[0].content
-                self.tape[-1]['debug_model_response'] = resp
-                print(resp)
-                self.runtime_vars['error_msg_model'] = self._update_world_model(resp, list(self.runtime_vars['interaction_rules'].keys()))
-        return
     
     def _call_model_debug(self, state, action, max_retries=3):
-        # import worldmodel
-        # importlib.reload(worldmodel)
-
         if not self.do_revise_model:
             return
 
@@ -794,99 +771,54 @@ class PRISMAgent:
                 pred = worldmodel.transition_model(state, action)
                 return pred
             except Exception as e:
-                # from ipdb import set_trace; set_trace()
-                # breakpoint()
-                prompt = self._make_langchain_prompt(
-                    self.debug_model_prompt,
-                    **{
-                        'state_format': self.engine.state_format,
-                        'actions_set': self.engine.actions_set,
-                        'world_model_str': self.runtime_vars['world_model_str'],
-                        'observations': 'IGNORE',
-                        'state': state,
-                        'action': action,
-                        'error': e,
-                        'utils': self.runtime_vars['utils']
-                    }
-                )
                 print(f'DEBUG ITER {i}')
                 print(f'ERROR: {e}')
-                # breakpoint()
 
-                # Save the prompt to a text file
-                with open(f'prompts_saved/revision_prompt_{self.world_model_version}.txt', 'w') as file:
-                    file.write(prompt.to_messages()[0].content)
+                # Create the debug prompt
+                prompt = self.debug_model_prompt.format(
+                    state_format=self.engine.state_format,
+                    actions_set=self.engine.actions_set,
+                    world_model_str=self.runtime_vars['world_model_str'],
+                    observations='IGNORE',
+                    state=state,
+                    action=action,
+                    error=e,
+                    utils=self.runtime_vars['utils']
+                )
 
+                # Use experiment logger to save debug files
+                step_dir = self.logger.create_step("debug")
                 resp = self.query_lm(prompt)
-                # resp = 'hi'
-                self.tape[-1]['debug_model_prompt'] = prompt.to_messages()[0].content
-                self.tape[-1]['debug_model_response'] = resp
-                print(resp)
-
-
-                # Create directories if they don't exist
-                base_dir = "world_model_versions"
-                full_responses_dir = os.path.join(base_dir, "full_responses")
-                os.makedirs(full_responses_dir, exist_ok=True)
-
-                # Track the world model version iteration using string formatting
-                version_str = f"version_{self.world_model_version}"
-
-                # Save the full response to a text file (for logging and reference)
-                full_response_path = os.path.join(full_responses_dir, f"full_response_{version_str}.txt")
-                with open(full_response_path, 'w') as file:
-                    file.write(resp)
-
                 new_world_model_code = self.extract_code_from_response(resp)
 
                 if new_world_model_code:
-                    # Update the world model string in runtime_vars
+                    self.logger.save_step_files(
+                        step_dir,
+                        prompt,
+                        resp,
+                        new_world_model_code,
+                        "worldmodel.py"
+                    )
+
+                    self.logger.add_to_tape({
+                        "step": "debug",
+                        "prompt": prompt,
+                        "response": resp,
+                        "error": str(e)
+                    })
+
+                    # Update world model code and version
                     self.runtime_vars['world_model_str'] = new_world_model_code
-
-                    # perhaps save history of all the error debugs
                     self.runtime_vars['error_msg_model'] = new_world_model_code
-
-                    # Overwrite the current worldmodel.py file with the new model
                     self.overwrite_world_model(new_world_model_code)
-
-                    # Save the new model as an iteration (e.g., _iteration1)
                     self.world_model_version += 1
                     save_world_model("world_model_versions/debugging/", iteration=self.world_model_version)
 
-        return
+                    # Add to tape for logging
+                    self.tape[-1]['debug_model_prompt'] = prompt
+                    self.tape[-1]['debug_model_response'] = resp
 
-    def _update_world_model(self, text, rule_keys, save_to_file=True):
-        x = re.findall(r'```python([\s\S]*?)```', text)
-        if not len(x):
-            return 'Exception: No code found'
-        x = '\n'.join([xi.strip() for xi in x])
-        if x:
-            interaction_rules = []  # Gets appended to in LLM-generated code
-            try:
-                exec(x, globals(), my_locals := {})
-            except Exception as e:
-                return e
-            else:
-                if not 'interaction_rules' in my_locals:
-                    return 'Exception: Could not find interaction_rules'
-                interaction_rules = my_locals['interaction_rules']
-                if len(interaction_rules):
-                    err_msg = ''
-                    for rule in interaction_rules:
-                        key = (rule.entity_key1, rule.entity_key2)
-                        if key in rule_keys:
-                            self.runtime_vars['interaction_rules'][key] = rule
-                            s = extract_function_or_class_str(x, rule.__class__.__name__)
-                            s += f"\n\ninteraction_rules.append({rule.__class__.__name__}('{key[0]}', '{key[1]}'))"
-                            self.runtime_vars['interaction_rules_str'][key] = s
-                        else:
-                            err_msg += f'Exception: Could not find {key} in rule_keys.\n'
-                    # self._save_interaction_rules_to_file()
-                    return None if not err_msg else err_msg
-                else:
-                    return 'Exception: Could not find any interaction rules'
-        else:
-            return 'Exception: No code found inside Python tags.'
+        return None  # Return None if all retries failed
 
     def _do_revise_model(self, error_count):
         # TODO: Consider fancier rule here
@@ -1045,54 +977,42 @@ class PRISMAgent:
         examples, error_count = self._choose_synthesis_examples()
         
         if self._do_revise_model(error_count):
-            # Modify this to include the collision information
-            # collision_entity = self.runtime_vars.get('current_collision', 'No collision entity')
-            # collision_info = f"Attempting collision with {collision_entity}"
-
-            # breakpoint()
-
-            prompt = self._make_langchain_prompt(
-                self.revise_world_model_prompt,
-                **{
-                    'state_format': self.engine.state_format,
-                    'actions_set': self.engine.actions_set,
-                    'errors_from_world_model': '\n\n'.join(examples),
-                    'world_model_str': self.runtime_vars['world_model_str'],
-                    'utils': self.runtime_vars['utils']
-                }
+        
+            prompt = self.revise_world_model_prompt.format(
+                state_format=self.engine.state_format,
+                actions_set=self.engine.actions_set,
+                errors_from_world_model='\n\n'.join(examples),
+                world_model_str=self.runtime_vars['world_model_str'],
+                utils=self.runtime_vars['utils']
             )
 
-            file_name='revise_prompt_LOSE_GOOP.txt'
-        # Get the content of the first message in the prompt
-            prompt_content = prompt.to_messages()[0].content
-
-        # Create or open the file and write the prompt content to it
-            with open(file_name, 'w') as file:
-                file.write(prompt_content)  
-
-            breakpoint()
-            # Query the language model for new world model code
+            # Create step directory and save files
+            step_dir = self.logger.create_step("revision")
             resp = self.query_lm(prompt)
             new_world_model_code = self.extract_code_from_response(resp)
 
             if new_world_model_code:
-                self.runtime_vars['world_model_str'] = new_world_model_code
-                self.overwrite_world_model(new_world_model_code)
+                self.logger.save_step_files(
+                    step_dir,
+                    prompt,
+                    resp,
+                    new_world_model_code,
+                    "worldmodel.py"
+                )
 
-                # Increment version counter and save the new version
-                self.world_model_version += 1
-                save_world_model("world_model_versions/", iteration=self.world_model_version)
+                self.logger.add_to_tape({
+                    "step": "revision",
+                    "prompt": prompt,
+                    "response": resp
+                })
 
-                # Save full response in case it's needed
-                full_response_path = f"world_model_versions/full_responses/response_{self.world_model_version}.txt"
-                with open(full_response_path, "w") as f:
-                    f.write(resp)
+                # ...rest of existing revision code...
 
-            self.tape[-1]['revision_prompts'] = prompt.to_messages()[0].content
+            self.tape[-1]['revision_prompts'] = prompt
             self.tape[-1]['revision_responses'] = resp
-            print(prompt.to_messages()[0].content)
+            print(prompt)
             print(resp)
-            breakpoint()
+            # breakpoint()
             if self._do_revise_plan(error_count):
                 self.runtime_vars['revise_plan'] = True
 
@@ -1131,11 +1051,10 @@ class PRISMAgent:
                 with open('world_model_version.txt', 'w') as version_file:
                     version_file.write(str(self.world_model_version))
 
-            self.tape[-1]['revision_prompts'] = prompt.to_messages()[0].content
+            self.tape[-1]['revision_prompts'] = prompt
             self.tape[-1]['revision_responses'] = resp
-            print(prompt.to_messages()[0].content)
+            print(prompt)
             print(resp)
-            # breakpoint()
             if self._do_revise_plan(error_count):
                 self.runtime_vars['revise_plan'] = True
 
@@ -1145,50 +1064,23 @@ class PRISMAgent:
 
         examples, error_count = self._choose_synthesis_examples()
 
-        prompt = self._make_langchain_prompt(
-            self.initialize_world_model_prompt,  # Initialize World Model prompt template
-            **{
-                'domain_file': self.runtime_vars.get('domain_file', ''),
-                'current_state': self.runtime_vars['observations'][-1],
-                'num_random_actions': num_actions,
-                'errors_from_world_model': '\n\n'.join(examples),
-                'actions_set': self.engine.actions_set,
-                'utils':"directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
-            }
-        )
+        prompt = self.initialize_world_model_prompt.format(
+        current_state=self.runtime_vars['observations'][-1],
+        actions_set=self.engine.actions_set,
+        num_random_actions=num_actions,
+        errors_from_world_model='\n\n'.join(examples),
+        utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
+    )
 
         file_name='current_prompt.txt'
         # Get the content of the first message in the prompt
-        prompt_content = prompt.to_messages()[0].content
+        prompt_content = prompt
 
         # Create or open the file and write the prompt content to it
         with open(file_name, 'w') as file:
             file.write(prompt_content)        
-        breakpoint()
         resp = self.query_lm(prompt)
-        # resp = 'hi'
-        # Save the initial version of the world model
-        # Extract the Python code from the response
 
-#         resp1 = \
-# """ ```python 
-# from predicates import *
-# from copy import deepcopy
-# from games import BabaIsYou
-
-# def transition_model(state, action):    
-
-#     # DO NOT CHANGE THIS!!!!!!!
-#     directions = {
-#         'left': [-1, 0],
-#         'right': [1, 0],
-#         'up': [0, 1],
-#         'down': [0, -1]
-#     }
-
-#     return state
-# ```"""
-        # breakpoint()
         new_world_model_code = self.extract_code_from_response(resp)
 
         if new_world_model_code:
@@ -1201,68 +1093,24 @@ class PRISMAgent:
             # Save the new model as an iteration (e.g., _iteration1)
             save_world_model("world_model_versions/", iteration=0)
 
-    def _revise_operators(self):
-        # TODO
-        pass
-        return
+            # Create step directory and save files
+            step_dir = self.logger.create_step("initialize")
+            self.logger.save_step_files(
+                step_dir,
+                prompt,
+                resp,
+                new_world_model_code,
+                "worldmodel.py"
+            )
 
-    def _revise_predicates(self):
-        # TODO
-        pass
-        return
+            self.logger.add_to_tape({
+                "step": "initialize",
+                "prompt": prompt,
+                "response": resp
+            })
 
     def _random_explore(self):
         return [random.choice(self.actions_set)]    
-
-    def _sample_exploratory_goal(self, state, model):
-        raise NotImplementedError()
-        # prompt = self._make_langchain_prompt(
-        #     self.exploratory_goal_prompt,  # TODO
-        #     **{
-        #         'interaction_rules': '\n'.join(self.runtime_vars['interaction_rules_str'].values()),
-        #         'state_format': self.engine.state_format,
-        #         'actions_set': self.engine.actions_set,
-        #         'current_state': self.runtime_vars['observations'][-1],
-        #     }
-        # )
-        # resp = self.query_lm(prompt)
-        # return resp
-
-    def _sample_plan(self, state, goal):
-        """
-        Generate plan as series of operators
-        """
-        prompt = self._make_langchain_prompt(
-            self.planner_prompt,
-            **{
-                'state_format': self.engine.state_format,
-                'actions_set': self.engine.actions_set,
-                'operators': self.runtime_vars['operators'].replace('{', '{{').replace('}', '}}'),
-                'predicates': self.runtime_vars['predicates'].replace('{', '{{').replace('}', '}}'),
-                'interaction_rules': '\n'.join(self.runtime_vars['interaction_rules_str'].values()),
-                'current_state': state,
-                'goal': goal,
-            }
-        )
-
-        resp = 'hi'
-        actions, error_msg = self._update_plan(resp)
-        if error_msg is None:
-            # Record data to tape
-            self.tape[-1]['planner_prompt'] = prompt.to_messages()[0].content
-            self.tape[-1]['planner_response'] = resp
-            print(prompt.to_messages()[0].content)
-            print(resp)
-        else:
-            print('PLANNER ERROR:', error_msg)
-            self.tape[-1]['planner_err'] = error_msg
-        if not actions:
-            actions = self._random_explore()
-        return actions
-
-    def _keep_plan(self):
-        """Prompt LLM to keep or reject plan it generated."""
-        return True  # DEBUG
 
     def _get_plan_feedback(self):
         state = self.runtime_vars['observations'][-1]
@@ -1319,9 +1167,6 @@ class PRISMAgent:
                     action_seq, state = actor(self.domain_file, subplan, state, max_iterations=None, debug_callback=self._call_model_debug) #max its 2k original
                     actions.extend(action_seq)
 
-                if self._keep_plan():
-                    break
-            # breakpoint()
             return actions  # Return the actions as a list
 
 
@@ -1510,7 +1355,7 @@ class PRISMAgent:
     def reset(self, keep_model=True):
         self.engine.reset()
         self.runtime_vars['revise_plan'] = False
-        self.actions_set = engine.actions_set
+        self.actions_set = self.engine.actions_set
 
         state = self.engine.get_obs().copy()
         state = {key: [list(item) for item in value] if isinstance(value, list) else value for key, value in state.items()}
@@ -1576,144 +1421,7 @@ class PRISMAgent:
         if self.predicates_empty:
             print("Warning: Predicates file is empty or contains no valid functions/classes.")
             breakpoint()
-
-    def check_collisions_in_replay_buffer(self):
-        """
-        This method scans the replay buffer for collisions between different entities.
-        A collision is defined as two or more entities occupying the same coordinates.
-
-        Returns:
-            observed_collisions (set): A set of observed collisions. Each collision is a tuple of the form
-                                    ((entity1, entity2), (x, y)), representing the two entities and their collision coordinates.
-        """
-        observed_collisions = set()
-        
-        # Extract entity keys (excluding non-colliding types)
-        entities = [key for key in self.engine.get_obs().keys() if key not in ['empty', 'border', 'won', 'lost']]
-
-        # Iterate through each experience in the replay buffer
-        for experience in self.replay_buffers:
-            state, action, next_state = experience
-
-            # Check for collisions in both state and next_state
-            for state_to_check in [state, next_state]:
-                for i, entity1 in enumerate(entities):
-                    for j in range(i + 1, len(entities)):
-                        entity2 = entities[j]
-
-                        # Skip comparison if both entities are the same
-                        if entity1 == entity2:
-                            continue
-
-                        # Get positions of entity1 and entity2
-                        positions1 = state_to_check.get(entity1, [])
-                        positions2 = state_to_check.get(entity2, [])
-
-                        # Convert all positions to tuples for consistent comparison
-                        positions1 = [tuple(pos) for pos in positions1]
-                        positions2 = [tuple(pos) for pos in positions2]
-
-                        # Check if any positions overlap
-                        for pos1 in positions1:
-                            if pos1 in positions2:
-                                # collision = ((entity1, entity2), pos1)
-                                collision = ((entity1, entity2))
-                                observed_collisions.add(collision)
-        
-        return observed_collisions
     
-
-    def possible_collision_pairs(self):
-        """
-        Initialize the set of all possible collision pairs based on observed entities.
-        """
-        entities = [key for key in self.engine.get_obs().keys() if key not in ['empty', 'border', 'won', 'lost']]
-        return set((entity1, entity2) for i, entity1 in enumerate(entities) for entity2 in entities[i+1:])
-    
-    def get_unobserved_collisions(self, observed_collisions):
-
-        all_possible_collisions = self.possible_collision_pairs()  # Call the method to get the set of possible collisions
-
-        # Calculate unobserved collisions by taking the difference
-        unobserved_collisions = all_possible_collisions - observed_collisions
-
-        return unobserved_collisions
-
-
-    def load_global_collisions(self, file_path):
-        """
-        Load global collision tracking from an external file.
-        """
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
-                global_collisions = json.load(f)
-                return set(tuple(collision) for collision in global_collisions)
-        else:
-            return set()
-
-    def save_global_collisions(self):
-        """
-        Save the global collision data to an external file.
-        """
-        with open(self.global_collision_file, "w") as f:
-            json.dump([list(collision) for collision in self.global_collisions], f, indent=4)
-
-
-    def update_global_collisions(self, observed_collisions):
-        """
-        Update the global collision data with newly observed collisions.
-        """
-        level_key = f"level_{self.current_level}"
-
-        if level_key not in self.global_collisions:
-            self.global_collisions[level_key] = []
-
-        for collision in observed_collisions:
-            if collision not in self.global_collisions[level_key]:
-                self.global_collisions[level_key].append(collision)
-
-        # Save the updated global collisions to file
-        self.save_global_collisions()
-
-    def reorder_collision_pair(self, controllable, entity1, entity2):
-        """
-        Ensure the controllable entity is first in the collision tuple.
-
-        Args:
-            controllable (str): The controllable entity.
-            entity1 (str): The first entity in the collision.
-            entity2 (str): The second entity in the collision.
-
-        Returns:
-            tuple: A tuple with the controllable entity first.
-        """
-        if entity1 == controllable:
-            return (entity1, entity2)
-        elif entity2 == controllable:
-            return (entity2, entity1)
-        else:
-            return (entity1, entity2)  # Default order if neither is controllable
-
-
-    def generate_subplans_for_collisions(self, state, collisions_to_test):
-        subplans = []
-
-        for entity1, entity2 in collisions_to_test:
-            # Get all instances of entity1 and entity2
-            instances1 = state.get(entity1, [])
-            instances2 = state.get(entity2, [])
-
-            # Generate subplans for each combination of instances
-            for i, instance1 in enumerate(instances1, start=1):
-                for j, instance2 in enumerate(instances2, start=1):
-                    subplan = f"move_to {entity1}_{i} {entity2}_{j}"
-                    subplans.append(subplan)
-
-                    # Save the current collision being tested for use in prompts
-                    self.runtime_vars['current_collision'] = entity2
-
-        return subplans
-
     def prune_exploratory_plans(self, plans):
         """
         Deduplicate exploratory plans by removing entity indices.
@@ -1731,6 +1439,59 @@ class PRISMAgent:
             deduplicated.add(pruned_plan)
 
         return list(deduplicated)  # Convert back to a list
+
+    def prune_exploratory_plans_with_lm(self, exploratory_plans, state, world_model_str):
+        """
+        Use LLM to prune exploratory plans based on the current state and world model.
+
+        Args:
+            exploratory_plans (list): List of suggested exploratory plans.
+            state (dict): Current game state.
+            world_model_str (str): Current world model as a string.
+
+        Returns:
+            list: Pruned exploratory plans.
+        """
+        # Generate the LLM prompt using the defined prune_exploration_prompt
+        formatted_prompt = prune_exploration_prompt.format(
+            suggested_exploratory_plans=exploratory_plans,
+            current_state=state,
+            world_model_str=world_model_str
+        )
+
+        # breakpoint()
+
+        # Query the LLM for the pruned plans
+        response = self.query_lm(formatted_prompt)
+
+        # Extract the list of plans from the response
+        selected_plans = self.extract_code_from_response(response)
+
+        # Create step directory and save files
+        step_dir = self.logger.create_step("exploratory_plan_pruning")
+        self.logger.save_step_files(
+            step_dir,
+            formatted_prompt,
+            response,
+            selected_plans,
+            "pruned_plans.txt"
+        )
+
+        self.logger.add_to_tape({
+            "step": "exploratory_plan_pruning",
+            "prompt": formatted_prompt,
+            "response": response
+        })
+        # Note: timestamp is now added by the logger
+
+        try:
+            # Parse the selected plans into a Python list
+            pruned_plans = ast.literal_eval(selected_plans)
+            print(f"Pruned exploratory plans: {pruned_plans}")
+            return pruned_plans
+        except Exception as e:
+            print(f"Error parsing LLM response for pruned plans: {e}")
+            return exploratory_plans  # Fallback to the original plans if parsing fails
 
     
     def enumerate_possible_subplans(self, state):
@@ -1875,36 +1636,6 @@ class PRISMAgent:
         self.runtime_vars['exploratory_plans'] = exploratory_plans
         return exploratory_plans
 
-    def execute_exploratory_plans(self, exploratory_plans, state, domain_file):
-        """
-        Execute the proposed exploratory plans, accumulate successfully executed plans, and update the state.
-        """
-        successful_plans = []  # Track successful exploratory plans
-
-        for subplan in exploratory_plans:
-            try:
-                actions, new_state = actor(domain_file, subplan, state, max_iterations=None)
-                print(f"Executed exploratory subplan: {subplan}")
-                print(f"Actions: {actions}")
-                print(f"Resulting state: {new_state}")
-
-                # Check if actions were successfully executed
-                if actions and actions != ["no-op"]:
-                    successful_plans.append(subplan)
-
-                # Log the transition to replay buffer
-                self._update_replay_buffers((state, subplan, new_state))
-
-                # Update the state
-                state = new_state
-
-            except Exception as e:
-                print(f"Failed to execute subplan {subplan}: {e}")
-
-        print(f"Successful exploratory plans: {successful_plans}")
-        return state, successful_plans
-
-
     def execute_random_actions(self, num_actions=10):
         """Execute random actions and store the resulting transitions in the replay buffer."""
         plan = []
@@ -1984,7 +1715,7 @@ class PRISMAgent:
         self.tape[-1]['world_model'] = self.runtime_vars['interaction_rules_str']
 
 
-    def run(self, engine, max_revisions=1):
+    def run(self, engine, max_revisions=10):
         self.engine = engine
         self.current_level = self.engine.level_id  # Or any other method to determine the level
         revision_count = 0
@@ -2002,13 +1733,17 @@ class PRISMAgent:
             if self.is_world_model_empty() and self.do_revise_model:
                 # If the world model is empty, use the default action set
                 print("World model is empty, executing random actions.")
-                num_actions = 10
+                num_actions = 5
                 plan = self.execute_random_actions(num_actions=num_actions)  # Adjust the number as needed
                 print(plan)
                 print("World model was empty, revised the model. Moving to next iteration.")
                 for action in plan:
                     self.step_env(action)
                 self._initialize_world_model(num_actions)
+                # If the world model is not empty, proceed with the hierarchical planner
+                mode = self._sample_planner_mode()  # Determine planner mode (explore/exploit)
+                plan = self._hierarchical_planner(mode) 
+                print("plan from init model:", plan)
             else:
                 # If the world model is not empty, proceed with the hierarchical planner
                 mode = self._sample_planner_mode()  # Determine planner mode (explore/exploit)
@@ -2023,57 +1758,51 @@ class PRISMAgent:
                     self.tape[-1]['exit_condition'] = 'won'
                     self._update_solution(self.current_level, first_letters)
                     print(first_letters)
-                    # breakpoint()
                     return True
 
-                # # Check if the agent lost (e.g., died or failed critically)
-                # if self.engine.lost:
-                #     self.tape[-1]['exit_condition'] = 'lost'
-                #     self._update_solution(self.current_level, first_letters)
-                #     print("AGENT LOST")
-                #     self._revise_world_model()
-                #     breakpoint()
-                #     return True
-                
-            # if self.is_world_model_empty() and self.do_revise_model:
-            #     revision_count += 1
-            #     self._initialize_world_model(num_actions)
-            #     print("World model was empty, revised the model. Moving to next iteration.")
-            #     continue
+                # Check if the agent lost (e.g., died or failed critically)
+                if self.engine.lost:
+                    self.tape[-1]['exit_condition'] = 'lost'
+                    self._update_solution(self.current_level, first_letters)
+                    print("AGENT LOST")
+                    self._revise_world_model()
+                    return True
 
             # Handle model revision if necessary
             if not self.is_world_model_empty() and self.do_revise_model:
-                # breakpoint()
                 exploratory_plans = self.propose_exploratory_plans(initial_state, self.domain_file)
                 print(exploratory_plans)
-                final_plans = self.prune_exploratory_plans(exploratory_plans)
-                print("pruned", final_plans)
                 breakpoint()
-                if exploratory_plans:
-                    print("Generated exploratory plans:", exploratory_plans)
-                    state, successful_plans = self.execute_exploratory_plans(exploratory_plans, initial_state, self.domain_file)
-                final_plans = self.prune_exploratory_plans(successful_plans)
-                self.runtime_vars['exploratory_plans'] = final_plans
+                pruned_plans = self.prune_exploratory_plans(exploratory_plans)
+                print("pruned automatically", pruned_plans)
 
-                breakpoint()
-                subplans = []
-                for subplan in subplans:
+                if len(pruned_plans) <= 3:
+                    print("Executing all pruned plans")
+                    LLM_pruned_plans = pruned_plans
+                else:
+                    # Prune the exploratory plans using LLM
+                    LLM_pruned_plans = self.prune_exploratory_plans_with_lm(
+                        exploratory_plans=pruned_plans,
+                        state=initial_state,
+                        world_model_str=self.runtime_vars['world_model_str']
+                    )
+
+                print(f"LLM Pruned exploratory plans: {LLM_pruned_plans}")
+                
+                self.runtime_vars['exploratory_plans'] = LLM_pruned_plans
+
+                for subplan in LLM_pruned_plans:
                     self.reset(keep_model=True)
-                    # self.engine.reset()
 
                     plan = self._hierarchical_planner(mode="explore_collision", subplan_exploratory=subplan)
 
                     # use this plan to get D for model revision 
                     if plan == None or plan == ["no-op"]:
                         print(f"plan was none for {subplan}")
-                        breakpoint()
                     
                     else:
-                        breakpoint()
                         for action in plan:
-
                             self.step_env(action)
-
 
                     # Perform model revision after every collision attempt
                     print(f"Revising the model after subplan: {subplan}")
@@ -2081,33 +1810,136 @@ class PRISMAgent:
 
                     revision_count += 1
 
-                    breakpoint()
-
                     if revision_count > max_revisions:
                         print("Max model revisions reached. Exiting.")
                         break
                     print(f"Model revised {revision_count} times. Re-running.")
-
-                # self._revise_world_model()
                 
             else:
                 # If no revisions happened and no win occurred, stop the loop
                 break
 
             self._update_solution(self.current_level, first_letters)
-        # self._revise_world_model()
         print("FAILED LEVEL")
         self._update_solution(self.current_level, first_letters)
-        # print(state)
+
+        # At the end of the run, generate and save summary
+        summary = f"""
+Level: {self.current_level}
+Revisions: {revision_count}
+Final Status: {"Won" if self.engine.won else "Failed"}
+First Letters: {first_letters}
+        """
+        self.logger.save_summary(summary)
+
         return False
 
+    def run_multiple_levels(self, level_sets, max_revisions=10):
+        """Run the agent through multiple levels sequentially."""
+        overall_results = {
+            "levels_completed": [],
+            "levels_failed": [],
+            "total_revisions": 0,
+            "total_debugs": 0,
+            "total_explorations": 0
+        }
 
+        for level_set, levels in level_sets.items():
+            for level_id in levels:
+                print(f"\nStarting Level {level_set}-{level_id}")
+                
+                # Initialize the engine for the current level
+                if args.game == 'baba':
+                    self.engine = BabaIsYou(level_set=level_set, level_id=level_id)
+                elif args.game == 'lava':
+                    self.engine = LavaGrid()
+                
+                # Initialize level statistics
+                level_key = f"{level_set}_{level_id}"
+                self.level_statistics[level_key] = {
+                    "attempts": 0,
+                    "revisions": 0,
+                    "debugs": 0,
+                    "explorations": 0,
+                    "status": "not_started",
+                    "steps_to_win": [],
+                    "first_letters": None
+                }
+
+                print(f"Running single level: {level_key}")
+                success = self.run(self.engine, max_revisions)
+                print(f"Finished running single level: {level_key} with success: {success}")
+                
+                if success:
+                    overall_results["levels_completed"].append(level_key)
+                    self.level_statistics[level_key]["status"] = "completed"
+                else:
+                    overall_results["levels_failed"].append(level_key)
+                    self.level_statistics[level_key]["status"] = "failed"
+
+                # Update overall statistics
+                overall_results["total_revisions"] += self.level_statistics[level_key]["revisions"]
+                overall_results["total_debugs"] += self.level_statistics[level_key]["debugs"]
+                overall_results["total_explorations"] += self.level_statistics[level_key]["explorations"]
+
+                # Save level summary
+                self._save_level_summary(level_key)
+
+        # Save overall summary
+        self._save_overall_summary(overall_results)
+        return overall_results
+
+    def _save_level_summary(self, level_key):
+        """Save a summary for a specific level."""
+        stats = self.level_statistics[level_key]
+        summary = f"""
+Level: {level_key}
+Status: {stats['status']}
+Attempts: {stats['attempts']}
+Revisions: {stats['revisions']}
+Debugs: {stats['debugs']}
+Explorations: {stats['explorations']}
+Solution: {stats['first_letters'] if stats['first_letters'] else 'None'}
+Steps to Win: {', '.join(stats['steps_to_win']) if stats['steps_to_win'] else 'Failed'}
+        """
+        
+        # Create level directory in experiment folder
+        level_dir = os.path.join(self.logger.experiment_dir, f"level_{level_key}")
+        os.makedirs(level_dir, exist_ok=True)
+        
+        # Save summary
+        with open(os.path.join(level_dir, "summary.txt"), "w") as f:
+            f.write(summary)
+
+        # Save statistics as JSON for later analysis
+        with open(os.path.join(level_dir, "statistics.json"), "w") as f:
+            json.dump(stats, f, indent=2)
+
+    def _save_overall_summary(self, results):
+        """Save overall experiment summary."""
+        summary = f"""
+Total Levels Attempted: {len(results['levels_completed']) + len(results['levels_failed'])}
+Levels Completed: {len(results['levels_completed'])}
+Levels Failed: {len(results['levels_failed'])}
+Total Revisions: {results['total_revisions']}
+Total Debugs: {results['total_debugs']}
+Total Explorations: {results['total_explorations']}
+
+Completed Levels: {', '.join(results['levels_completed'])}
+Failed Levels: {', '.join(results['levels_failed'])}
+        """
+        
+        self.logger.save_summary(summary)
+        
+        # Save detailed results as JSON
+        with open(os.path.join(self.logger.experiment_dir, "results.json"), "w") as f:
+            json.dump(results, f, indent=2)
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', type=str, default='baba')
-    parser.add_argument('--levels', type=str, default="[('demo_LEVELS', 1)]")
+    parser.add_argument('--level-sets', type=str, default="{'demo_LEVELS': [0, 1, 2, 3]}")
     parser.add_argument('--episode-length', type=int, default=20)
     parser.add_argument('--world-model-file-name', type=str, default='worldmodel')
     parser.add_argument('--domain-file-name', type=str, default='domain.pddl')  # Add this line
@@ -2115,33 +1947,43 @@ if __name__ == '__main__':
     parser.add_argument('--json-reporter-path', type=str, default='KekeCompetition-main/Keke_JS/reports/TBRL_BABA_REPORT.json')
     parser.add_argument('--learn-model', action='store_true')
     parser.add_argument('--query-mode', type=str, default='groq')
+    parser.add_argument('--experiment-dir', type=str, default='experiments',
+                      help='Directory to store experiment runs')
+    parser.add_argument('--multi-level', action='store_true', help='Run multiple levels sequentially')
     args = parser.parse_args()
 
-    levels = eval(args.levels)
+    level_sets = eval(args.level_sets)
 
-    for level_set, level_id in levels:
-        plan_file_name = f'plans_{level_set}.json'  # Dynamically set plan file based on level_set
+    plan_file_name = 'plans_demo_LEVELS.json'  # Use a single plan file
 
+    agent = PRISMAgent(
+        base_dir=args.experiment_dir,  # Use experiment directory from args
+        episode_length=args.episode_length,
+        world_model_load_name=args.world_model_file_name,
+        json_reporter_path=args.json_reporter_path,
+        predicates_file_name=args.predicates_file_name,
+        domain_file_name=args.domain_file_name, 
+        do_revise_model=args.learn_model,
+        plans_file_name=plan_file_name,  # Pass the specific plan file
+        query_mode=args.query_mode
+    )
+
+    if args.multi_level:
+        results = agent.run_multiple_levels(level_sets, max_revisions=10)
+        print("\nExperiment Complete!")
+        print(f"Levels Completed: {len(results['levels_completed'])}")
+        print(f"Levels Failed: {len(results['levels_failed'])}")
+    else:
         if args.game == 'baba':
-            engine = BabaIsYou(level_set=level_set, level_id=level_id)
+            engine = BabaIsYou(level_set=list(level_sets.keys())[0], level_id=level_sets[list(level_sets.keys())[0]][0])
         elif args.game == 'lava':
             engine = LavaGrid()
-        agent = PRISMAgent(
-            episode_length=args.episode_length,
-            world_model_load_name=args.world_model_file_name,
-            json_reporter_path=args.json_reporter_path,
-            predicates_file_name=args.predicates_file_name,
-            domain_file_name=args.domain_file_name, 
-            do_revise_model=args.learn_model,
-            plans_file_name=plan_file_name,  # Pass the specific plan file
-            query_mode=args.query_mode
-        )
         agent.run(engine)
 
     # Save tape to json
     import time
     import json
-    tape_path = f'tapes/{args.game}_{level_set}_{level_id}_{time.time()}.json'
+    tape_path = f'tapes/{args.game}_{list(level_sets.keys())[0]}_{level_sets[list(level_sets.keys())[0]][0]}_{time.time()}.json'
     Path(tape_path).parent.mkdir(parents=True, exist_ok=True)
     
     with open(tape_path, 'w') as f:

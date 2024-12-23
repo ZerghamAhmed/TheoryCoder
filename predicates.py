@@ -25,7 +25,37 @@ def are_adjacent(coords):
     return False
 
 def rule_formed(state, word1, word2, word3):
-    """Check if the given words are adjacent in the state."""
+    """
+    Determine if a valid rule is formed by the three specified words in the given state.
+
+    A rule is formed if:
+    - The three words appear in the state with valid coordinates.
+    - The words are aligned either horizontally or vertically.
+    - The words are adjacent to each other with no gaps.
+    - The second word is 'is_word' (a requirement for rule formation).
+
+    Args:
+        state (dict): A dictionary representing the current game state. 
+                      Keys are word names (e.g., "baba_word") mapped to lists of their coordinates.
+        word1 (str): The first word in the rule (e.g., "baba_word").
+        word2 (str): The second word in the rule (must be "is_word").
+        word3 (str): The third word in the rule (e.g., "win_word").
+
+    Returns:
+        bool: True if the three words form a valid rule, False otherwise.
+
+    Example:
+        state = {
+            "baba_word": [[0, 0]],
+            "is_word": [[0, 1]],
+            "you_word": [[0, 2]],
+        }
+        rule_formed(state, "baba_word", "is_word", "you_word")  # Returns True, as the words are horizontally adjacent.
+
+    Notes:
+        - This function uses the `are_adjacent` helper to verify adjacency and alignment of the words.
+        - If any of the words are not present in the state or do not have coordinates, the function returns False.
+    """
     coords1 = state.get(word1, [])
     coords2 = state.get(word2, [])
     coords3 = state.get(word3, [])
@@ -118,21 +148,105 @@ def is_on_border(state, loc):
 
 def rule_formable(state, word1, word2, word3):
     """
-    Check if the rule composed of word1, word2, word3 can be formed.
-
+    Check if the rule composed of word1, word2, word3 is formable.
+    
+    A rule is formable if:
+    - It is not already formed.
+    - None of the specific instances of the words in the rule are reused within the same rule.
+    - word1 and word3 are not part of an unbreakable rule (where rule_breakable = False).
+    
     Args:
-    state (dict): The current game state.
-    word1 (str): The first word in the rule.
-    word2 (str): The second word in the rule.
-    word3 (str): The third word in the rule.
-
+        state (dict): The current game state.
+        word1 (str): The first word in the rule (e.g., "baba_word").
+        word2 (str): The second word in the rule (e.g., "is_word").
+        word3 (str): The third word in the rule (e.g., "win_word").
+    
     Returns:
-    bool: True if the rule is formable, False otherwise.
+        bool: True if the rule is formable, False otherwise.
     """
-    for word in [word1, word2, word3]:
-        if word.endswith('_word') and not pushable_word(state, word):
-            return False
+
+    # Words that cannot be used to start a rule
+    end_words = {
+        'you_word',
+        'win_word',
+        'push_word',
+        'stop_word',
+        'hot_word',
+        'melt_word',
+        'sink_word',
+        'kill_word',
+    }
+    
+    # Step 1: Check if the rule is already formed
+    if rule_formed(state, word1, word2, word3):
+        return False  # Rule is already formed; cannot be formed again
+    
+    # Step 2: If word1 is an end word or 'is_word', it cannot form a new rule
+    if word1 in end_words or word1 == "is_word" or word3 == "is_word" or word2 != 'is_word':
+        return False
+
+    # Step 3: Get the coordinates of the words in the state
+    coords1 = state.get(word1, [])
+    coords2 = state.get(word2, [])
+    coords3 = state.get(word3, [])
+    
+    if len(coords1) == 0 or len(coords2) == 0 or len(coords3) == 0:
+        return False  # If any word has no coordinates, the rule cannot be formed
+
+    # Step 4: Find all unbreakable rules and track their word instances (coordinates)
+    def find_unbreakable_rules(state):
+        """
+        Find all unbreakable rules on the map and return the word instances (coordinates) involved.
+        
+        Args:
+            state (dict): The current game state.
+        
+        Returns:
+            set: A set of (word, coord) tuples that represent the instances in unbreakable rules.
+        """
+        unbreakable_instances = set()
+        word_entities = [entity for entity in state.keys() if entity.endswith('_word')]
+        
+        # Loop over all possible combinations of subject, predicate, and object
+        for subj in word_entities:
+            for pred in word_entities:
+                for obj in word_entities:
+                    if rule_formed(state, subj, pred, obj):
+                        if not rule_breakable(state, subj, pred, obj):
+                            # Add the specific word instances (coordinates) involved in unbreakable rules
+                            for coord1, coord2, coord3 in product(state.get(subj, []), state.get(pred, []), state.get(obj, [])):
+                                if are_adjacent((coord1, coord2, coord3)):  # Ensure they are adjacent
+                                    unbreakable_instances.add((subj, tuple(coord1)))
+                                    unbreakable_instances.add((obj, tuple(coord3)))
+        return unbreakable_instances
+
+    # Step 5: Check if any specific instances of word1 or word3 are part of any unbreakable rule
+    unbreakable_instances = find_unbreakable_rules(state)
+    
+    # Allow only the instances that are not part of an unbreakable rule
+    for coord1, coord3 in product(coords1, coords3):
+        if (word1, tuple(coord1)) in unbreakable_instances or (word3, tuple(coord3)) in unbreakable_instances:
+            continue  # Skip this instance if it's part of an unbreakable rule
+        # Valid instance found, break out of loop and form the rule.
+        break
+    else:
+        return False  # No valid instances, rule cannot be formed
+
+    # Step 6: Prevent rules like 'baba_word is_word baba_word' if only one instance of the word exists
+    if (len(coords1) == 1 and word1 == word3) or (len(coords3) == 1 and word1 == word3):
+        return False  # If word1 and word3 are the same and only one instance, block the rule
+    
+    # Step 7: Ensure that no word instance is reused within the same rule
+    for coord1, coord2, coord3 in product(coords1, coords2, coords3):
+        # Check if any of the coordinates are the same (i.e., word reuse in the same rule)
+        if coord1 == coord2 or coord1 == coord3 or coord2 == coord3:
+            return False  # Invalid because the same instance of a word is reused
+
+    if not pushable_word(state, word1) and not pushable_word(state, word2) and pushable_word(state, word3):
+        return False
+
     return True
+
 
 
 def pushable_word_up(state, word):
@@ -385,116 +499,6 @@ def get_unbreakable_rules(state):
     return unbreakable_rules
 
 
-
-
-
-from itertools import product
-
-from itertools import product
-
-from itertools import product
-
-def rule_formable(state, word1, word2, word3):
-    """
-    Check if the rule composed of word1, word2, word3 is formable.
-    
-    A rule is formable if:
-    - It is not already formed.
-    - None of the specific instances of the words in the rule are reused within the same rule.
-    - word1 and word3 are not part of an unbreakable rule (where rule_breakable = False).
-    
-    Args:
-        state (dict): The current game state.
-        word1 (str): The first word in the rule (e.g., "baba_word").
-        word2 (str): The second word in the rule (e.g., "is_word").
-        word3 (str): The third word in the rule (e.g., "win_word").
-    
-    Returns:
-        bool: True if the rule is formable, False otherwise.
-    """
-
-    # Words that cannot be used to start a rule
-    end_words = {
-        'you_word',
-        'win_word',
-        'push_word',
-        'stop_word',
-        'hot_word',
-        'melt_word',
-        'sink_word',
-        'kill_word',
-    }
-    
-    # Step 1: Check if the rule is already formed
-    if rule_formed(state, word1, word2, word3):
-        return False  # Rule is already formed; cannot be formed again
-    
-    # Step 2: If word1 is an end word or 'is_word', it cannot form a new rule
-    if word1 in end_words or word1 == "is_word" or word3 == "is_word":
-        return False
-
-    # Step 3: Get the coordinates of the words in the state
-    coords1 = state.get(word1, [])
-    coords2 = state.get(word2, [])
-    coords3 = state.get(word3, [])
-    
-    if len(coords1) == 0 or len(coords2) == 0 or len(coords3) == 0:
-        return False  # If any word has no coordinates, the rule cannot be formed
-
-    # Step 4: Find all unbreakable rules and track their word instances (coordinates)
-    def find_unbreakable_rules(state):
-        """
-        Find all unbreakable rules on the map and return the word instances (coordinates) involved.
-        
-        Args:
-            state (dict): The current game state.
-        
-        Returns:
-            set: A set of (word, coord) tuples that represent the instances in unbreakable rules.
-        """
-        unbreakable_instances = set()
-        word_entities = [entity for entity in state.keys() if entity.endswith('_word')]
-        
-        # Loop over all possible combinations of subject, predicate, and object
-        for subj in word_entities:
-            for pred in word_entities:
-                for obj in word_entities:
-                    if rule_formed(state, subj, pred, obj):
-                        if not rule_breakable(state, subj, pred, obj):
-                            # Add the specific word instances (coordinates) involved in unbreakable rules
-                            for coord1, coord2, coord3 in product(state.get(subj, []), state.get(pred, []), state.get(obj, [])):
-                                if are_adjacent((coord1, coord2, coord3)):  # Ensure they are adjacent
-                                    unbreakable_instances.add((subj, tuple(coord1)))
-                                    unbreakable_instances.add((obj, tuple(coord3)))
-        return unbreakable_instances
-
-    # Step 5: Check if any specific instances of word1 or word3 are part of any unbreakable rule
-    unbreakable_instances = find_unbreakable_rules(state)
-    
-    # Allow only the instances that are not part of an unbreakable rule
-    for coord1, coord3 in product(coords1, coords3):
-        if (word1, tuple(coord1)) in unbreakable_instances or (word3, tuple(coord3)) in unbreakable_instances:
-            continue  # Skip this instance if it's part of an unbreakable rule
-        # Valid instance found, break out of loop and form the rule.
-        break
-    else:
-        return False  # No valid instances, rule cannot be formed
-
-    # Step 6: Prevent rules like 'baba_word is_word baba_word' if only one instance of the word exists
-    if (len(coords1) == 1 and word1 == word3) or (len(coords3) == 1 and word1 == word3):
-        return False  # If word1 and word3 are the same and only one instance, block the rule
-    
-    # Step 7: Ensure that no word instance is reused within the same rule
-    for coord1, coord2, coord3 in product(coords1, coords2, coords3):
-        # Check if any of the coordinates are the same (i.e., word reuse in the same rule)
-        if coord1 == coord2 or coord1 == coord3 or coord2 == coord3:
-            return False  # Invalid because the same instance of a word is reused
-
-    if not pushable_word(state, word1) and not pushable_word(state, word2) and pushable_word(state, word3):
-        return False
-
-    return True
-
 def overlapable(state, entity):
     """
     Check if the given entity is overlapable.
@@ -507,3 +511,32 @@ def overlapable(state, entity):
         bool: True if the entity ends with '_obj', False otherwise.
     """
     return entity.endswith('_obj')
+
+def pushable_obj(state, entity):
+    """
+    Check if the given object entity is pushable based on the rule 'X_word is_word push_word'.
+
+    Args:
+        state (dict): The current game state.
+        entity (str): The object entity to check (e.g., "baba_obj", "rock_obj").
+
+    Returns:
+        bool: True if the corresponding rule 'X_word is_word push_word' is formed, False otherwise.
+
+    Example: 
+        If 'rock_word is_word push_word' is formed, then 'rock_obj' is pushable_obj.
+    """
+    # Step 1: Ensure the entity is an object
+    if not entity.endswith('_obj'):
+        return False  # Only applicable to objects
+    
+    # Step 2: Derive the corresponding word entity (e.g., "baba_obj" -> "baba_word")
+    base_name = entity[:-4]  # Remove '_obj' suffix
+    word_entity = f"{base_name}_word"  # Corresponding word entity
+
+    # Step 3: Check if the rule 'X_word is_word push_word' is formed
+    if rule_formed(state, word_entity, "is_word", "push_word"):
+        return True
+    
+    return False
+

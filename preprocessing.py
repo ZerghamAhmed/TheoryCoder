@@ -33,10 +33,10 @@ def preprocess_subplan(subplan):
 
 
     if action == 'form_rule':
-        formatted_params = [re.sub(r'_\d+$', '', param) for param in params]
+        formatted_params = [param for param in params]
 
     if action == 'break_rule':
-        formatted_params = [re.sub(r'_\d+$', '', param) for param in params]
+        formatted_params = [param for param in params]
 
     if action == 'move_to':
         for param in params:
@@ -47,25 +47,43 @@ def preprocess_subplan(subplan):
                 index = int(match.group(2)) - 1  # Convert to zero-based index
                 formatted_params.extend([base_name, index])
 
-    elif action in ['move_loc', 'push_to']:
-        # Extract the coordinates as a list of integers
-        location = re.search(r'\[(\d+),\s*(\d+)\]', subplan)
-        if location:
-            coordinates = [int(location.group(1)), int(location.group(2))]
-            for param in params:
-                if '[' in param and ']' in param:
-                    # Add the coordinates as a list to formatted_params
-                    formatted_params.append(coordinates)
-                else:
-                    # Strip the trailing underscores and digits
-                    match = re.match(r'(.+?)_(\d+)$', param)
-                    if match:
-                        base_name = match.group(1)
-                        instance_index = int(match.group(2)) - 1  # Convert to zero-based index
-                        formatted_params.append(base_name)
-                        formatted_params.append(instance_index)
-                    else:
-                        formatted_params.append(re.sub(r'_\d+$', '', param))
+    # if action == 'push_to':
+    #     for param in params:
+    #         # Extract the base name and number using regular expressions
+    #         match = re.match(r'(.+?)_(\d+)$', param)
+    #         if match:
+    #             base_name = match.group(1)  # the object name is match group 1, index is match group 2
+    #             index = int(match.group(2)) - 1  # Convert to zero-based index
+    #             formatted_params.extend([base_name, index])
+
+    if action == 'push_to':
+        for param in params:
+            match = re.match(r'(.+?)_(\d+)$', param)
+            if match:
+                base_name = match.group(1)
+                index = int(match.group(2)) - 1  # Convert to zero-based index
+                formatted_params.extend([base_name, index])
+
+
+    # elif action in ['move_loc', 'push_to']:
+    #     # Extract the coordinates as a list of integers
+    #     location = re.search(r'\[(\d+),\s*(\d+)\]', subplan)
+    #     if location:
+    #         coordinates = [int(location.group(1)), int(location.group(2))]
+    #         for param in params:
+    #             if '[' in param and ']' in param:
+    #                 # Add the coordinates as a list to formatted_params
+    #                 formatted_params.append(coordinates)
+    #             else:
+    #                 # Strip the trailing underscores and digits
+    #                 match = re.match(r'(.+?)_(\d+)$', param)
+    #                 if match:
+    #                     base_name = match.group(1)
+    #                     instance_index = int(match.group(2)) - 1  # Convert to zero-based index
+    #                     formatted_params.append(base_name)
+    #                     formatted_params.append(instance_index)
+    #                 else:
+    #                     formatted_params.append(re.sub(r'_\d+$', '', param))
 
 
     # if action == 'move_loc':
@@ -130,7 +148,6 @@ def parse_domain_file(domain_file):
     
     return domain_data
 
-
 def parse_logical_expression(expression):
     tokens = re.findall(r'\(|\)|\w+|not', expression)
     stack = []
@@ -148,7 +165,12 @@ def parse_logical_expression(expression):
         else:
             current.append(token)
     
-    return current[0] if current else []
+    return current[0] if len(current) == 1 else current  # Flatten top-level nesting
+
+
+
+
+
 
 
 def operator_extractor(domain_file, subplan):
@@ -162,28 +184,34 @@ def operator_extractor(domain_file, subplan):
 
         # depends on abstraction level of domain file used
         formatted_args = preprocess_subplan(subplan)
+
+        # if operator == 'push_to':
+        #     breakpoint()
         
         return {"operator": operator, "parameters": parameters, "preconditions": preconditions, "effects": effects, "grounding_Python": formatted_args}
     else:
         raise ValueError(f"Operator {operator} not found in domain file.")
     
-
 def extract_predicates(conditions):
     predicates = []
+
     if isinstance(conditions, list):
-        if conditions[0] == 'not':
-            predicates.append(f"not {conditions[1][0]}")
-        elif conditions[0] in {'and', 'or'}:
-            for sub_cond in conditions[1:]:
-                predicates.extend(extract_predicates(sub_cond))
-        else:
+        if conditions[0] == 'not':  # Handle negation
+            predicates.append(f"not {conditions[1][0]}")  # Add 'not' with predicate name
+        elif conditions[0] in ['and', 'or']:  # Handle logical operators
+            for sub_condition in conditions[1:]:
+                predicates.extend(extract_predicates(sub_condition))  # Recurse
+        else:  # Direct predicate name
             predicates.append(conditions[0])
-    else:
-        predicates.append(conditions)
+    
     return predicates
+
+
 
 def checker(state, predicates, operators):
     results = []
+    # if operators['operator'] == 'push_to':
+    #     breakpoint()
     for predicate in predicates:
 
         print("predicate name", predicate)
@@ -226,6 +254,24 @@ def checker(state, predicates, operators):
             print(word1, word2, word3)
             results.append(negate(rule_formed(state, word1, word2, word3)))
 
+        if predicate == 'rule_formable':
+            # Extract the three words from grounding_Python
+            word1, word2, word3 = operators["grounding_Python"]
+            results.append(rule_formable(state, word1, word2, word3))
+
+        if predicate == 'rule_breakable':
+            # Extract the three words from grounding_Python
+            word1, word2, word3 = operators["grounding_Python"]
+            # breakpoint()
+            results.append(rule_breakable(state, word1, word2, word3))
+
+        if predicate == 'pushable_obj':
+            # Extract the object entity from the grounding
+            # breakpoint()
+            obj = operators["grounding_Python"][2]
+            results.append(pushable_obj(state, obj))
+
+
         if predicate == 'overlapping':
             results.append(overlapping(state, operators["grounding_Python"][0], operators["grounding_Python"][1], operators["grounding_Python"][2], operators["grounding_Python"][3]))
 
@@ -248,8 +294,64 @@ def checker(state, predicates, operators):
 
         if predicate == 'at':
             # breakpoint()
+            # obj, loc, index = operators["grounding_Python"][0], operators["grounding_Python"][2], operators["grounding_Python"][1]
+            # # breakpoint()
+            # # Check if the object was pushed into a sink (you can customize the "sink" logic)
+            # if (obj == "rock_obj" and state[obj] == [[8, 4], []]) or  (obj == "rock_obj" and state[obj] == [[], [8, 4]]):
+            #     # state[obj] 
+            #     breakpoint()
+            #     # If the object is logically at the sink, but removed from the state, return True
+            #     results.append(True)
             results.append(at(state, operators["grounding_Python"][0], operators["grounding_Python"][2], operators["grounding_Python"][1]))
             # breakpoint()
 
+    # if operators["operator"] == 'push_to':
+    #     breakpoint()
+    # if operators["operator"] == 'break_rule':
+    #     breakpoint()
+    # breakpoint()
     print("condition evalutions list:", results)
     return all(results)
+
+
+def is_and_expression(subplan):
+    """Check if the subplan is an AND expression."""
+    return subplan.startswith('AND(')
+
+def evaluate_and_expression(domain_file, expression, state):
+    """
+    Evaluates a string of the form AND(subplan1, subplan2) and returns the AND result.
+    
+    Args:
+        domain_file (str): Path to the PDDL domain file.
+        expression (str): The AND expression containing two subplans.
+        state (dict): The current game state.
+
+    Returns:
+        bool: True if both subplans are satisfied, False otherwise.
+    """
+    # Modify the regex to extract subplans without quotes
+    match = re.match(r'AND\((.+?),\s*(.+?)\)', expression)
+    if not match:
+        raise ValueError("Expression is not in the correct AND format.")
+
+    # Extract the two subplans
+    subplan_1 = match.group(1).strip()
+    subplan_2 = match.group(2).strip()
+
+    # Extract operator and preconditions for the first subplan
+    operator_1 = operator_extractor(domain_file, subplan_1)
+    preconditions_1 = operator_1['preconditions']
+    result_1 = checker(state, preconditions_1, operator_1)
+
+    # Extract operator and preconditions for the second subplan
+    operator_2 = operator_extractor(domain_file, subplan_2)
+    preconditions_2 = operator_2['preconditions']
+    result_2 = checker(state, preconditions_2, operator_2)
+
+    # breakpoint()
+
+    # result_1 = not result
+
+    # Return the AND of both results
+    return not result_1 and not result_2
