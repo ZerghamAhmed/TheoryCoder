@@ -47,8 +47,10 @@ The levels you start out with will be simpler but you will be adding on more and
 So try to make the transition model general and avoid hardcoding anything from the state dictionary keys. Feel free to infer the types of interactions that will occur in later levels. 
 Do not feel like you need to build the transition model for just this replay buffer. 
 For example, make sure you use each of the categorizations i.e. overlappables, pushables, controllables, etc in your initial world model.
+Please make sure to handle pushables in your initial world model too. 
 
-Do not assume the win condition is always the same for future levels.
+Do not assume the win condition is always the same for future levels. Do not change or deal with the win key in the state. 
+This will be handled by the game engine, not the transition model.
  
 
 CURRENT STATE:
@@ -814,6 +816,9 @@ class PRISMAgent:
                     self.world_model_version += 1
                     save_world_model("world_model_versions/debugging/", iteration=self.world_model_version)
 
+                    # Overwrite the current worldmodel.py file with the new model
+                    self.overwrite_world_model(new_world_model_code)
+
                     # Add to tape for logging
                     self.tape[-1]['debug_model_prompt'] = prompt
                     self.tape[-1]['debug_model_response'] = resp
@@ -863,109 +868,43 @@ class PRISMAgent:
         )
 
 
-    def _choose_synthesis_examples(self):
+    def _choose_synthesis_examples(self, exploratory_plan=None):
         """
         Choose (s0, a) --> s1 transitions from replay buffer as program
         synthesis examples.
 
-        TODO: Make this fancier (e.g. choose most important examples somehow)
+        Args:
+            exploratory_plan (str): The exploratory plan for which to generate errors.
+
+        Returns:
+            list: A list of formatted examples.
+            int: The count of errors.
         """
         # Simple solution: Just take the last k from the buffer
-        # obs = self.replay_buffers[::-1][:5]
         obs = self.replay_buffers[::1]
 
-
         actions_taken = [a for (s0, a, s1) in obs]
-
         correct_states = [s1 for (s0, a, s1) in obs]
-        
+
         # Generate predictions for each (s0, a) pair in obs
         preds = [self._call_model_debug(s0, a) for (s0, a, s1) in obs]
-        
+
         # Compare predicted and actual states to identify errors
         errors = [self._get_pred_errors(s1, pred) for (s0, a, s1), pred in zip(obs, preds)]
-        
+
         # Create summaries of the observations along with the errors
         examples = [self._make_observation_summaries((s0, a, s1), e) for (s0, a, s1), e in zip(obs, errors)]
-        
+
         # Count the number of errors
         error_count = sum([1 if e else 0 for e in errors])
-        
-        # breakpoint()
-        return examples, error_count
 
-    
-    def deep_sort_list(self, value):
-        """Recursively sort lists within the dictionary values."""
-        if isinstance(value, list):
-            return sorted(self.deep_sort_list(v) for v in value)
-        return value
+        # Format examples with the exploratory plan if provided
+        if exploratory_plan:
+            formatted_examples = [f"ERRORS FROM WORLD MODEL for EXPLORATORY PLAN {exploratory_plan}:\n\n{example}" for example in examples]
+        else:
+            formatted_examples = examples
 
-    def compare_states(self, state1, state2):
-        """
-        Compares two state dictionaries considering unordered lists.
-        """
-        # First, check if the keys match
-        if state1.keys() != state2.keys():
-            return False
-        
-        for key in state1:
-            val1 = self.deep_sort_list(state1[key])
-            val2 = self.deep_sort_list(state2[key])
-
-            if val1 != val2:
-                return False
-        
-        return True
-    
-    # Function to simulate state transitions based on planner's actions
-    def simulate_planner_transitions(self, s0, actions):
-        import worldmodel
-        importlib.reload(worldmodel)
-
-        predicted_transitions = []
-        
-        for action in actions:
-            s1 = worldmodel.transition_model(deepcopy(s0), action)  
-            predicted_transitions.append((s0, action, s1))
-            s0 = s1
-        
-        return predicted_transitions
-    
-    def compare_transitions(self, replay_buffer, simulated_transitions):
-        correct_predictions = []
-        incorrect_predictions = []
-
-        for i, (replay_transition, predicted_transition) in enumerate(zip(replay_buffer, simulated_transitions)):
-            replay_state, replay_action, replay_next_state = replay_transition
-            pred_state, pred_action, pred_next_state = predicted_transition
-
-            if replay_action != pred_action:
-                print(f"Action mismatch at step {i}: replay {replay_action} vs planner {pred_action}")
-                continue
-
-            if self.compare_states(replay_next_state, pred_next_state):
-                correct_predictions.append((i, replay_transition))
-            else:
-                incorrect_predictions.append((i, replay_transition, predicted_transition, replay_next_state))
-
-        return correct_predictions, incorrect_predictions
-
-
-    def _choose_synthesis_examples_TB(self, rule_key):
-        """
-        Choose (s0, a) --> s1 transitions from replay buffer as program
-        synthesis examples.
-
-        TODO: Make this fancier (e.g. choose most important examples somehow)
-        """
-        # Simple solution: Just take last k from buffer
-        obs = self.replay_buffers[::-1][rule_key][:self.observation_memory_size]
-        preds = [self._call_model_debug(rule_key, s0, a) for (s0, a, s1) in obs]
-        errors = [self._get_pred_errors(rule_key, s1, pred) for (s0, a, s1), pred in zip(obs, preds)]
-        examples = [self._make_observation_summaries(rule_key, x, e) for x, e in zip(obs, errors)]
-        error_count = sum([1 if e else 0 for e in errors])
-        return examples, error_count
+        return formatted_examples, error_count
 
     def _revise_world_model(self):
         if not self.do_revise_model:
@@ -975,9 +914,8 @@ class PRISMAgent:
         self.tape[-1]['revision_responses'] = {}
 
         examples, error_count = self._choose_synthesis_examples()
-        
+
         if self._do_revise_model(error_count):
-        
             prompt = self.revise_world_model_prompt.format(
                 state_format=self.engine.state_format,
                 actions_set=self.engine.actions_set,
@@ -1006,59 +944,19 @@ class PRISMAgent:
                     "response": resp
                 })
 
-                # ...rest of existing revision code...
-
-            self.tape[-1]['revision_prompts'] = prompt
-            self.tape[-1]['revision_responses'] = resp
-            print(prompt)
-            print(resp)
-            # breakpoint()
-            if self._do_revise_plan(error_count):
-                self.runtime_vars['revise_plan'] = True
-
-
-
-    def _PRE_revise_world_model(self):
-        if not self.do_revise_model:
-            return
-
-        self.tape[-1]['revision_prompts'] = {}
-        self.tape[-1]['revision_responses'] = {}
-        examples, error_count = self._choose_synthesis_examples()
-        if self._do_revise_model(error_count):
-            prompt = self._make_langchain_prompt(
-                self.revise_world_model_prompt,
-                **{
-                    'state_format': self.engine.state_format,
-                    'actions_set': self.engine.actions_set,
-                    'errors_from_world_model': '\n\n'.join(examples),
-                    'world_model_str': self.runtime_vars['world_model_str'],
-                }
-            )
-            # resp = 'hi'
-            resp = self.query_lm(prompt)
-            new_world_model_code = self.extract_code_from_response(resp)
-
-            if new_world_model_code:
+                # Update world model code and version
                 self.runtime_vars['world_model_str'] = new_world_model_code
+                self.runtime_vars['error_msg_model'] = new_world_model_code
+
+                # Overwrite the current worldmodel.py file with the new model
                 self.overwrite_world_model(new_world_model_code)
 
-                # Increment version counter and save the new version
-                self.world_model_version += 1
-                save_world_model("world_model_versions/", iteration=self.world_model_version)
-
-                # Persist the version counter
-                with open('world_model_version.txt', 'w') as version_file:
-                    version_file.write(str(self.world_model_version))
-
             self.tape[-1]['revision_prompts'] = prompt
             self.tape[-1]['revision_responses'] = resp
             print(prompt)
             print(resp)
             if self._do_revise_plan(error_count):
                 self.runtime_vars['revise_plan'] = True
-
-
 
     def _initialize_world_model(self, num_actions):
 
@@ -1139,7 +1037,7 @@ class PRISMAgent:
             importlib.reload(planner)
             importlib.reload(levelrunner)
 
-            actionlist, state = actor(self.domain_file, subplan_exploratory, state, max_iterations=None, debug_callback=self._call_model_debug) #max its 2k original
+            actionlist, state = actor(self.domain_file, subplan_exploratory, state, max_iterations=None, debug_callback=self._call_model_debug, level=self.current_level) #max its 2k original
             # breakpoint()
             actions.extend(actionlist)
 
@@ -1164,7 +1062,7 @@ class PRISMAgent:
                 
                 for subplan in self.plans.get(str(self.current_level), []):
                     # breakpoint()
-                    action_seq, state = actor(self.domain_file, subplan, state, max_iterations=None, debug_callback=self._call_model_debug) #max its 2k original
+                    action_seq, state = actor(self.domain_file, subplan, state, max_iterations=None, debug_callback=self._call_model_debug, level=self.current_level) #max its 2k original
                     actions.extend(action_seq)
 
             return actions  # Return the actions as a list
@@ -1529,33 +1427,26 @@ class PRISMAgent:
 
         # 2. Generate subplans for move_to (only applicable to object entities)
         for obj1 in objects:
-            for i, coords1 in enumerate(state[obj1]):
-                for obj2 in objects:
-                    for j, coords2 in enumerate(state[obj2]):
-                        if obj1 != obj2 or i != j:  # Avoid self-referencing moves
-                            subplans.append(f"move_to {obj1}_{i+1} {obj2}_{j+1}")
+            for obj2 in objects:
+                if obj1 != obj2:  # Avoid self-referencing moves
+                    subplans.append(f"move_to {obj1} {obj2}")
 
         # Generate subplans for push_to
         for pusher in objects:
             if not rule_formed(state, f"{pusher[:-4]}_word", "is_word", "you_word"):  # Ensure pusher is controllable
                 continue  # Skip objects that are not pushers
 
-            for i, coords_pusher in enumerate(state[pusher]):  # Enumerate pusher instances
-                for obj in objects:
-                    if not rule_formed(state, f"{obj[:-4]}_word", "is_word", "push_word"):  # Ensure object is pushable
-                        continue  # Skip objects that are not pushable
+            for obj in objects:
+                if not rule_formed(state, f"{obj[:-4]}_word", "is_word", "push_word"):  # Ensure object is pushable
+                    continue  # Skip objects that are not pushable
 
-                    for j, coords_obj in enumerate(state[obj]):  # Enumerate pushed object instances
-                        for target in objects:  # Potential targets
-                            if target == obj or target == pusher:  # Avoid self-referencing or invalid targets
-                                continue
+                for target in objects:  # Potential targets
+                    if target == obj or target == pusher:  # Avoid self-referencing or invalid targets
+                        continue
 
-                            for k, coords_target in enumerate(state[target]):  # Enumerate target instances
-                                if coords_pusher == coords_target:  # Avoid pusher overlapping with the target
-                                    continue
+                    # Add the subplan without indices
+                    subplans.append(f"push_to {pusher} {obj} {target}")
 
-                                # Add the subplan with indices
-                                subplans.append(f"push_to {pusher}_{i+1} {obj}_{j+1} {target}_{k+1}")
         return subplans
 
     
@@ -1719,6 +1610,7 @@ class PRISMAgent:
         self.engine = engine
         self.current_level = self.engine.level_id  # Or any other method to determine the level
         revision_count = 0
+        debug_count = 0
 
         while revision_count <= max_revisions:
             # Initialize
@@ -1757,6 +1649,9 @@ class PRISMAgent:
                 if self.engine.won:
                     self.tape[-1]['exit_condition'] = 'won'
                     self._update_solution(self.current_level, first_letters)
+                    self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+                    self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+                    self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
                     print(first_letters)
                     return True
 
@@ -1764,6 +1659,9 @@ class PRISMAgent:
                 if self.engine.lost:
                     self.tape[-1]['exit_condition'] = 'lost'
                     self._update_solution(self.current_level, first_letters)
+                    self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+                    self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+                    self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
                     print("AGENT LOST")
                     self._revise_world_model()
                     return True
@@ -1772,7 +1670,7 @@ class PRISMAgent:
             if not self.is_world_model_empty() and self.do_revise_model:
                 exploratory_plans = self.propose_exploratory_plans(initial_state, self.domain_file)
                 print(exploratory_plans)
-                breakpoint()
+                # breakpoint()
                 pruned_plans = self.prune_exploratory_plans(exploratory_plans)
                 print("pruned automatically", pruned_plans)
 
@@ -1806,7 +1704,49 @@ class PRISMAgent:
 
                     # Perform model revision after every collision attempt
                     print(f"Revising the model after subplan: {subplan}")
-                    self._revise_world_model()
+                    examples, error_count = self._choose_synthesis_examples(exploratory_plan=subplan)
+                    if self._do_revise_model(error_count):
+                        prompt = self.revise_world_model_prompt.format(
+                            state_format=self.engine.state_format,
+                            actions_set=self.engine.actions_set,
+                            errors_from_world_model='\n\n'.join(examples),
+                            world_model_str=self.runtime_vars['world_model_str'],
+                            utils=self.runtime_vars['utils']
+                        )
+
+                        # Create step directory and save files
+                        step_dir = self.logger.create_step("revision")
+                        resp = self.query_lm(prompt)
+                        new_world_model_code = self.extract_code_from_response(resp)
+
+                        if new_world_model_code:
+                            self.logger.save_step_files(
+                                step_dir,
+                                prompt,
+                                resp,
+                                new_world_model_code,
+                                "worldmodel.py"
+                            )
+
+                            self.logger.add_to_tape({
+                                "step": "revision",
+                                "prompt": prompt,
+                                "response": resp
+                            })
+
+                            # Update world model code and version
+                            self.runtime_vars['world_model_str'] = new_world_model_code
+                            self.runtime_vars['error_msg_model'] = new_world_model_code
+
+                            # Overwrite the current worldmodel.py file with the new model
+                            self.overwrite_world_model(new_world_model_code)
+
+                        self.tape[-1]['revision_prompts'] = prompt
+                        self.tape[-1]['revision_responses'] = resp
+                        print(prompt)
+                        print(resp)
+                        if self._do_revise_plan(error_count):
+                            self.runtime_vars['revise_plan'] = True
 
                     revision_count += 1
 
@@ -1820,8 +1760,14 @@ class PRISMAgent:
                 break
 
             self._update_solution(self.current_level, first_letters)
+            self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+            self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+            self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
         print("FAILED LEVEL")
         self._update_solution(self.current_level, first_letters)
+        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
 
         # At the end of the run, generate and save summary
         summary = f"""
@@ -1862,7 +1808,6 @@ First Letters: {first_letters}
                     "debugs": 0,
                     "explorations": 0,
                     "status": "not_started",
-                    "steps_to_win": [],
                     "first_letters": None
                 }
 
@@ -1900,7 +1845,6 @@ Revisions: {stats['revisions']}
 Debugs: {stats['debugs']}
 Explorations: {stats['explorations']}
 Solution: {stats['first_letters'] if stats['first_letters'] else 'None'}
-Steps to Win: {', '.join(stats['steps_to_win']) if stats['steps_to_win'] else 'Failed'}
         """
         
         # Create level directory in experiment folder
@@ -1947,7 +1891,7 @@ if __name__ == '__main__':
     parser.add_argument('--json-reporter-path', type=str, default='KekeCompetition-main/Keke_JS/reports/TBRL_BABA_REPORT.json')
     parser.add_argument('--learn-model', action='store_true')
     parser.add_argument('--query-mode', type=str, default='groq')
-    parser.add_argument('--experiment-dir', type=str, default='experiments',
+    parser.add_argument('--experiment-dir', type=str, default='debuglv3',
                       help='Directory to store experiment runs')
     parser.add_argument('--multi-level', action='store_true', help='Run multiple levels sequentially')
     args = parser.parse_args()
