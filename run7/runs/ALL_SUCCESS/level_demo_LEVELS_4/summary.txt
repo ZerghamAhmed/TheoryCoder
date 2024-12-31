@@ -1,0 +1,9 @@
+
+Level: demo_LEVELS_4
+Status: completed
+Attempts: 0
+Revisions: 2
+Debugs: 0
+Explorations: 0
+Solution: rrdddldrrurruuu
+        

@@ -1,0 +1,1 @@
+[push_to baba_obj rock_obj flag_obj]

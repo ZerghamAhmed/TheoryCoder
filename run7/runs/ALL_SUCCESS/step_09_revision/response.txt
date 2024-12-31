@@ -1,0 +1,109 @@
+Based on the provided exploratory plan and the errors identified, we need to address the handling of certain interactions and rules in the transition model. The main error highlighted is that the `rock_obj` should not be considered pushable when it is sunk in the `goop_obj`.
+
+To address this, we will add logic to check for the sinking condition of `rock_obj` and remove them from the `pushables` when they interact with `goop_obj` per the rule `'goop_word is_word sink_word'`.
+
+Here's the updated transition model:
+
+```Python
+# make sure to include these import statements
+from copy import deepcopy
+from utils import directions
+
+def manage_rule_changes(state):
+    # Check if 'rock_word is_word flag_word' rule is formed
+    if 'rock_word is_word flag_word' in state['rules_formed']:
+        # Convert rock_obj to flag_obj and manage overlappables
+        if 'flag_obj' not in state:
+            state['flag_obj'] = []
+        state['flag_obj'].extend(state.get('rock_obj', []))
+        state.pop('rock_obj', None)
+
+        # Mark flag_obj as overlappable
+        state['overlappables'].append('flag_obj')
+
+def transition_model(state, action):
+    # Create a deepcopy of the state to avoid modifying the original state directly
+    new_state = deepcopy(state)
+
+    # Get the action direction vector
+    direction = directions[action]
+
+    # Iterate over all controllable objects and attempt to move them
+    for controllable in state['controllables']:
+        # Get the current position of the controllable object
+        current_position = state[controllable][0]
+        
+        # Calculate the new position after the action
+        new_position = [current_position[0] + direction[0], current_position[1] + direction[1]]
+        
+        # Check if the new position is within the borders
+        if new_position in state['border']:
+            continue
+        
+        # Check if the new position contains a pushable object
+        can_move = True
+        for pushable in state['pushables']:
+            if new_position in state[pushable]:
+                # Try to push the pushable object
+                if not push_pushable(state, new_state, pushable, new_position, direction):
+                    can_move = False
+                    break
+        
+        # If the move is valid, update the position of the controllable
+        if can_move:
+            new_state[controllable][0] = new_position
+
+            # Check for sinking condition with goop_obj
+            if 'goop_word is_word sink_word' in state['rules_formed']:
+                if new_position in state['goop_obj']:
+                    # Remove the controllable from new_state
+                    new_state[controllable].remove(new_position)
+                    # Since baba_obj is removed, remove it from controllables
+                    new_state['controllables'].remove(controllable)
+                    # Remove the goop_obj at the sinking position
+                    new_state['goop_obj'].remove(new_position)
+
+    # Additional logic to handle rock_obj sinking into goop_obj
+    if 'goop_word is_word sink_word' in state['rules_formed']:
+        for rock_position in new_state.get('rock_obj', []):
+            if rock_position in state['goop_obj']:
+                new_state['rock_obj'].remove(rock_position)
+                new_state['goop_obj'].remove(rock_position)  # Ensure goop_obj is also removed
+                # Remove rock_obj from pushables if it's sunk
+                if 'rock_obj' in new_state['pushables']:
+                    new_state['pushables'].remove('rock_obj')
+
+    # Manage rule changes after movements
+    manage_rule_changes(new_state)
+    
+    # If no controllables are left, mark the game as lost
+    if not new_state['controllables']:
+        new_state['lost'] = True
+    
+    return new_state
+
+def push_pushable(state, new_state, pushable, position, direction):
+    # Calculate the new position of the pushable object
+    next_position = [position[0] + direction[0], position[1] + direction[1]]
+    
+    # Check if next position is within the borders
+    if next_position in state['border']:
+        return False
+    
+    # Check if the next position has another pushable object
+    for other_pushable in state['pushables']:
+        if next_position in state[other_pushable]:
+            # Recursively try to push the next pushable
+            if not push_pushable(state, new_state, other_pushable, next_position, direction):
+                return False
+    
+    # If the next position is valid, move the pushable
+    for pushable in state['pushables']:
+        if position in state[pushable]:
+            new_state[pushable].remove(position)
+            new_state[pushable].append(next_position)
+    
+    return True
+```
+
+This code modification ensures that `rock_obj` is removed from the `pushables` when it is sunk by `goop_obj`. This addresses the prediction error identified in the exploration plan.
