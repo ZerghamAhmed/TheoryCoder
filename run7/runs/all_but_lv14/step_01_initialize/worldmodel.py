@@ -1,0 +1,67 @@
+# make sure to include these import statements
+from copy import deepcopy
+
+# Utility for directions
+directions = {
+    'left': [-1, 0],
+    'right': [1, 0],
+    'up': [0, 1],
+    'down': [0, -1],
+}
+
+def transition_model(state, action):
+    # Create a deep copy of the state to modify
+    new_state = deepcopy(state)
+
+    # Extract necessary state components
+    controllables = state['controllables']
+    pushables = state['pushables']
+    borders = state['border']
+    
+    # Get the direction vector from the action
+    dx, dy = directions[action]
+
+    def move_object(obj_pos, dx, dy):
+        """ Helper function to calculate new position """
+        return [obj_pos[0] + dx, obj_pos[1] + dy]
+
+    def is_within_bounds(pos):
+        """ Check if the position is within the borders """
+        return pos not in borders
+
+    def is_pushable_at_position(pos):
+        """ Check if any pushable object is at a specific position """
+        for pushable in pushables:
+            if pos in new_state[pushable]:
+                return pushable
+        return None
+
+    def move_controllable(controllable):
+        """ Move the controllable object and handle interactions """
+        current_pos = state[controllable][0]  # Assuming single position per controllable
+        new_pos = move_object(current_pos, dx, dy)
+
+        if not is_within_bounds(new_pos):
+            return  # Can't move out of bounds
+
+        # Check for pushable at the new position
+        pushable = is_pushable_at_position(new_pos)
+
+        if pushable:
+            # Attempt to move the pushable
+            new_pushable_pos = move_object(new_pos, dx, dy)
+            if is_within_bounds(new_pushable_pos) and not is_pushable_at_position(new_pushable_pos):
+                # Move the pushable
+                pushable_index = new_state[pushable].index(new_pos)
+                new_state[pushable][pushable_index] = new_pushable_pos
+            else:
+                return  # Can't move if pushable can't be moved
+
+        # Move the controllable object
+        new_state[controllable][0] = new_pos
+    
+    # Loop through all controllables and move them
+    for controllable in controllables:
+        move_controllable(controllable)
+
+    return new_state

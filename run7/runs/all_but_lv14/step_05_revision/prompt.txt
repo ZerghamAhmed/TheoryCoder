@@ -1,0 +1,381 @@
+ You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
+will be a python program that captures the logic and mechanics of the game. You have begun this world model, but it did not capture everything. Below is your current world model, the action space, and the state transition that your transition model handled wrong.
+
+In order to craft the world model and get this state transition you explored your environment with an EXPLORATION PLAN, The state initially and after executing this plan is shown below. Pay close attention to what is involved and modify your transition model to be able to handle this.
+
+Note this exploration is a high level plan and the transition returned is at the end of executing all the actions(right, left, up, down) related to this high level plan.
+
+Notes:
+
+Also DO NOT make changes to "won" in the state dictionary since that will happen outside of the world model.
+
+Feel free to also explain your thinking outside of the markup tags, but know that I will only use the code inside the markup tags. 
+
+Your response format is given below. You will never need to modify any of the current program loops. Your code should only be an addition outside of the current logic just as shown in the example.
+
+You can access the current rules_formed by state['rules_formed'], pushables by state['pushables'], etc.. You DO NOT need to handle their modification, the game engine returns them updated.  
+
+However, based on the rules_formed you may need to adjust the entities or other dictionary elements.
+ 
+
+ACTION SPACE:
+
+['up', 'down', 'left', 'right']
+
+STATE FORMAT: 
+
+\{
+    <object 1>: [(x, y)],  # some object class and its location
+    <object 2>: [(x, y), ...],  # some other object class and its locations
+    ...  # etc.
+    'lost': <bool>,  # Whether game has been lost yet
+    'won': <bool>,  # Whether game has been won yet
+\}
+
+CURRENT WORLD MODEL:
+
+# make sure to include these import statements
+from copy import deepcopy
+
+# Utility for directions
+directions = {
+    'left': [-1, 0],
+    'right': [1, 0],
+    'up': [0, 1],
+    'down': [0, -1],
+}
+
+def transition_model(state, action):
+    # Create a deep copy of the state to modify
+    new_state = deepcopy(state)
+
+    # Extract necessary state components
+    controllables = state['controllables']
+    pushables = state['pushables']
+    borders = state['border']
+    rules_formed = state['rules_formed']
+    
+    # Get the direction vector from the action
+    dx, dy = directions[action]
+
+    def move_object(obj_pos, dx, dy):
+        """ Helper function to calculate new position """
+        return [obj_pos[0] + dx, obj_pos[1] + dy]
+
+    def is_within_bounds(pos):
+        """ Check if the position is within the borders """
+        return pos not in borders
+
+    def is_pushable_at_position(pos):
+        """ Check if any pushable object is at a specific position """
+        for pushable in pushables:
+            if pos in new_state[pushable]:
+                return pushable
+        return None
+
+    def move_controllable(controllable):
+        """ Move the controllable object and handle interactions """
+        current_pos = state[controllable][0]  # Assuming single position per controllable
+        new_pos = move_object(current_pos, dx, dy)
+
+        if not is_within_bounds(new_pos):
+            return  # Can't move out of bounds
+
+        # Check for pushable at the new position
+        pushable = is_pushable_at_position(new_pos)
+
+        if pushable:
+            # Attempt to move the pushable
+            new_pushable_pos = move_object(new_pos, dx, dy)
+            if is_within_bounds(new_pushable_pos) and not is_pushable_at_position(new_pushable_pos):
+                # Move the pushable
+                pushable_index = new_state[pushable].index(new_pos)
+                new_state[pushable][pushable_index] = new_pushable_pos
+            else:
+                return  # Can't move if pushable can't be moved
+
+        # Check for sink interaction
+        if 'goop_word is_word sink_word' in rules_formed:
+            if new_pos in new_state.get('goop_obj', []):
+                # Remove baba_obj and goop_obj at this position
+                new_state[controllable] = []
+                new_state['controllables'] = []
+                new_state['goop_obj'].remove(new_pos)
+                new_state['lost'] = True
+                return
+        
+        # Move the controllable object
+        new_state[controllable][0] = new_pos
+    
+    # Loop through all controllables and move them
+    for controllable in controllables:
+        move_controllable(controllable)
+
+    # Handle rule-based transformations
+    if 'rock_word is_word flag_word' in rules_formed:
+        # Change rock_obj to flag_obj
+        if 'rock_obj' in new_state:
+            new_state['flag_obj'] = new_state.pop('rock_obj')
+        
+        # Update overlappables if necessary
+        if 'flag_obj' in new_state:
+            new_state['overlappables'].append('flag_obj')
+    
+    return new_state
+
+
+ERRORS FROM WORLD MODEL:
+
+ERRORS FROM WORLD MODEL for EXPLORATORY PLAN move_to baba_obj rock_obj:
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 6]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 5]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 5]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 4]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 4]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 3]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 3]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 2]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 2]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[3, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[3, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[4, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[4, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[5, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[5, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'baba_obj': [[7, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'baba_obj': [[7, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'baba_obj': [[8, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5], [8, 4]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3], [8, 3]], 'baba_obj': [[8, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'baba_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+"rock_obj": predicted: [[7, 3], [8, 4]]
+"rock_obj": actual: [[7, 3]]
+
+"goop_obj": extraneous: [[8, 4]]
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'baba_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'baba_obj': [[8, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'baba_obj': [[8, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'baba_obj': [[7, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'baba_obj': [[7, 2]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 3]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 3]], 'flag_obj': [[7, 7]], 'rock_obj': [[7, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: right
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'baba_obj': [[7, 3]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'baba_obj': [[7, 3]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 3]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 3]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[6, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[5, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'baba_obj': [[5, 2]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[4, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[4, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[3, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'baba_obj': [[3, 2]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: left
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 2]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 2]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 3]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 3]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 4]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 4]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 5]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 5]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: up
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 6]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+Initial state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 6]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+Action: down
+Next state: {'border': [[0, 9], [0, 8], [0, 7], [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 9], [1, 0], [2, 9], [2, 0], [3, 9], [3, 0], [4, 9], [4, 0], [5, 9], [5, 0], [6, 9], [6, 0], [7, 9], [7, 0], [8, 9], [8, 0], [9, 9], [9, 8], [9, 7], [9, 6], [9, 5], [9, 4], [9, 3], [9, 2], [9, 1], [9, 0]], 'baba_word': [[1, 8]], 'flag_word': [[1, 7]], 'goop_obj': [[1, 6], [1, 5], [1, 4], [3, 6], [3, 5], [3, 4], [3, 3], [4, 8], [4, 7], [4, 6], [4, 5], [4, 4], [4, 3], [5, 8], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3], [5, 1], [6, 5], [6, 4], [7, 5], [7, 4], [8, 5]], 'goop_word': [[1, 3]], 'is_word': [[1, 2], [2, 8], [2, 7], [3, 1]], 'sink_word': [[1, 1]], 'baba_obj': [[2, 5]], 'rock_word': [[2, 1]], 'you_word': [[3, 8]], 'win_word': [[3, 7]], 'push_word': [[4, 1]], 'flag_obj': [[7, 7]], 'rock_obj': [[8, 3]], 'won': False, 'lost': False, 'controllables': ['baba_obj'], 'overlappables': ['flag_obj'], 'pushables': ['is_word', 'baba_word', 'goop_word', 'rock_obj', 'win_word', 'you_word', 'sink_word', 'push_word', 'rock_word', 'flag_word'], 'rules_formed': ['baba_word is_word you_word', 'flag_word is_word win_word', 'goop_word is_word sink_word', 'rock_word is_word push_word']}
+
+Your prediction errors:
+
+
+
+UTILS:
+
+directions = {
+        'left': [-1, 0],
+        'right': [1, 0],
+        'up': [0, 1],
+        'down': [0, -1],
+    }
+
+
+
+RESPONSE FORMAT (make sure to include your code in markup tags):
+
+```Python
+
+# make sure to include these import statements
+from predicates import *
+from copy import deepcopy
+from utils import directions
+
+def transition_model(state, action):
+
+       if 'x_word y_word z_word' in state['rules_formed']:
+              state[x_obj] # example logic
+        else:
+              state[y_obj] # example logic
+	
+
+
+        Return State
+
+```
