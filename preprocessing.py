@@ -19,102 +19,25 @@ def preprocess_subplan(subplan):
     list: A list of processed parameters. 
           - For 'form_rule', it returns a list of strings with numeric suffixes removed.
             Example: 
-                Input: 'form_rule flag_word_1 is_word_2 win_word_1'
+                Input: 'form_rule flag_word is_word win_word'
                 Output: ['flag_word', 'is_word', 'win_word']
           - For 'move_to', it returns a list alternating between the base object names 
             and their corresponding zero-based indices.
             Example: 
-                Input: 'move_to baba_obj_1 flag_obj_1'
-                Output: ['baba_obj', 0, 'flag_obj', 0]
+                Input: 'move_to baba_obj flag_obj'
+                Output: ['baba_obj', 'flag_obj']
     """
 
     action, *params = subplan.split()
     formatted_params = []
 
-
-    if action == 'form_rule':
+    if action in ['form_rule', 'break_rule']:
         formatted_params = [param for param in params]
 
-    if action == 'break_rule':
+    if action in ['move_to', 'push_to']:
         formatted_params = [param for param in params]
-
-    if action == 'move_to':
-        for param in params:
-            # Extract the base name and number using regular expressions
-            match = re.match(r'(.+?)_(\d+)$', param)
-            if match:
-                base_name = match.group(1)  # the object name is match group 1, index is match group 2
-                index = int(match.group(2)) - 1  # Convert to zero-based index
-                formatted_params.extend([base_name, index])
-
-    # if action == 'push_to':
-    #     for param in params:
-    #         # Extract the base name and number using regular expressions
-    #         match = re.match(r'(.+?)_(\d+)$', param)
-    #         if match:
-    #             base_name = match.group(1)  # the object name is match group 1, index is match group 2
-    #             index = int(match.group(2)) - 1  # Convert to zero-based index
-    #             formatted_params.extend([base_name, index])
-
-    if action == 'push_to':
-        for param in params:
-            match = re.match(r'(.+?)_(\d+)$', param)
-            if match:
-                base_name = match.group(1)
-                index = int(match.group(2)) - 1  # Convert to zero-based index
-                formatted_params.extend([base_name, index])
-
-
-    # elif action in ['move_loc', 'push_to']:
-    #     # Extract the coordinates as a list of integers
-    #     location = re.search(r'\[(\d+),\s*(\d+)\]', subplan)
-    #     if location:
-    #         coordinates = [int(location.group(1)), int(location.group(2))]
-    #         for param in params:
-    #             if '[' in param and ']' in param:
-    #                 # Add the coordinates as a list to formatted_params
-    #                 formatted_params.append(coordinates)
-    #             else:
-    #                 # Strip the trailing underscores and digits
-    #                 match = re.match(r'(.+?)_(\d+)$', param)
-    #                 if match:
-    #                     base_name = match.group(1)
-    #                     instance_index = int(match.group(2)) - 1  # Convert to zero-based index
-    #                     formatted_params.append(base_name)
-    #                     formatted_params.append(instance_index)
-    #                 else:
-    #                     formatted_params.append(re.sub(r'_\d+$', '', param))
-
-
-    # if action == 'move_loc':
-    #     # Extract the coordinates as a list of integers
-    #     location = re.search(r'\[(\d+),\s*(\d+)\]', subplan)
-    #     if location:
-    #         coordinates = [int(location.group(1)), int(location.group(2))]
-    #         for param in params:
-    #             if '[' in param and ']' in param:
-    #                 # Add the coordinates as a list to formatted_params
-    #                 formatted_params.append(coordinates)
-    #             else:
-    #                 # Strip the trailing underscores and digits
-    #                 formatted_params.append(re.sub(r'_\d+$', '', param))
-
-    # if action == 'push_to':
-    #     # Extract the coordinates as a list of integers
-    #     location = re.search(r'\[(\d+),\s*(\d+)\]', subplan)
-    #     if location:
-    #         coordinates = [int(location.group(1)), int(location.group(2))]
-    #         for param in params:
-    #             if '[' in param and ']' in param:
-    #                 # Add the coordinates as a list to formatted_params
-    #                 formatted_params.append(coordinates)
-    #             else:
-    #                 # Strip the trailing underscores and digits
-    #                 formatted_params.append(re.sub(r'_\d+$', '', param))
-
 
     return formatted_params
-
 
 def parse_domain_file(domain_file):
     with open(domain_file, 'r') as file:
@@ -187,6 +110,9 @@ def operator_extractor(domain_file, subplan):
 
         # if operator == 'push_to':
         #     breakpoint()
+
+        # if operator == 'move_to':
+        #     breakpoint()
         
         return {"operator": operator, "parameters": parameters, "preconditions": preconditions, "effects": effects, "grounding_Python": formatted_args}
     else:
@@ -210,19 +136,14 @@ def extract_predicates(conditions):
 
 def checker(state, predicates, operators):
     results = []
-    # if operators['operator'] == 'push_to':
-    #     breakpoint()
     for predicate in predicates:
 
         print("predicate name", predicate)
         
         if predicate == 'control_rule':
-            # breakpoint()
-            # Extract words from grounding_Python
             word1 = operators["grounding_Python"][0].replace("obj", "word")
             word2 = "is_word"
             word3 = "you_word" 
-            # Call rule_formed with these words
             results.append(rule_formed(state, word1, word2, word3))
             # breakpoint()
             if not all(results):
@@ -235,81 +156,49 @@ def checker(state, predicates, operators):
                 results.append(True)
 
         if predicate == 'push_rule':
-            # Extract words from grounding_Python
             word1 = operators["grounding_Python"][0].replace("obj", "word")
             word2 = "is_word"
             word3 = "push_word" 
-            # Call rule_formed with these words
             results.append(rule_formed(state, word1, word2, word3))
 
         if predicate == 'rule_formed':
-            # Extract words from grounding_Python
             word1, word2, word3 = operators["grounding_Python"]
             print(word1, word2, word3)
             results.append(rule_formed(state, word1, word2, word3))
 
         if predicate == 'not rule_formed':
-            # Extract words from grounding_Python
             word1, word2, word3 = operators["grounding_Python"]
             print(word1, word2, word3)
             results.append(negate(rule_formed(state, word1, word2, word3)))
 
         if predicate == 'rule_formable':
-            # Extract the three words from grounding_Python
             word1, word2, word3 = operators["grounding_Python"]
             results.append(rule_formable(state, word1, word2, word3))
 
         if predicate == 'rule_breakable':
-            # Extract the three words from grounding_Python
             word1, word2, word3 = operators["grounding_Python"]
-            # breakpoint()
             results.append(rule_breakable(state, word1, word2, word3))
 
         if predicate == 'pushable_obj':
-            # Extract the object entity from the grounding
+            obj = operators["grounding_Python"][1]  # Corrected index to 1
+            is_pushable = pushable_obj(state, obj)
+            print(f"Checking pushable_obj for {obj}: {is_pushable}")  # Debugging statement
+            results.append(is_pushable)
             # breakpoint()
-            obj = operators["grounding_Python"][2]
-            results.append(pushable_obj(state, obj))
-
 
         if predicate == 'overlapping':
-            results.append(overlapping(state, operators["grounding_Python"][0], operators["grounding_Python"][1], operators["grounding_Python"][2], operators["grounding_Python"][3]))
+            results.append(overlapping(state, operators["grounding_Python"][0], operators["grounding_Python"][1]))
 
         if predicate == 'not overlapping':
-            overlap = overlapping(state, operators["grounding_Python"][0], operators["grounding_Python"][1], operators["grounding_Python"][2], operators["grounding_Python"][3])
+            overlap = overlapping(state, operators["grounding_Python"][0], operators["grounding_Python"][1])
             results.append(negate(overlap))
 
-        # if predicate == 'not at':
-        # # Extract words from grounding_Python
-        #     results.append(negate(at(state, operators["grounding_Python"][0], operators["grounding_Python"][1])))
-
-        # if predicate == 'at':
-        # # Extract words from grounding_Python
-        #     results.append(at(state, operators["grounding_Python"][0], operators["grounding_Python"][1]))
-        #     breakpoint()
-
-        # instance level
         if predicate == 'not at':
-            results.append(negate(at(state, operators["grounding_Python"][0], operators["grounding_Python"][2], operators["grounding_Python"][1])))
+            results.append(negate(at(state, operators["grounding_Python"][0], operators["grounding_Python"][1])))
 
         if predicate == 'at':
-            # breakpoint()
-            # obj, loc, index = operators["grounding_Python"][0], operators["grounding_Python"][2], operators["grounding_Python"][1]
-            # # breakpoint()
-            # # Check if the object was pushed into a sink (you can customize the "sink" logic)
-            # if (obj == "rock_obj" and state[obj] == [[8, 4], []]) or  (obj == "rock_obj" and state[obj] == [[], [8, 4]]):
-            #     # state[obj] 
-            #     breakpoint()
-            #     # If the object is logically at the sink, but removed from the state, return True
-            #     results.append(True)
-            results.append(at(state, operators["grounding_Python"][0], operators["grounding_Python"][2], operators["grounding_Python"][1]))
-            # breakpoint()
+            results.append(at(state, operators["grounding_Python"][0], operators["grounding_Python"][1]))
 
-    # if operators["operator"] == 'push_to':
-    #     breakpoint()
-    # if operators["operator"] == 'break_rule':
-    #     breakpoint()
-    # breakpoint()
     print("condition evalutions list:", results)
     return all(results)
 

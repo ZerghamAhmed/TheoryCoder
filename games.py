@@ -63,7 +63,7 @@ class BabaIsYou:
         self.level_id = level_id
 
         # Standard setup for all games
-        self.actions_set = ['up', 'down', 'left', 'right', 'space']
+        self.actions_set = ['up', 'down', 'left', 'right']
         self.state_format = (
             "\{\n"
             "    <object 1>: [(x, y)],  # some object class and its location\n"

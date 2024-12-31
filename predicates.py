@@ -73,65 +73,41 @@ def rule_formed(state, word1, word2, word3):
 
     return False
 
-def overlapping(state, entity1, index1, entity2, index2):
+def overlapping(state, entity1, entity2):
     """
-    Check if a specific instance of one entity overlaps (shares the same coordinate) with a specific instance of another entity.
+    Check if any instance of one entity overlaps (shares the same coordinate) with any instance of another entity.
 
     Args:
     state (dict): The state dictionary containing entity positions.
     entity1 (str): The first entity to check.
-    index1 (int): The index of the instance of the first entity.
     entity2 (str): The second entity to check.
-    index2 (int): The index of the instance of the second entity.
 
     Returns:
-    bool: True if the specified instances overlap, False otherwise.
+    bool: True if any instances overlap, False otherwise.
     """
-    # Get the list of coordinates for both entities
     coords1 = state.get(entity1, [])
     coords2 = state.get(entity2, [])
 
-    # Check if the indices are within the bounds of the coordinate lists
-    if index1 < len(coords1) and index2 < len(coords2):
-        # Compare the coordinates at the specified indices
-        return tuple(coords1[index1]) == tuple(coords2[index2])
+    for coord1 in coords1:
+        if coord1 in coords2:
+            return True
 
     return False
-    
 
-
-def at(state, entity, loc, index=None):
+def at(state, entity, loc):
     """
-    Check if the specific instance of an entity is at the given location.
-    If index is None, check if any instance of the entity is at the location.
+    Check if any instance of an entity is at the given location.
 
     Args:
     state (dict): The state dictionary containing entity positions.
     entity (str): The entity to check (e.g., "flag_word").
-    loc (list): The location to check (e.g., [6, 8]). MUST BE A LIST NOT Tuple.
-    index (int, optional): The index of the specific instance to check. Defaults to None.
+    loc (list): The location to check (e.g., [6, 8]).
 
     Returns:
-    bool: True if the entity (or specific instance) is at the location, False otherwise.
+    bool: True if any instance of the entity is at the location, False otherwise.
     """
-    # breakpoint()
-    # Get the list of coordinates for the entity
     coords = state.get(entity, [])
-
-    # breakpoint()
-    # breakpoint()
-    # Check if a specific instance is requested
-    if index is not None:
-        if 0 <= index < len(coords):
-            return loc == coords[index]
-        else:
-            return False
-
-    # breakpoint()
-
-    # Check if the location is in the list of coordinates for any instance
     return loc in coords
-
 
 def is_on_border(state, loc):
     """

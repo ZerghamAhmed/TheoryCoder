@@ -47,10 +47,20 @@ The levels you start out with will be simpler but you will be adding on more and
 So try to make the transition model general and avoid hardcoding anything from the state dictionary keys. Feel free to infer the types of interactions that will occur in later levels. 
 Do not feel like you need to build the transition model for just this replay buffer. 
 For example, make sure you use each of the categorizations i.e. overlappables, pushables, controllables, etc in your initial world model.
-Please make sure to handle pushables in your initial world model too. 
+Please make sure to handle pushables in your initial world model too. Pushables cannot overlap with eachother.
+
+BUT A PUSHABLE DOES PUSH ANOTHER PUSHABLE. MAKE NOTE OF THIS if a pushable is pushed and another pushable is occupying that space, that pushable will be pushed
+unless there is a border!
 
 Do not assume the win condition is always the same for future levels. Do not change or deal with the win key in the state. 
 This will be handled by the game engine, not the transition model.
+
+Do NOT just assume there will be one controllable object, you will need to loop over all the controllables.
+
+Remember there should be logic in your transition model to handle the pushables pushing other pushables!!!!
+
+Also, remember to return the state if you modified it directly or return the new_state if you deepcopied it.
+
  
 
 CURRENT STATE:
@@ -61,10 +71,6 @@ ACTION SPACE:
 
 {actions_set}
 
-Replay Buffer (last {num_random_actions} transitions):
-
-{errors_from_world_model}
-
 UTILS:
 
 {utils}
@@ -72,13 +78,14 @@ UTILS:
 
 RESPONSE FORMAT:
 
+- Make sure that you return the correct state for example if you made a deepcopy of the state and modify the deep copy then return the new_state
+- If you modify the state directly then return the state instead of new_state
+
 ```python
 
 # make sure to include these import statements
 from predicates import *
 from copy import deepcopy
-from games import BabaIsYou
-from babareport import BabaReportUpdater
 from utils import directions
 
 def transition_model(state, action):
@@ -92,23 +99,24 @@ def transition_model(state, action):
 
 revise_world_model_prompt = \
 """ You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
-will be a python program that captures the logic and mechanics of the game. You have began this world model, but it get some 
-of the state transitions wrong. Below is your current world model, the action space, and 
-the state transitions that you got correct and the ones that you got incorrect.
-For the state transitions that are wrong, you will also be provided with that the end state should be after the action. 
-You will also be given utilities typically functions or variables you can use in the world model.
+will be a python program that captures the logic and mechanics of the game. You have begun this world model, but it did not capture everything. Below is your current world model, the action space, and the state transition that your transition model handled wrong.
 
-If there are any execution errors you will be given those to fix as well.
+In order to craft the world model and get this state transition you explored your environment with an EXPLORATION PLAN, The state initially and after executing this plan is shown below. Pay close attention to what is involved and modify your transition model to be able to handle this.
 
-Please fix your world model to make it work for all the cases and make it be able to return the correct state for the transition. 
-
-Try to make your world model as general as possible and account for possible cases that may arise in the future!
+Note this exploration is a high level plan and the transition returned is at the end of executing all the actions(right, left, up, down) related to this high level plan.
 
 Notes:
 
 Also DO NOT make changes to "won" in the state dictionary since that will happen outside of the world model.
 
 Feel free to also explain your thinking outside of the markup tags, but know that I will only use the code inside the markup tags. 
+
+Your response format is given below. You will never need to modify any of the current program loops. Your code should only be an addition outside of the current logic just as shown in the example.
+
+You can access the current rules_formed by state['rules_formed'], pushables by state['pushables'], etc.. You DO NOT need to handle their modification, the game engine returns them updated.  
+
+However, based on the rules_formed you may need to adjust the entities or other dictionary elements.
+ 
 
 ACTION SPACE:
 
@@ -139,14 +147,18 @@ RESPONSE FORMAT (make sure to include your code in markup tags):
 # make sure to include these import statements
 from predicates import *
 from copy import deepcopy
-from games import BabaIsYou
-from babareport import BabaReportUpdater
 from utils import directions
 
 def transition_model(state, action):
 
+       if 'x_word y_word z_word' in state['rules_formed']:
+              state[x_obj] # example logic
+        else:
+              state[y_obj] # example logic
+	
 
-	Return State
+
+        Return State
 
 ```
 """
@@ -159,6 +171,11 @@ You need to carry out an exploratory goal that will help you understand what you
 You are given the following suggestion for exploratory plans. Which one of this is the most likely one that you should carry out?
 
 Think about the current state of the game and the current world model you have. Also include an explanation.
+
+Notes:
+
+Think about what types of interactions are missing in your world model. For example, try colliding into different objects
+or try pushing other objects into others. Think deeply about which of these interactions you have not seen before.
 
 SUGGESTED EXPLORATORY PLANS: 
 
@@ -438,7 +455,7 @@ class PRISMAgent:
                 seed=42,  # Add the seed for reproducibility
             )
             # Return the generated response
-            return completion.choices[0].message.content.strip()
+            return completion.choices[0].message.content.strip(), completion.system_fingerprint if completion.system_fingerprint else ""
 
         elif self.query_mode == 'groq':
             # Query using Groq API
@@ -790,7 +807,7 @@ class PRISMAgent:
 
                 # Use experiment logger to save debug files
                 step_dir = self.logger.create_step("debug")
-                resp = self.query_lm(prompt)
+                resp, fingerprint = self.query_lm(prompt)
                 new_world_model_code = self.extract_code_from_response(resp)
 
                 if new_world_model_code:
@@ -801,6 +818,10 @@ class PRISMAgent:
                         new_world_model_code,
                         "worldmodel.py"
                     )
+
+                    # Save fingerprint to file
+                    with open(os.path.join(step_dir, "fingerprint.txt"), "w") as f:
+                        f.write(fingerprint)
 
                     self.logger.add_to_tape({
                         "step": "debug",
@@ -863,8 +884,7 @@ class PRISMAgent:
             f"Initial state: {s0}\n"
             f"Action: {a}\n"
             f"Next state: {s1}\n"
-            f"Summary of changes:\n{self._get_state_deltas_str(s0, s1)}"
-            f"Your prediction errors:\n{errors}\n"
+            f"\nYour prediction errors:\n{errors}\n"
         )
 
 
@@ -900,7 +920,10 @@ class PRISMAgent:
 
         # Format examples with the exploratory plan if provided
         if exploratory_plan:
-            formatted_examples = [f"ERRORS FROM WORLD MODEL for EXPLORATORY PLAN {exploratory_plan}:\n\n{example}" for example in examples]
+            # last_example = examples[-1] if examples else ""
+            # formatted_examples = [f"ERRORS FROM WORLD MODEL for EXPLORATORY PLAN {exploratory_plan}:\n\n{last_example}"]
+            formatted_examples = [f"ERRORS FROM WORLD MODEL for EXPLORATORY PLAN {exploratory_plan}:\n\n" + "\n\n".join(examples)]
+
         else:
             formatted_examples = examples
 
@@ -926,7 +949,7 @@ class PRISMAgent:
 
             # Create step directory and save files
             step_dir = self.logger.create_step("revision")
-            resp = self.query_lm(prompt)
+            resp, fingerprint = self.query_lm(prompt)
             new_world_model_code = self.extract_code_from_response(resp)
 
             if new_world_model_code:
@@ -937,6 +960,10 @@ class PRISMAgent:
                     new_world_model_code,
                     "worldmodel.py"
                 )
+
+                # Save fingerprint to file
+                with open(os.path.join(step_dir, "fingerprint.txt"), "w") as f:
+                    f.write(fingerprint)
 
                 self.logger.add_to_tape({
                     "step": "revision",
@@ -966,7 +993,6 @@ class PRISMAgent:
         current_state=self.runtime_vars['observations'][-1],
         actions_set=self.engine.actions_set,
         num_random_actions=num_actions,
-        errors_from_world_model='\n\n'.join(examples),
         utils="directions = {\n    'left': [-1, 0],\n    'right': [1, 0],\n    'up': [0, 1],\n    'down': [0, -1],\n}"
     )
 
@@ -974,10 +1000,12 @@ class PRISMAgent:
         # Get the content of the first message in the prompt
         prompt_content = prompt
 
+        # breakpoint()
+
         # Create or open the file and write the prompt content to it
         with open(file_name, 'w') as file:
             file.write(prompt_content)        
-        resp = self.query_lm(prompt)
+        resp, fingerprint = self.query_lm(prompt)
 
         new_world_model_code = self.extract_code_from_response(resp)
 
@@ -1000,6 +1028,10 @@ class PRISMAgent:
                 new_world_model_code,
                 "worldmodel.py"
             )
+
+            # Save fingerprint to file
+            with open(os.path.join(step_dir, "fingerprint.txt"), "w") as f:
+                f.write(fingerprint)
 
             self.logger.add_to_tape({
                 "step": "initialize",
@@ -1268,10 +1300,17 @@ class PRISMAgent:
                     if rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'win_word') 
                 }
         
+        # pushables = {
+        #             entity for entity in state
+        #             if entity.endswith('_word')
+        #         }
+        
         pushables = {
-                    entity for entity in state
-                    if entity.endswith('_word')
-                }
+        entity for entity in state
+            if entity.endswith('_word') 
+            or rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'push_word') 
+            or (entity.endswith('_obj') and rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'push_word'))
+        }
 
         
         # Add controllables to the state dictionary
@@ -1360,7 +1399,13 @@ class PRISMAgent:
         # breakpoint()
 
         # Query the LLM for the pruned plans
-        response = self.query_lm(formatted_prompt)
+        response, fingerprint = self.query_lm(formatted_prompt)
+#         response, fingerprint = """```Python
+# ['push_to baba_obj rock_obj goop_obj']
+# # ```""", 'fingerprint'
+#         response, fingerprint = """```Python
+# ['form_rule keke_word is_word you_word']
+# ```""", 'fingerprint'
 
         # Extract the list of plans from the response
         selected_plans = self.extract_code_from_response(response)
@@ -1375,6 +1420,10 @@ class PRISMAgent:
             "pruned_plans.txt"
         )
 
+        # Save fingerprint to file
+        with open(os.path.join(step_dir, "fingerprint.txt"), "w") as f:
+            f.write(fingerprint)
+
         self.logger.add_to_tape({
             "step": "exploratory_plan_pruning",
             "prompt": formatted_prompt,
@@ -1382,7 +1431,12 @@ class PRISMAgent:
         })
         # Note: timestamp is now added by the logger
 
+        # Read the pruned plans from the saved file
+        pruned_plans_path = os.path.join(step_dir, "pruned_plans.txt")
         try:
+            with open(pruned_plans_path, 'r') as f:
+                selected_plans = f.read().strip()
+            
             # Parse the selected plans into a Python list
             pruned_plans = ast.literal_eval(selected_plans)
             print(f"Pruned exploratory plans: {pruned_plans}")
@@ -1557,10 +1611,17 @@ class PRISMAgent:
 
                 }
         
+        # pushables = {
+        #         entity for entity in state
+        #         if entity.endswith('_word')
+        #     }
+        
         pushables = {
-                entity for entity in state
-                if entity.endswith('_word')
-            }
+        entity for entity in state
+            if entity.endswith('_word') 
+            or rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'push_word') 
+            or (entity.endswith('_obj') and rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'push_word'))
+        }
         
     
         
@@ -1606,13 +1667,15 @@ class PRISMAgent:
         self.tape[-1]['world_model'] = self.runtime_vars['interaction_rules_str']
 
 
-    def run(self, engine, max_revisions=10):
+    def run(self, engine, max_revisions=10, max_attempts=3):
         self.engine = engine
         self.current_level = self.engine.level_id  # Or any other method to determine the level
         revision_count = 0
         debug_count = 0
+        attempt_count = 0
+        exploratory_plan_index = 0
 
-        while revision_count <= max_revisions:
+        while revision_count <= max_revisions and attempt_count < max_attempts:
             # Initialize
             self.reset(keep_model=True)
             first_letters = ''
@@ -1664,15 +1727,50 @@ class PRISMAgent:
                     self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
                     print("AGENT LOST")
                     self._revise_world_model()
-                    return True
+                    attempt_count += 1
+                    model_was_revised = True
+                    break
+
+            # If the model was revised, execute it first before proceeding with exploratory goals
+            if model_was_revised:
+                self.reset(keep_model=True)
+                first_letters = ''  # Reset first_letters after model revision
+                mode = self._sample_planner_mode()  # Determine planner mode (explore/exploit)
+                plan = self._hierarchical_planner(mode) 
+                for action in plan:
+                    self.step_env(action)
+                    first_letters += action[0]  # Collect the first letters of each action
+
+                    # Exit if agent won
+                    if self.engine.won:
+                        self.tape[-1]['exit_condition'] = 'won'
+                        self._update_solution(self.current_level, first_letters)
+                        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+                        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+                        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
+                        print(first_letters)
+                        return True
+
+                    # Check if the agent lost (e.g., died or failed critically)
+                    if self.engine.lost:
+                        self.tape[-1]['exit_condition'] = 'lost'
+                        self._update_solution(self.current_level, first_letters)
+                        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+                        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+                        self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
+                        print("AGENT LOST")
+                        attempt_count += 1
+                        break
 
             # Handle model revision if necessary
-            if not self.is_world_model_empty() and self.do_revise_model:
+            if not self.is_world_model_empty() and self.do_revise_model and not model_was_revised:
                 exploratory_plans = self.propose_exploratory_plans(initial_state, self.domain_file)
                 print(exploratory_plans)
                 # breakpoint()
                 pruned_plans = self.prune_exploratory_plans(exploratory_plans)
                 print("pruned automatically", pruned_plans)
+
+                # breakpoint()
 
                 if len(pruned_plans) <= 3:
                     print("Executing all pruned plans")
@@ -1689,8 +1787,11 @@ class PRISMAgent:
                 
                 self.runtime_vars['exploratory_plans'] = LLM_pruned_plans
 
-                for subplan in LLM_pruned_plans:
+                # Cycle through exploratory plans across attempts
+                for i in range(len(LLM_pruned_plans)):
+                    subplan = LLM_pruned_plans[(exploratory_plan_index + i) % len(LLM_pruned_plans)]
                     self.reset(keep_model=True)
+                    first_letters = ''  # Reset first_letters for each exploratory plan
 
                     plan = self._hierarchical_planner(mode="explore_collision", subplan_exploratory=subplan)
 
@@ -1701,6 +1802,7 @@ class PRISMAgent:
                     else:
                         for action in plan:
                             self.step_env(action)
+                            first_letters += action[0]  # Collect the first letters of each action
 
                     # Perform model revision after every collision attempt
                     print(f"Revising the model after subplan: {subplan}")
@@ -1716,7 +1818,11 @@ class PRISMAgent:
 
                         # Create step directory and save files
                         step_dir = self.logger.create_step("revision")
-                        resp = self.query_lm(prompt)
+                        resp, fingerprint = self.query_lm(prompt)
+
+                        with open('fingerprint_seed_v2_revision_lv4.txt', 'w') as file:
+                            file.write(fingerprint)
+
                         new_world_model_code = self.extract_code_from_response(resp)
 
                         if new_world_model_code:
@@ -1733,6 +1839,10 @@ class PRISMAgent:
                                 "prompt": prompt,
                                 "response": resp
                             })
+
+                            # Save fingerprint to file
+                            with open(os.path.join(step_dir, "fingerprint.txt"), "w") as f:
+                                f.write(fingerprint)
 
                             # Update world model code and version
                             self.runtime_vars['world_model_str'] = new_world_model_code
@@ -1755,9 +1865,22 @@ class PRISMAgent:
                         break
                     print(f"Model revised {revision_count} times. Re-running.")
                 
+                exploratory_plan_index = (exploratory_plan_index + len(LLM_pruned_plans)) % len(LLM_pruned_plans)
+
             else:
                 # If no revisions happened and no win occurred, stop the loop
                 break
+
+            # Special case for level 6
+            if self.current_level == 6 and first_letters == 'rrruuu':
+                breakpoint()
+                self.tape[-1]['exit_condition'] = 'won'
+                self._update_solution(self.current_level, first_letters)
+                self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+                self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+                self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
+                print(first_letters)
+                return True
 
             self._update_solution(self.current_level, first_letters)
             self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
@@ -1773,6 +1896,7 @@ class PRISMAgent:
         summary = f"""
 Level: {self.current_level}
 Revisions: {revision_count}
+Attempts: {attempt_count}
 Final Status: {"Won" if self.engine.won else "Failed"}
 First Letters: {first_letters}
         """
@@ -1780,7 +1904,7 @@ First Letters: {first_letters}
 
         return False
 
-    def run_multiple_levels(self, level_sets, max_revisions=10):
+    def run_multiple_levels(self, level_sets, max_revisions=10, max_attempts=3):
         """Run the agent through multiple levels sequentially."""
         overall_results = {
             "levels_completed": [],
@@ -1812,7 +1936,7 @@ First Letters: {first_letters}
                 }
 
                 print(f"Running single level: {level_key}")
-                success = self.run(self.engine, max_revisions)
+                success = self.run(self.engine, max_revisions, max_attempts)
                 print(f"Finished running single level: {level_key} with success: {success}")
                 
                 if success:
@@ -1894,6 +2018,7 @@ if __name__ == '__main__':
     parser.add_argument('--experiment-dir', type=str, default='debuglv3',
                       help='Directory to store experiment runs')
     parser.add_argument('--multi-level', action='store_true', help='Run multiple levels sequentially')
+    parser.add_argument('--max-attempts', type=int, default=3, help='Maximum attempts per level')
     args = parser.parse_args()
 
     level_sets = eval(args.level_sets)
@@ -1913,7 +2038,7 @@ if __name__ == '__main__':
     )
 
     if args.multi_level:
-        results = agent.run_multiple_levels(level_sets, max_revisions=10)
+        results = agent.run_multiple_levels(level_sets, max_revisions=10, max_attempts=args.max_attempts)
         print("\nExperiment Complete!")
         print(f"Levels Completed: {len(results['levels_completed'])}")
         print(f"Levels Failed: {len(results['levels_failed'])}")
@@ -1922,7 +2047,7 @@ if __name__ == '__main__':
             engine = BabaIsYou(level_set=list(level_sets.keys())[0], level_id=level_sets[list(level_sets.keys())[0]][0])
         elif args.game == 'lava':
             engine = LavaGrid()
-        agent.run(engine)
+        agent.run(engine, max_attempts=args.max_attempts)
 
     # Save tape to json
     import time

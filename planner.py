@@ -28,10 +28,17 @@ def update_entity_categorizations(state):
         or entity.endswith('goop_obj')  # Example of overlappable goop
     }
     
-    # Pushables are typically word entities that can be pushed around
+    # # Pushables are typically word entities that can be pushed around
+    # pushables = {
+    #     entity for entity in state
+    #     if entity.endswith('_word')  # Checks if the entity is a pushable word entity
+    # }
+
     pushables = {
-        entity for entity in state
-        if entity.endswith('_word')  # Checks if the entity is a pushable word entity
+    entity for entity in state
+        if entity.endswith('_word') 
+        or rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'push_word') 
+        or (entity.endswith('_obj') and rule_formed(state, f'{entity[:-4]}_word', 'is_word', 'push_word'))
     }
     
     # Update state dictionary with these categorizations
@@ -81,7 +88,7 @@ def convert_state_to_hashable(state):
     return frozenset(hashable_state)
 
 # 50k was the baseline worked for mos 5000000
-def enumerative_search(state0, operator, preconditions, effects, strategy='bfs', max_iters=50000, debug_callback=None, level=None):
+def enumerative_search(state0, operator, preconditions, effects, strategy='bfs', max_iters=500000, debug_callback=None, level=None):
     """
     Search for a goal state. Takes an optional `debug_callback` to call when errors occur.
     """
@@ -104,10 +111,24 @@ def enumerative_search(state0, operator, preconditions, effects, strategy='bfs',
 
                 }
     
+    # pushables = {
+    #                 entity for entity in state0
+    #                 if entity.endswith('_word') or rule_formed(state0, f'{entity[:-4]}_word', 'is_word', 'push_word')
+    #             }
+    
+    # pushables = {
+    #                 entity for entity in state0
+    #                 if entity.endswith('_word') or entity == 'rock_obj'
+    #             }
+    
+    
     pushables = {
-                    entity for entity in state0
-                    if entity.endswith('_word')
-                }
+    entity for entity in state0
+        if entity.endswith('_word') 
+        or rule_formed(state0, f'{entity[:-4]}_word', 'is_word', 'push_word') 
+        or (entity.endswith('_obj') and rule_formed(state0, f'{entity[:-4]}_word', 'is_word', 'push_word'))
+    }
+
 
         
         # Add controllables to the state dictionary
@@ -193,6 +214,7 @@ def enumerative_search(state0, operator, preconditions, effects, strategy='bfs',
                     # added exception for level 2 where PDDL plan effects cannot express dual condition
                     # that baba is you and baba is win must be satisfied simulataneously
                     if level == 2:
+                        # breakpoint()
                         if (rule_formed(state, "baba_word", "is_word", "you_word") and rule_formed(state, "baba_word", "is_word", "win_word")):
                             print('Goal reached')
                             # breakpoint()

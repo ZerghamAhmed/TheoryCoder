@@ -1,0 +1,16 @@
+{
+    "0": ["move_to baba_obj flag_obj"],
+    "1": ["form_rule flag_word is_word win_word", "move_to baba_obj flag_obj"],
+    "2": ["form_rule baba_word is_word win_word"],
+    "3": ["move_to flag_obj baba_obj"],
+    "4": ["form_rule rock_word is_word flag_word", "move_to baba_obj flag_obj"],
+    "5": ["break_rule rock_word is_word rock_word", "move_to baba_obj flag_obj"],
+    "6": ["move_to baba_obj flag_obj"],
+    "7": ["move_to baba_obj flag_obj"],
+    "8": ["break_rule wall_word is_word stop_word", "move_to baba_obj flag_obj"],
+    "9": ["break_rule skull_word is_word kill_word", "move_to baba_obj flag_obj"],
+    "10": ["break_rule goop_word is_word sink_word", "move_to baba_obj flag_obj"],
+    "11": ["move_to baba_obj flag_obj"],
+    "12": ["break_rule baba_word is_word melt_word", "move_to baba_obj flag_obj"],
+    "13": ["form_rule keke_word is_word you_word", "move_to keke_obj flag_obj"]
+}
