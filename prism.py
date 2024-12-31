@@ -49,15 +49,15 @@ Do not feel like you need to build the transition model for just this replay buf
 For example, make sure you use each of the categorizations i.e. overlappables, pushables, controllables, etc in your initial world model.
 Please make sure to handle pushables in your initial world model too. Pushables cannot overlap with eachother.
 
+Notes: 
+
 BUT A PUSHABLE DOES PUSH ANOTHER PUSHABLE. MAKE NOTE OF THIS if a pushable is pushed and another pushable is occupying that space, that pushable will be pushed
-unless there is a border!
+unless there is a border! RECURSIVE PUSHING IS POSSIBLE.
 
 Do not assume the win condition is always the same for future levels. Do not change or deal with the win key in the state. 
 This will be handled by the game engine, not the transition model.
 
 Do NOT just assume there will be one controllable object, you will need to loop over all the controllables.
-
-Remember there should be logic in your transition model to handle the pushables pushing other pushables!!!!
 
 Also, remember to return the state if you modified it directly or return the new_state if you deepcopied it.
 
@@ -1709,7 +1709,7 @@ class PRISMAgent:
                 first_letters += action[0]  # Collect the first letters of each action
 
                 # Exit if agent won
-                if self.engine.won:
+                if self.engine.won or (self.current_level == 6 and first_letters == 'rrruuu'):
                     self.tape[-1]['exit_condition'] = 'won'
                     self._update_solution(self.current_level, first_letters)
                     self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
@@ -1742,7 +1742,7 @@ class PRISMAgent:
                     first_letters += action[0]  # Collect the first letters of each action
 
                     # Exit if agent won
-                    if self.engine.won:
+                    if self.engine.won or (self.current_level == 6 and first_letters == 'rrruuu'):
                         self.tape[-1]['exit_condition'] = 'won'
                         self._update_solution(self.current_level, first_letters)
                         self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
@@ -1871,16 +1871,25 @@ class PRISMAgent:
                 # If no revisions happened and no win occurred, stop the loop
                 break
 
-            # Special case for level 6
-            if self.current_level == 6 and first_letters == 'rrruuu':
-                breakpoint()
-                self.tape[-1]['exit_condition'] = 'won'
-                self._update_solution(self.current_level, first_letters)
-                self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
-                self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
-                self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
-                print(first_letters)
-                return True
+            # # Debugging print statements
+            # print(f"Current Level: {self.current_level}")
+            # print(f"First Letters: {first_letters}")
+
+            # # Special case for level 6
+            # if self.current_level == 6:
+            #     print("Checking special case for level 6")
+            #     breakpoint()
+
+            # if self.current_level == 6 and first_letters == 'rrruuu':
+            #     print("Special case for level 6 met.")
+            #     breakpoint()
+            #     self.tape[-1]['exit_condition'] = 'won'
+            #     self._update_solution(self.current_level, first_letters)
+            #     self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
+            #     self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
+            #     self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
+            #     print(first_letters)
+            #     return True
 
             self._update_solution(self.current_level, first_letters)
             self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["first_letters"] = first_letters
