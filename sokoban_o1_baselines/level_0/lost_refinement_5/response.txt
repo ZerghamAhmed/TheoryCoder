@@ -1,0 +1,17 @@
+```Python
+["left", "up",
+ "right", "right", "right", "right", "right", "right", "right", "down",
+ "left", "left", "left", "left",
+ "down", "down", "down",
+ "right", "right", "right",
+ "up",
+ "right"]
+```
+
+explanation:
+
+In this action sequence, we first move the avatar left and up to position ourselves behind the box at `[4,6]`. Then, we push this box to the right across the top row by repeatedly moving right, until it reaches position `[10,6]`. From there, we push it down into the hole at `[10,5]`.
+
+Next, we move back left to the box at `[6,5]`. We push this box down three times to bring it to `[6,2]`. We then push it to the right across the bottom row until it reaches `[9,2]`. From there, we push it up to `[9,3]` and finally right into the hole at `[10,3]`.
+
+By carefully maneuvering the boxes into the holes using the available paths and avoiding walls, we ensure both boxes are placed into the holes, thus achieving the goal of the level.

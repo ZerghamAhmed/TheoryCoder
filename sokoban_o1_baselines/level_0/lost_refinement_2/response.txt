@@ -1,0 +1,32 @@
+```Python
+["left", "down", "down", "down", "left", 
+ "right", "right", "right", "right", "right", "right", "right", "right", "up", 
+ "left", "left", "left", "left", "left", "left", "left", 
+ "up", "up", "up", 
+ "right", "right", "right", "right", "right", "right", "down"]
+```
+
+Explanation:
+
+First, we move the avatar towards the box at position [2,2]:
+
+1. `'left'` - Move from [4,5] to [3,5].
+2. `'down'`, `'down'`, `'down'` - Move down to [3,2].
+3. `'left'` - Move to [2,2], where the box is located.
+
+We then push this box to the right towards the hole at [10,3]:
+
+4. `'right'` x8 - Push the box from [2,2] to [10,2].
+5. `'up'` - Push the box into the hole at [10,3].
+
+Next, we move the avatar to the starting position for pushing the second box:
+
+6. `'left'` x7 - Move back to [3,3].
+7. `'up'` x3 - Move up to [3,6], getting behind the box at [4,6].
+
+We push the second box towards the hole at [10,5]:
+
+8. `'right'` x6 - Push the box from [4,6] to [10,6].
+9. `'down'` - Push the box into the hole at [10,5].
+
+By pushing both boxes into the two holes, we've met the objective of the level which is to fill all the holes with boxes, thus winning the game.
