@@ -1,0 +1,16 @@
+```Python
+
+["left", "left", "forward", "forward"]
+
+```
+
+explanation:
+
+We start at position [5,4] facing 'down' ([0, -1]). Our goal is to reach the red ball at position [5,6]. 
+
+1. **First action**: `left` — This turns the agent from facing 'down' ([0, -1]) to facing 'right' ([1, 0]).
+2. **Second action**: `left` — Now, the agent turns from facing 'right' ([1, 0]) to facing 'up' ([0, 1]).
+3. **Third action**: `forward` — The agent moves from [5,4] to [5,5] while facing 'up'.
+4. **Fourth action**: `forward` — The agent moves from [5,5] to [5,6], arriving at the location of the red ball.
+
+By following these actions, we reach the red ball at [5,6] and achieve the goal of the level.

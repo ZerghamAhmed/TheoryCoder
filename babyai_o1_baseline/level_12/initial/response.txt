@@ -1,0 +1,22 @@
+```Python
+
+["left", "left", "forward", "forward", "toggle", "forward", "forward", "right", "forward", "pickup"]
+
+```
+
+explanation:
+
+The agent starts at position [7,7], facing down (direction [0, -1]).
+
+1. **left**: The agent turns left from facing down ([0, -1]) to facing right ([1, 0]).
+2. **left**: The agent turns left again from facing right ([1, 0]) to facing up ([0, 1]).
+3. **forward**: The agent moves forward to [7,8], moving one step upward.
+4. **forward**: The agent moves forward to [7,9], continuing upward.
+5. **toggle**: Facing up and adjacent to the closed purple door at [7,10], the agent toggles it to open the door.
+6. **forward**: The agent moves forward to [7,10], passing through the now open door.
+7. **forward**: The agent moves forward to [7,11].
+8. **right**: The agent turns right from facing up ([0, 1]) to facing right ([1, 0]).
+9. **forward**: The agent moves forward to [8,11], moving one step to the right.
+10. **pickup**: Facing right and adjacent to the red box at [9,11], the agent picks up the red box.
+
+By following these actions, the agent navigates around walls, opens necessary doors, and reaches the red box. The agent ensures it's adjacent to and facing the red box to successfully pick it up, thus accomplishing the goal of the level.

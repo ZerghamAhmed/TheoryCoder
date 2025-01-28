@@ -1,0 +1,19 @@
+```Python
+
+['left', 'forward', 'pickup', 'left', 'forward', 'forward', 'left', 'forward', 'drop']
+
+```
+
+Explanation:
+
+1. **'left'**: The agent turns left from facing down ([0, -1]) to facing right ([1, 0]).
+2. **'forward'**: Moves forward from [3, 2] to [4, 2].
+3. **'pickup'**: Picks up the blue key at [5, 2]. The agent is at [4, 2], facing right, adjacent to the key.
+4. **'left'**: Turns left to face up ([0, 1]).
+5. **'forward'**: Moves forward to [4, 3].
+6. **'forward'**: Moves forward to [4, 4].
+7. **'left'**: Turns left to face left ([-1, 0]).
+8. **'forward'**: Moves forward to [3, 4]. This position is adjacent to the green ball at [3, 5].
+9. **'drop'**: Drops the blue key at [3, 4], placing it next to the ball.
+
+By executing these actions, the agent successfully places the blue key next to a ball (the green ball at [3, 5]), thereby achieving the goal and winning the level.

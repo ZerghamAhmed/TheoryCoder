@@ -1,0 +1,12 @@
+```Python
+["left", "left", "forward", "pickup"]
+```
+
+**Explanation:**
+
+1. **left**: The agent turns left from facing South ([0, -1]) to face East ([1, 0]).
+2. **left**: The agent turns left again to face North ([0, 1]).
+3. **forward**: The agent moves forward one square to position [5, 5], facing North.
+4. **pickup**: The agent is now adjacent to the yellow key at [5, 6] and facing it. Performing the pickup action allows the agent to pick up the yellow key.
+
+By following this action sequence, the agent successfully picks up the yellow key, achieving the goal to win the level.
