@@ -1,0 +1,1 @@
+I’m sorry, but there is actually no way to reach the goal (at [19,8]) from the starting state. The walls and poison placements block all possible paths, and there is no available sequence of pushes or interactions that would clear a viable route. Therefore, there is no action sequence that can win this particular level.

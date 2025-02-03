@@ -1,0 +1,116 @@
+Human: 
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. 
+
+You are given your current state that you start from in the level as well as the goal to win.
+
+You previously attemped this level and returned the following action sequences but did not win the game. 
+The history of your previous action sequence predictions and the corresponding replay buffer for that sequence is given 
+under history.
+
+Please provide your corrected action sequence that will result in winning the level. 
+Do not forget to give your explanation for why this is now correct. 
+
+DESCRIPTION OF DOMAIN:
+
+In this domain, you control the avatar, which can move up, down, left, or right. Each action results in a state transition, with interactions governed by specific rules.
+
+Movement Constraints:
+The avatar cannot move into walls. If an attempted move would place the avatar in a wall, the action is ignored, and the avatar remains in place.
+
+If the avatar moves onto poison1, poison2, or poison3, it dies immediately, and the avatar is removed from the state.
+
+While the avatar is moving it can interact with box1. Box1 CANNOT be moved into a wall or another box1.
+
+If box1 overlaps with poison2, poison2 will be pushed BUT while posion2 is being pushed
+if it encounters a wall or box2 and the new coordinate its being pushed to has wall or box2, then
+NO MOVEMENT WILL happen. Meaning box1 will not be pushed and the avatar wouldn't be able to move either.
+If while pushing box1 if box1 overlaps with poison1, then poison1 will disappear. If box1 overlaps with box2 then box1 disappears.
+
+And of course if box1 is being pushed and there is nothing where its being pushed to, it'll simply occupy that location.
+
+Another interaction is with dynamite. While the avatar is moving arround it can push dynamite BUT
+the new location where the dynamite will occupy cannot have a wall or another dynamite or box1 or box2 or poison1!! Or else no movement will happen.
+
+If movement is not blocked and dynamite encounters poison2 and overlaps with it then BOTH poison2 and dynamite will dissapear.
+
+If the avatar interacts with box2 then box2 will disappear.
+
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
+['left', 'right', 'up', 'down', 'noop']
+
+INITIAL STATE FOR LEVEL:
+
+{'wall': [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9], [15, 9], [16, 9], [17, 9], [18, 9], [19, 9], [20, 9], [21, 9], [0, 8], [17, 8], [21, 8], [0, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [21, 7], [0, 6], [21, 6], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [18, 5], [20, 5], [21, 5], [0, 4], [1, 4], [10, 4], [12, 4], [13, 4], [17, 4], [21, 4], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [8, 3], [16, 3], [17, 3], [21, 3], [0, 2], [4, 2], [9, 2], [10, 2], [13, 2], [17, 2], [18, 2], [20, 2], [21, 2], [0, 1], [10, 1], [11, 1], [12, 1], [20, 1], [21, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0]], 'avatar': [[7, 8]], 'box1': [[5, 8], [9, 8], [14, 8], [3, 7], [16, 7], [18, 6], [19, 6], [12, 3], [5, 2]], 'poison1': [[12, 8], [9, 6], [16, 6], [5, 4], [3, 1], [15, 1]], 'dynamite': [[2, 7], [14, 3], [7, 1]], 'poison2': [[8, 6], [13, 3], [4, 1]], 'box2': [[14, 6], [9, 1]], 'poison3': [[20, 4]], 'goal': [[1, 1]]}
+
+HISTORY:
+
+**Previous Actions 1 and its replay buffer:**
+
+Actions:
+['noop']
+
+Replay Buffer:
+Initial state: {'wall': [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9], [15, 9], [16, 9], [17, 9], [18, 9], [19, 9], [20, 9], [21, 9], [0, 8], [17, 8], [21, 8], [0, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [21, 7], [0, 6], [21, 6], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [18, 5], [20, 5], [21, 5], [0, 4], [1, 4], [10, 4], [12, 4], [13, 4], [17, 4], [21, 4], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [8, 3], [16, 3], [17, 3], [21, 3], [0, 2], [4, 2], [9, 2], [10, 2], [13, 2], [17, 2], [18, 2], [20, 2], [21, 2], [0, 1], [10, 1], [11, 1], [12, 1], [20, 1], [21, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0]], 'avatar': [[7, 8]], 'box1': [[5, 8], [9, 8], [14, 8], [3, 7], [16, 7], [18, 6], [19, 6], [12, 3], [5, 2]], 'poison1': [[12, 8], [9, 6], [16, 6], [5, 4], [3, 1], [15, 1]], 'dynamite': [[2, 7], [14, 3], [7, 1]], 'poison2': [[8, 6], [13, 3], [4, 1]], 'box2': [[14, 6], [9, 1]], 'poison3': [[20, 4]], 'goal': [[1, 1]]}
+Action: noop
+Next state: {'wall': [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9], [15, 9], [16, 9], [17, 9], [18, 9], [19, 9], [20, 9], [21, 9], [0, 8], [17, 8], [21, 8], [0, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [21, 7], [0, 6], [21, 6], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [18, 5], [20, 5], [21, 5], [0, 4], [1, 4], [10, 4], [12, 4], [13, 4], [17, 4], [21, 4], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [8, 3], [16, 3], [17, 3], [21, 3], [0, 2], [4, 2], [9, 2], [10, 2], [13, 2], [17, 2], [18, 2], [20, 2], [21, 2], [0, 1], [10, 1], [11, 1], [12, 1], [20, 1], [21, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0]], 'avatar': [[7, 8]], 'box1': [[5, 8], [9, 8], [14, 8], [3, 7], [16, 7], [18, 6], [19, 6], [12, 3], [5, 2]], 'poison1': [[12, 8], [9, 6], [16, 6], [5, 4], [3, 1], [15, 1]], 'dynamite': [[2, 7], [14, 3], [7, 1]], 'poison2': [[8, 6], [13, 3], [4, 1]], 'box2': [[14, 6], [9, 1]], 'poison3': [[20, 4]], 'goal': [[1, 1]]}
+Summary of changes:
+
+
+**Previous Actions 2 and its replay buffer:**
+
+Actions:
+['noop']
+
+Replay Buffer:
+Initial state: {'wall': [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9], [15, 9], [16, 9], [17, 9], [18, 9], [19, 9], [20, 9], [21, 9], [0, 8], [17, 8], [21, 8], [0, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [21, 7], [0, 6], [21, 6], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [18, 5], [20, 5], [21, 5], [0, 4], [1, 4], [10, 4], [12, 4], [13, 4], [17, 4], [21, 4], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [8, 3], [16, 3], [17, 3], [21, 3], [0, 2], [4, 2], [9, 2], [10, 2], [13, 2], [17, 2], [18, 2], [20, 2], [21, 2], [0, 1], [10, 1], [11, 1], [12, 1], [20, 1], [21, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0]], 'avatar': [[7, 8]], 'box1': [[5, 8], [9, 8], [14, 8], [3, 7], [16, 7], [18, 6], [19, 6], [12, 3], [5, 2]], 'poison1': [[12, 8], [9, 6], [16, 6], [5, 4], [3, 1], [15, 1]], 'dynamite': [[2, 7], [14, 3], [7, 1]], 'poison2': [[8, 6], [13, 3], [4, 1]], 'box2': [[14, 6], [9, 1]], 'poison3': [[20, 4]], 'goal': [[1, 1]]}
+Action: noop
+Next state: {'wall': [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9], [15, 9], [16, 9], [17, 9], [18, 9], [19, 9], [20, 9], [21, 9], [0, 8], [17, 8], [21, 8], [0, 7], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [21, 7], [0, 6], [21, 6], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [8, 5], [9, 5], [10, 5], [11, 5], [12, 5], [13, 5], [14, 5], [15, 5], [16, 5], [17, 5], [18, 5], [20, 5], [21, 5], [0, 4], [1, 4], [10, 4], [12, 4], [13, 4], [17, 4], [21, 4], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [8, 3], [16, 3], [17, 3], [21, 3], [0, 2], [4, 2], [9, 2], [10, 2], [13, 2], [17, 2], [18, 2], [20, 2], [21, 2], [0, 1], [10, 1], [11, 1], [12, 1], [20, 1], [21, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0]], 'avatar': [[7, 8]], 'box1': [[5, 8], [9, 8], [14, 8], [3, 7], [16, 7], [18, 6], [19, 6], [12, 3], [5, 2]], 'poison1': [[12, 8], [9, 6], [16, 6], [5, 4], [3, 1], [15, 1]], 'dynamite': [[2, 7], [14, 3], [7, 1]], 'poison2': [[8, 6], [13, 3], [4, 1]], 'box2': [[14, 6], [9, 1]], 'poison3': [[20, 4]], 'goal': [[1, 1]]}
+Summary of changes:
+
+
+**Previous Actions 3 and its replay buffer:**
+
+Actions:
+[]
+
+Replay Buffer:
+
+
+**Previous Actions 4 and its replay buffer:**
+
+Actions:
+[]
+
+Replay Buffer:
+
+
+**Previous Actions 5 and its replay buffer:**
+
+Actions:
+[]
+
+Replay Buffer:
+
+
+
+
+UTILS:
+
+{'directions': {'left': [-1, 0], 'right': [1, 0], 'up': [0, 1], 'down': [0, -1]}}
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag, explanations should be outside it):
+
+```Python
+
+["right", "right", "up", "right", "down"]
+
+```
+
+explanation:
+
+Example explanation.
+

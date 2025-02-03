@@ -1,0 +1,7 @@
+```Python
+["noop"]
+```
+
+explanation:
+
+After analyzing all possible moves, there is no legal sequence of actions that allows the avatar to reach the goal at (2,6). Walls block nearly every route, poison tiles prevent safe passage, and the few pushable objects cannot be maneuvered in a way that opens a path up to row y=6. Consequently, no plan exists to reach the goal, so we return a "noop" (no‐operation) action.

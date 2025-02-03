@@ -1,0 +1,66 @@
+Human: 
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. You will also need to provide your reasoning for why this will allow you to win.
+
+You are given your current state that you start from in the level as well as the goal to win.
+
+So using the information please return the action sequence that will result in winning the level. 
+Make sure to give your explanation, also
+make sure to just have a sepearte section with your actions as demonstrated in the response format.
+
+DESCRIPTION OF DOMAIN:
+
+In this domain, you control the avatar, which can move up, down, left, or right. Each action results in a state transition, with interactions governed by specific rules.
+
+Movement Constraints:
+The avatar cannot move into walls. If an attempted move would place the avatar in a wall, the action is ignored, and the avatar remains in place.
+
+If the avatar moves onto poison1, poison2, or poison3, it dies immediately, and the avatar is removed from the state.
+
+While the avatar is moving it can interact with box1. Box1 CANNOT be moved into a wall or another box1.
+
+If box1 overlaps with poison2, poison2 will be pushed BUT while posion2 is being pushed
+if it encounters a wall or box2 and the new coordinate its being pushed to has wall or box2, then
+NO MOVEMENT WILL happen. Meaning box1 will not be pushed and the avatar wouldn't be able to move either.
+If while pushing box1 if box1 overlaps with poison1, then poison1 will disappear. If box1 overlaps with box2 then box1 disappears.
+
+And of course if box1 is being pushed and there is nothing where its being pushed to, it'll simply occupy that location.
+
+Another interaction is with dynamite. While the avatar is moving arround it can push dynamite BUT
+the new location where the dynamite will occupy cannot have a wall or another dynamite or box1 or box2 or poison1!! Or else no movement will happen.
+
+If movement is not blocked and dynamite encounters poison2 and overlaps with it then BOTH poison2 and dynamite will dissapear.
+
+If the avatar interacts with box2 then box2 will disappear.
+
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
+['left', 'right', 'up', 'down', 'noop']
+
+INITIAL STATE:
+
+{'wall': [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9], [15, 9], [16, 9], [17, 9], [18, 9], [19, 9], [20, 9], [21, 9], [0, 8], [21, 8], [0, 7], [21, 7], [0, 6], [14, 6], [20, 6], [21, 6], [0, 5], [5, 5], [14, 5], [16, 5], [21, 5], [0, 4], [1, 4], [21, 4], [0, 3], [21, 3], [0, 2], [19, 2], [20, 2], [21, 2], [0, 1], [21, 1], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0]], 'avatar': [[1, 6]], 'box1': [[3, 8], [6, 5], [16, 3]], 'poison1': [[8, 8], [10, 7], [4, 3]], 'box2': [[5, 7], [10, 6], [5, 2], [10, 1]], 'poison2': [[4, 6], [12, 4], [9, 3], [18, 1]], 'dynamite': [[17, 1]], 'goal': [[20, 1]]}
+
+UTILS:
+
+directions = {
+    'left': [-1, 0],
+    'right': [1, 0],
+    'up': [0, 1],
+    'down': [0, -1],
+}
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag):
+
+```Python
+
+["right", "right", "up", "right", "down"]
+
+```
+
+explanation:
+
+Example explanation.
+
