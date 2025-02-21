@@ -1,4 +1,4 @@
-# PRISM-Agent
+# TheoryCoder
 
 Run the experiment on all levels:
 
