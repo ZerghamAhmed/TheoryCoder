@@ -1,0 +1,21 @@
+{
+    "0": ["move_to red_agent yellow_key"],
+    "1": ["move_to red_agent red_ball"],
+    "2": ["move_to red_agent yellow_key"],
+    "3": ["open red_door"],
+    "4": ["open red_door"],
+    "5": ["pickup blue_ball"],
+    "6": ["pickup yellow_key","put_next_to yellow_key yellow_box"],
+    "7": ["pickup grey_box","put_next_to grey_box blue_box","pickup grey_key","put_next_to grey_key green_box"],
+    "8": ["pickup red_key","unlock red_door red_key"],
+    "9": ["pickup red_key","unlock red_door red_key","drop red_key","pickup red_box"],
+    "10": ["unblock red_door red_ball","drop red_ball","pickup red_key","unlock red_door red_key","drop red_key", "pickup red_box"],
+    "11": ["open_box_for_key red_box red_key", "pickup red_key", "unlock red_door red_key"],
+    "12": ["open purple_door","pickup red_box"],
+    "13": ["open yellow_door","open green_door","pickup red_key","unlock red_door red_key"],
+    "14": ["open blue_door"],
+    "15": ["pickup blue_key","put_next_to blue_key red_ball"],
+    "16": ["open green_door", "pickup green_ball"]
+
+    
+}
