@@ -273,7 +273,7 @@ def extract_function_names(file_content):
     function_names = set(match.group(1).strip() for match in matches)
     return function_names
 
-class PRISMAgent:
+class TheoryCoderAgent:
     """
     Theory-based RL agent.
 
@@ -2034,7 +2034,7 @@ if __name__ == '__main__':
 
     plan_file_name = 'plans_demo_LEVELS.json'  # Use a single plan file
 
-    agent = PRISMAgent(
+    agent = TheoryCoderAgent(
         base_dir=args.experiment_dir,  # Use experiment directory from args
         episode_length=args.episode_length,
         world_model_load_name=args.world_model_file_name,
