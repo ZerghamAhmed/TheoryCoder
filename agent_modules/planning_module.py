@@ -10,7 +10,7 @@ from collections import deque
 from predicates import *
 from preprocessing import operator_extractor, checker
 from copy import deepcopy
-from planner import enumerative_search
+from agent_modules.planner import enumerative_search
 
 def actor(domain_file, subplan, state, max_iterations=None, debug_callback=None, level=None, engine=None):
     operator = operator_extractor(domain_file, subplan)
@@ -67,7 +67,7 @@ class HierarchicalPlanner:
         Execute a single exploratory subplan.
         """
         # reload world model & planner dependencies
-        import worldmodel, planner, levelrunner
+        import worldmodel, agent_modules.planner as planner, levelrunner
         importlib.reload(worldmodel)
         importlib.reload(planner)
         importlib.reload(levelrunner)
@@ -94,7 +94,7 @@ class HierarchicalPlanner:
         actions = []
         # reload deps each iteration
         for i in range(self.max_replans):
-            import worldmodel, planner, levelrunner
+            import worldmodel, agent_modules.planner as planner, levelrunner
             importlib.reload(worldmodel)
             importlib.reload(planner)
             importlib.reload(levelrunner)
