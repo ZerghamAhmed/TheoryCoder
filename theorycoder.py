@@ -7,11 +7,11 @@ import random
 import inspect
 import os
 
-from llm_handler import QueryClient
-from experiment_logger import ExperimentLogger
-from modeling import WorldModelManager
-from planning_module import HierarchicalPlanner
-from experience_manager import ExperienceManager
+from agent_modules.llm_handler import QueryClient
+from agent_modules.experiment_logger import ExperimentLogger
+from agent_modules.modeling import WorldModelManager
+from agent_modules.planning_module import HierarchicalPlanner
+from agent_modules.experience_manager import ExperienceManager
 
 import sys, os
 
@@ -19,7 +19,7 @@ import sys, os
 proj_root = os.path.abspath(os.path.dirname(__file__))
 sys.path = [proj_root] 
 
-from io_manager import (
+from agent_modules.io_manager import (
     capture_world_model,
     extract_code_from_response,
     is_world_model_empty,
