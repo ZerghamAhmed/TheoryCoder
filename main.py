@@ -5,14 +5,13 @@ import time
 from pathlib import Path
 
 from theorycoder import TheoryCoderAgent
-from babyai_env import BabyAI
-from boulderdash2_env import Boulderdash2Env
-from pb1_env import pb1env
-from sokoban_env import SokobanEnv
-from labyrinth_env import LabyrinthEnv
+from envs.babyai_env import BabyAI
+from envs.pb1_env import pb1env
+from envs.sokoban_env import SokobanEnv
+from envs.labyrinth_env import LabyrinthEnv
 from games import BabaIsYou
-from maze_env import MazeEnv
-from cheesemaze_env import CheesemazeEnv
+from envs.maze_env import MazeEnv
+from envs.cheesemaze_env import CheesemazeEnv
 
 
 def init_engine(game, level_set, level_id):
@@ -23,8 +22,6 @@ def init_engine(game, level_set, level_id):
         return LavaGrid()
     elif game == 'babyai':
         return BabyAI(level_set=level_set, level_id=level_id)
-    elif game == 'boulderdash2':
-        return Boulderdash2Env(level_set=level_set, level_id=level_id)
     elif game == 'pb1':
         return pb1env(level_set=level_set, level_id=level_id)
     elif game == 'sokoban':
