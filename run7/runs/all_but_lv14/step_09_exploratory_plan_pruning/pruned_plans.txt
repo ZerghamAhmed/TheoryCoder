@@ -1,1 +1,0 @@
-[move_to baba_obj keke_obj]

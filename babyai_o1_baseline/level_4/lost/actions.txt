@@ -1,1 +1,0 @@
-['right', 'forward', 'forward', 'left', 'toggle']

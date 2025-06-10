@@ -1,9 +1,0 @@
-
-Level: demo_LEVELS_12
-Status: completed
-Attempts: 0
-Revisions: 0
-Debugs: 0
-Explorations: 0
-Solution: rruuulull
-        

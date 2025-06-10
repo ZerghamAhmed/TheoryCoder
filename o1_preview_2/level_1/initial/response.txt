@@ -1,5 +1,0 @@
-```Python
-
-["right", "right", "right", "right", "up", "up", "up", "right", "down", "down", "down"]
-
-```

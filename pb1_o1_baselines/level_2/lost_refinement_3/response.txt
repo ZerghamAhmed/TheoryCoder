@@ -1,7 +1,0 @@
-```Python
-[]
-```
-
-explanation:
-
-After carefully examining the layout of walls and poisons in every possible route, there is no viable path by which the avatar can reach the goal at [1,1]. Row y=5 is completely walled off (except for an inaccessible cell at [19,5]), and similarly other rows and columns are blocked by walls or contain lethal poison cells. No sequence of moves or pushes can clear a route for the avatar to pass safely. Consequently, there is no solution that allows the avatar to reach [1,1] without dying, hence the empty action list.

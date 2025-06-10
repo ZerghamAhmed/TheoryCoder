@@ -1,1 +1,0 @@
-['left', 'left', 'forward', 'forward', 'left', 'pickup', 'right', 'right', 'forward', 'forward', 'forward', 'right', 'forward', 'forward', 'left', 'forward', 'left', 'drop', 'right', 'forward', 'left', 'pickup', 'forward', 'forward', 'forward', 'drop']

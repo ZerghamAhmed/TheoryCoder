@@ -1,1 +1,0 @@
-['form_rule keke_word is_word you_word']

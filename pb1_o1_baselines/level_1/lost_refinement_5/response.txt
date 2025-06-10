@@ -1,7 +1,0 @@
-```Python
-[]
-```
-
-explanation:
-
-Unfortunately, there is no sequence of legal moves that allows the avatar to reach the goal at [19,8] without running into walls or poison. The walls block all straightforward paths along row 8, and attempting to navigate around them via rows 7 or 6 leads to intersections with walls or poison tiles (which kill the avatar on contact). Consequently, no sequence of actions from the given action space can place the avatar on the goal location, making it impossible to win this level under the specified rules.

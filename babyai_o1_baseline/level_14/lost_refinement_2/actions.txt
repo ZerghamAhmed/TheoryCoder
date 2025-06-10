@@ -1,1 +1,0 @@
-['right', 'forward', 'forward', 'left', 'forward', 'right', 'forward', 'toggle', 'forward', 'forward', 'forward', 'left', 'forward', 'forward', 'toggle', 'right', 'right', 'forward', 'forward', 'right', 'forward', 'forward', 'forward', 'forward', 'forward', 'left', 'forward', 'forward', 'toggle']

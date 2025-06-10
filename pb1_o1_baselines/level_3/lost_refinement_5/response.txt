@@ -1,7 +1,0 @@
-```Python
-[]
-```
-
-explanation:
-
-By examining the layout of walls, poison, and boxes, there is no open path from the avatar’s start at (2,2) to the goal at (2,6). Row 5 is completely blocked at x=2 (and nearly everywhere else), and attempting to push boxes or dynamite does not remove walls. Moving around the edges is also blocked by walls or poison. Consequently, no sequence of moves can place the avatar on the goal; the puzzle, as given, is unwinnable. An empty action list (doing nothing) is therefore “correct” in the sense that no actual winning sequence exists.
