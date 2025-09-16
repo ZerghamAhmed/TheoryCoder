@@ -1,43 +1,74 @@
-(define (domain baba)
-    (:requirements :strips :negative-preconditions :equality :conditional-effects :typing)
+(define (domain babyai)
+    (:requirements :strips :negative-preconditions :typing)
 
     (:types 
-        word object location
+        object door
     )
 
     (:predicates
-        (control_rule ?obj_name - object ?word2 - word ?word3 - word)
-        (at ?obj - object ?loc - location)
-        (overlapping ?obj1 - object ?obj2 - object)
-        (rule_formed ?word1 - word ?word2 - word ?word3 - word)
-        (rule_formable ?word1 - word ?word2 - word ?word3 - word)
-        (rule_breakable ?word1 - word ?word2 - word ?word3 - word)
-        (pushable_obj ?obj - object)
-    )
+        (controllable ?obj - object)
+        (overlapping ?obj - object ?to - object)
+        (carrying ?obj - object)
+        (open_door ?door - door)
+        (locked ?door - door)
+        (next_to ?obj1 - object ?obj2 - object)
+        (unlocks ?key - object ?door - door)
+        (blocking ?obj - object ?door - door)
+        (clear ?door - door)
+        (inventory_full)
+        (agent_moved_away ?door - door)
+        (not_near_door ?obj)
+        (found ?obj - object)
+        (unfound ?obj - object)
+        (went_through ?agent ?door)
 
+    )
 
     (:action move_to
-        :parameters (?obj - object ?to)
-        :precondition (and (control_rule ?obj is_word you_word) (not (overlapping ?obj ?to)) )
-        :effect (overlapping ?obj ?to)
+        :parameters (?obj - object ?to - object)
+        :precondition (and (controllable ?obj) (not (next_to ?obj ?to)))
+        :effect (next_to ?obj ?to)
     )
 
-    (:action push_to
-        :parameters (?pusher - object ?obj - object ?to)
-        :precondition (and (not (overlapping ?obj ?to)) (pushable_obj ?obj) (control_rule ?pusher is_word you_word) (not (overlapping ?pusher ?to)))
-        :effect (and (overlapping ?obj ?to) (not (overlapping ?pusher ?to)))
+    (:action unblock
+        :parameters (?door - door ?obj - object)
+        :precondition (and (blocking ?obj ?door) (not (clear ?door)) (not (carrying ?obj)) (not (inventory_full)))
+        :effect (and (agent_moved_away ?door) (not (blocking ?obj ?door)) (clear ?door) (carrying ?obj) (inventory_full))
+    )
+    
+    (:action drop
+        :parameters (?obj - object)
+        :precondition (and (carrying ?obj) (inventory_full))
+        :effect (and (not (carrying ?obj)) (not (inventory_full)) (not_near_door ?obj))
     )
 
-    (:action form_rule
-        :parameters (?word1 - word ?word2 - word ?word3 - word)
-        :precondition (and (not (rule_formed ?word1 ?word2 ?word3)) (rule_formable ?word1 ?word2 ?word3))
-        :effect (rule_formed ?word1 ?word2 ?word3)
+    (:action pickup
+        :parameters (?item - object)
+        :precondition (not (carrying ?item))
+        :effect (carrying ?item)
     )
 
-    (:action break_rule
-        :parameters (?word1 - word ?word2 - word ?word3 - word)
-        :precondition (and (rule_formed ?word1 ?word2 ?word3) (rule_breakable ?word1 ?word2 ?word3))
-        :effect (not (rule_formed ?word1 ?word2 ?word3))
+    (:action put_next_to
+        :parameters (?item - object ?adjacent - object)
+        :precondition (not (next_to ?item ?adjacent))
+        :effect (next_to ?item ?adjacent)
     )
 
+    (:action open
+        :parameters (?door - door)
+        :precondition (and (not (open_door ?door)) (not (locked ?door)))
+        :effect (open_door ?door)
+    )
+
+    (:action open_box_for_key
+        :parameters (?box - object ?key - object)
+        :precondition (and (not (found ?key)))
+        :effect (found ?key)
+    )
+
+    (:action unlock
+        :parameters (?door - door ?key - object)
+        :precondition (and (locked ?door) (unlocks ?key ?door) (clear ?door))
+        :effect (open_door ?door)
+    )
 )

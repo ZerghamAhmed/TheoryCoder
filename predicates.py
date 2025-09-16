@@ -516,3 +516,213 @@ def pushable_obj(state, entity):
     
     return False
 
+# Automatically generated placeholders for missing predicates
+
+
+def controllable(state, obj):
+    """
+    Check if an object is controllable.
+
+    Args:
+        state (dict): The game state.
+        obj (str): The name of the object to check.
+
+    Returns:
+        bool: True if the object is controllable, False otherwise.
+    """
+    return obj == "red_agent"
+
+
+
+def carrying(state, obj):
+    """
+    Check if the agent is carrying a specific object.
+
+    Args:
+        state (dict): The game state.
+        obj (str): The name of the object to check (e.g., 'red_key').
+
+    Returns:
+        bool: True if the agent is carrying the specified object, False otherwise.
+    """
+    # Extract the type and color of the object
+    if "_" not in obj:
+        return False  # Invalid format; objects should have a "type_color" format
+    
+    obj_color, obj_type = obj.split("_")
+    
+    # Check if the agent is carrying the object
+    for item in state.get("agent_carrying", []):
+        if item["type"] == obj_type and item["color"] == obj_color:
+            return True
+    return False
+
+
+
+def open_door(state, door):
+    """
+    Check if a door is open based on the state.
+
+    Args:
+        state (dict): The game state.
+        door (str): The name of the door to check (e.g., 'red_door').
+
+    Returns:
+        bool: True if the door is open, False otherwise.
+    """
+    # Form the expected key for an open door
+    open_door_key = f"open_{door}"
+    # Check if the door key exists in the state
+    return open_door_key in state
+
+
+
+def locked(state, door):
+    """
+    Check if a door is locked based on the state.
+
+    Args:
+        state (dict): The game state.
+        door (str): The name of the door to check (e.g., 'red_door').
+
+    Returns:
+        bool: True if the door is locked, False otherwise.
+    """
+    # Form the expected key for a locked door
+    locked_door_key = f"locked_{door}"
+    # Check if the locked door key exists in the state
+    return locked_door_key in state
+
+
+
+def next_to(state, obj1, obj2):
+    """
+    Check if two objects are adjacent (horizontally or vertically).
+
+    Args:
+        state (dict): The game state.
+        obj1 (str): The name of the first object.
+        obj2 (str): The name of the second object.
+
+    Returns:
+        bool: True if the objects are adjacent, False otherwise.
+    """
+    coords1 = state.get(obj1, [])
+    coords2 = state.get(obj2, [])
+
+    for (x1, y1) in coords1:
+        for (x2, y2) in coords2:
+            # Check if the objects are adjacent horizontally or vertically
+            if abs(x1 - x2) + abs(y1 - y2) == 1:  # Manhattan distance = 1
+                return True
+
+    return False
+
+
+
+def unlocks(state, key, door):
+    """
+    Check if a key can unlock a specific door based on their color.
+
+    Args:
+        state (dict): The game state.
+        key (str): The name of the key (e.g., 'red_key').
+        door (str): The name of the door (e.g., 'red_door').
+
+    Returns:
+        bool: True if the key unlocks the door, False otherwise.
+    """
+    # Extract the color of the key and the door
+    key_color = key.split("_")[0]
+    door_color = door.split("_")[0]
+
+    # Check if the colors match
+    return key_color == door_color
+
+
+
+def blocking(state, obj, door):
+    """
+    Check if a specific object is blocking a door (i.e., adjacent to it).
+
+    Args:
+        state (dict): The game state.
+        obj (str): The name of the object to check (e.g., 'red_ball').
+        door (str): The name of the door to check (e.g., 'red_door').
+
+    Returns:
+        bool: True if the object is blocking the door, False otherwise.
+    """
+    # Combine all possible door representations
+    possible_door_keys = [f"{prefix}_{door}" for prefix in ["locked", "closed", "open"]]
+    door_coords = []
+    for key in possible_door_keys:
+        door_coords.extend(state.get(key, []))
+
+    obj_coords = state.get(obj, [])
+
+    # Check if any coordinate of the object is adjacent to the door
+    for (dx, dy) in door_coords:
+        for (ox, oy) in obj_coords:
+            if abs(dx - ox) + abs(dy - oy) == 1:  # Manhattan distance = 1
+                return True
+
+    return False
+
+
+
+def clear(state, door):
+    """
+    Check if a door is clear (i.e., no objects except excluded entities like 'grey_wall',
+    'red_agent', 'agent_direction', and 'agent_carrying' are adjacent to it).
+
+    Args:
+        state (dict): The game state.
+        door (str): The name of the door to check (e.g., 'red_door').
+
+    Returns:
+        bool: True if the door is clear, False otherwise.
+    """
+    # Combine all possible door representations
+    possible_door_keys = [f"{prefix}_{door}" for prefix in ["locked", "closed", "open"]]
+    door_coords = []
+    for key in possible_door_keys:
+        door_coords.extend(state.get(key, []))
+
+    # Objects to exclude from "blocking" the door
+    excluded_objects = {"grey_wall", "red_agent", "agent_direction", "agent_carrying"} | set(possible_door_keys)
+
+    # Iterate over all objects in the state
+    for obj, obj_coords in state.items():
+        if obj in excluded_objects:  # Skip excluded objects
+            continue
+
+        # Check if any coordinate of the object is adjacent to the door
+        for (dx, dy) in door_coords:
+            for (ox, oy) in obj_coords:
+                if abs(dx - ox) + abs(dy - oy) == 1:  # Manhattan distance = 1
+                    return False
+
+    return True
+
+
+
+
+
+
+def inventory_full(state):
+    """
+    Check if the agent's inventory is full.
+
+    Args:
+        state (dict): The game state.
+
+    Returns:
+        bool: True if the inventory is full, False otherwise.
+    """
+    # Check if the agent is carrying "none"
+    for item in state.get("agent_carrying", []):
+        if item["type"] == "none" and item["color"] == "none":
+            return False
+    return True
+
