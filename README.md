@@ -147,3 +147,12 @@ the same name when new code is generated.
 
 
 At each prompt enter an action (e.g. `up`, `down`, `left`, `right`). The script displays the predicted next state from the world model, the actual state from the environment, and whether the predicate is satisfied.
+
+## Acknowledgements
+
+This repo build's off of https://github.com/c-j-bates/model-based-rl-with-llms.
+
+
+
+
+
