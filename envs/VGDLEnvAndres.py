@@ -192,6 +192,13 @@ class VGDLEnvAndres(object):
         # screen = (screen * 255).astype(np.uint8)  # Convert back to uint8
         imageio.imsave(filename, self.Env.render())
 
+    def get_rgb_frame(self):
+        """Return the current full-resolution RGB frame as a uint8 HxWx3 array.
+
+        Used to build per-attempt GIFs of the executed action sequence.
+        """
+        return np.asarray(self.Env.render(), dtype=np.uint8)
+
 
 
     def get_screen(self):

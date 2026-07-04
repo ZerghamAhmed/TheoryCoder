@@ -233,6 +233,15 @@ class BabyAI:
         """
         return deepcopy(self.state)
 
+    def get_rgb_frame(self):
+        """Return the current full-resolution RGB frame as a uint8 HxWx3 array.
+
+        Uses MiniGrid's get_frame() so it works regardless of render_mode.
+        Used to build per-attempt GIFs of the executed action sequence.
+        """
+        import numpy as np
+        return np.asarray(self.env.unwrapped.get_frame(), dtype=np.uint8)
+
     def close(self):
         """
         Close the environment.

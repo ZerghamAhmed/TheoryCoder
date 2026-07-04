@@ -3132,12 +3132,63 @@ class TheoryCoderAgent:
 
 
 
+    def _capture_gif_frame(self):
+        """Append the engine's current RGB frame to the per-attempt GIF buffer.
+
+        No-op (and never raises) if the engine can't render, so visualization
+        can never break a run.
+        """
+        if not hasattr(self, "gif_frames"):
+            self.gif_frames = []
+        try:
+            getter = getattr(self.engine, "get_rgb_frame", None)
+            if getter is None:
+                inner = getattr(self.engine, "env", None)
+                getter = getattr(inner, "get_rgb_frame", None) if inner is not None else None
+            if getter is None:
+                return
+            frame = getter()
+            if frame is not None:
+                self.gif_frames.append(frame)
+        except Exception as e:
+            print(f"[gif] frame capture skipped: {e}")
+
+    def _save_gif(self, outcome, attempt):
+        """Write the buffered frames to a GIF under experiment_dir/gifs, then clear.
+
+        Called at every attempt conclusion (won / lost / nowin) so failed action
+        sequences are visualized too. No-op if no frames were captured.
+        """
+        frames = getattr(self, "gif_frames", None)
+        if not frames:
+            return
+        try:
+            import imageio
+            gif_dir = os.path.join(self.logger.experiment_dir, "gifs")
+            os.makedirs(gif_dir, exist_ok=True)
+            path = os.path.join(
+                gif_dir, f"level_{self.current_level}_attempt_{attempt}_{outcome}.gif"
+            )
+            imageio.mimsave(path, frames, duration=0.2)
+            print(f"[gif] saved {len(frames)} frames -> {path}")
+        except Exception as e:
+            print(f"[gif] failed to save: {e}")
+        finally:
+            self.gif_frames = []
+
     def step_env(self, action):
 
         # Step the game engine and append to history
 
+        # Capture the starting frame of this attempt's action sequence (for GIFs)
+        if not getattr(self, "gif_frames", None):
+            self._capture_gif_frame()
+
         self.engine.step(action)
         state = deepcopy(self.engine.get_obs())
+
+        # Capture the frame after the action for the GIF buffer
+        self._capture_gif_frame()
 
         if isinstance(self.engine, BabaIsYou):
             state = process_state_baba(state)
@@ -3368,6 +3419,7 @@ class TheoryCoderAgent:
                         self.level_statistics[level_key]["attempts"] = attempt_count
                         self._save_level_summary(level_key)
 
+                        self._save_gif("won", attempt_count)
                         return True
 
                     # Check if the agent lost (e.g., died or failed critically)
@@ -3378,6 +3430,7 @@ class TheoryCoderAgent:
                         self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["revisions"] = revision_count
                         self.level_statistics[f"{self.engine.level_set}_{self.current_level}"]["debugs"] = debug_count
                         print("AGENT DIED")
+                        self._save_gif("lost", attempt_count)
                         if self.current_level == 3 and self._get_game_name() == "minihack":
                             self._revise_lvl3_bundle()
                         else:
@@ -3392,6 +3445,7 @@ class TheoryCoderAgent:
                 if (not self.engine.won and not self.engine.lost
                         and not model_was_revised and plan):
                     print("Plan executed but no win/loss — revising WM from silent failure")
+                    self._save_gif("nowin", attempt_count)
                     if self.current_level == 3 and self._get_game_name() == "minihack":
                         self._revise_lvl3_bundle()
                     else:
@@ -3414,6 +3468,7 @@ class TheoryCoderAgent:
                             self.tape[-1]['exit_condition'] = 'won'
                             print(f"\n===== WON level {self.current_level}! =====")
                             print(f"Actions that led to win: {self.actions}")
+                            self._save_gif("won", attempt_count)
                             return True
 
                         # Check if the agent lost (e.g., died or failed critically)
@@ -3421,9 +3476,10 @@ class TheoryCoderAgent:
                             self.tape[-1]['exit_condition'] = 'lost'
                     
                             print(self.engine.get_obs())
+                            self._save_gif("lost", attempt_count)
                             attempt_count += 1
 
-                            
+
                             break
 
                 
@@ -3628,8 +3684,8 @@ class TheoryCoderAgent:
             print("LEVEL TERMINATED")
             print(self.engine.get_obs())
 
-
-     
+            # Flush any remaining frames from the final (unsaved) attempt
+            self._save_gif("terminated", locals().get("attempt_count", 0))
 
             # timing_run will auto-save timings JSON here
             return False

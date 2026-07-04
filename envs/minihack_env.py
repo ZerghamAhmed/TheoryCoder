@@ -79,8 +79,9 @@ class MinihackEnv:
 
         self.env = gym.make(
             self.env_name,
-            observation_keys=("screen_descriptions","message","inv_strs","inv_letters")
+            observation_keys=("screen_descriptions","message","inv_strs","inv_letters","pixel")
         )
+        self._last_frame = None
 
         # ---------------------------------------------------
         # ACTION SET HANDLING
@@ -166,6 +167,7 @@ class MinihackEnv:
     # ----------------------------------------------------
     def reset(self):
         obs, info = self.env.reset(seed=self.seed)
+        self._last_frame = obs.get("pixel")
 
         inv=[]
         if "inv_strs" in obs:
@@ -198,6 +200,7 @@ class MinihackEnv:
             a=int(action)
 
         obs, reward, terminated, truncated, info = self.env.step(a)
+        self._last_frame = obs.get("pixel")
         done = terminated or truncated
 
         inv_items=[]
@@ -326,3 +329,14 @@ class MinihackEnv:
     def save_screen(self, path=None):
         img=Image.new("L",(240,40),color=255)
         Path(path or f"minihack_{self.turn_number}.png").write_bytes(img.tobytes())
+
+    def get_rgb_frame(self):
+        """Return the latest MiniHack pixel frame as a uint8 HxWx3 array (or None).
+
+        Sourced from the env's "pixel" observation. Used to build per-attempt
+        GIFs of the executed action sequence.
+        """
+        if self._last_frame is None:
+            return None
+        import numpy as np
+        return np.asarray(self._last_frame, dtype=np.uint8)
