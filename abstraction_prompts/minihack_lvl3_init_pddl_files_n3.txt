@@ -1,0 +1,165 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Can you give me a minimal PDDL domain and problem file for this setup that will allow the agent to win the game? Think in terms of the most minimal abstract files you can.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+
+There is no reference to coordinates or spatial concepts, like connections etc. For example, you can assume that there are objects and they can be ontop of one another
+but do not assume there are physical locations. For example, do NOT propose the predciate "at" or any other position style predicate. In order to express
+these types of relationship you can think of the objects being in the same position as overlapping or being on top of one another.
+
+DO NOT PROPOSE PREDCIATES THAT IMPLY SPATIAL RELATIONS LIKE FROM OR TO!!!!!
+
+for any new operator you propose make sure it only has 1 effect and precondition!!!!!!!!!!!! ONLY PROPOSE ONE NEW OPERATOR!!!
+
+
+The raw state dictionary keys are considered traversable.
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Do NOT use symbols like "-" for the predicate names. For example, the predicate "avatar-at" should NOT be proposed since it has a "-".
+Please use all LOWERCASE for the operator names as well!!!!!!!!!! USE ONLY one WORD predicates and do not use python function names like "in", etc as the
+predicate name.
+
+FOLLOW THESE EXAMPLES CLOSELY
+
+DO NOT MAKE PDDL PROGRAMS WITHOUT ANY Paramaters for the actions
+
+
+BEGIN EXAMPLE
+
+state is 'table': [3, 4], 'mug', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (ontop mug table))
+  )
+
+  (:goal
+  ; mug will overlap with table 'table': [4, 4], 'mug', [4, 4]
+    (ontop mug table)
+  )
+)
+
+END EXAMPLE
+
+BEGIN EXAMPLE 2
+
+state is 'agent': [3, 4], 'apple', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (eaten ?x - object ?y - object)
+  )
+
+  (:action eat
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (eaten ?obj1 ?obj2))
+    :effect (eaten ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (eaten agent apple))
+  )
+
+  (:goal
+    (eaten agent apple)
+  )
+)
+
+END EXAMPLE 2
+
+BEGIN EXAMPLE 3
+
+state is 'agent': [6, 3], 'blocked_gold_window': [4,4], 'unblocked_silver_window': [1,4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (unblocked ?x - object)
+  )
+
+  (:action clear
+    :parameters (?x - object)
+    :precondition (not (unblocked ?x))
+    :effect (unblocked ?x)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple gold_window - object
+  )
+
+  (:init
+    ; the end goal is to eat the apple
+    (not (unblocked gold_window))
+  )
+
+  (:goal
+    (unblocked gold_window)
+  )
+)
+
+END EXAMPLE 3
+
+Raw state of game (generate the files for this):
+
+{raw_state}
+
+Domain Description:
+
+Kill the minotaur to win.
+
+STRUCTURAL CONSTRAINTS (these must hold or the planner will crash):
+1. The predicate signature MUST take the SAME number of parameters as the operator that produces it. If the operator has two parameters (e.g., `:parameters (?attacker ?target)`), the predicate it sets must also have two parameters (e.g., `(killed ?attacker - object ?target - object)`). A 2-arg operator paired with a 0-arg or 1-arg predicate is a fatal mismatch.
+2. The problem `:objects` list MUST include every object name your goal or init clauses reference, using the exact keys from the raw state dict (e.g., `agent`, `minotaur`, `wand`).
+3. The goal MUST ground each operator parameter to a DISTINCT object. Do not bind two parameters to the same object (e.g., goal `(killed agent agent)` is wrong; `(killed agent minotaur)` is correct).

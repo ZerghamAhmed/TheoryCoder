@@ -1,0 +1,81 @@
+{
+  "events": [
+    {
+      "ts": 1782935957.743062,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.09940641699358821,
+      "level": 0
+    },
+    {
+      "ts": 1782935975.4699972,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 17.523947125009727,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 23850,
+      "completion_tokens": 2066,
+      "total_tokens": 25916
+    },
+    {
+      "ts": 1782935992.4767518,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 16.99958162504481,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1545,
+      "completion_tokens": 1579,
+      "total_tokens": 3124
+    },
+    {
+      "ts": 1782935992.498899,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move avatar goal",
+      "duration_s": 0.014714624965563416
+    }
+  ],
+  "rollup": {
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.09940641699358821,
+        "mean_s": 0.09940641699358821,
+        "max_s": 0.09940641699358821,
+        "min_s": 0.09940641699358821
+      }
+    },
+    "llm": {
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 17.523947125009727,
+        "mean_s": 17.523947125009727,
+        "max_s": 17.523947125009727,
+        "min_s": 17.523947125009727
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 16.99958162504481,
+        "mean_s": 16.99958162504481,
+        "max_s": 16.99958162504481,
+        "min_s": 16.99958162504481
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:move avatar goal": {
+        "count": 1,
+        "total_s": 0.014714624965563416,
+        "mean_s": 0.014714624965563416,
+        "max_s": 0.014714624965563416,
+        "min_s": 0.014714624965563416
+      }
+    }
+  },
+  "meta": {
+    "game": "labyrinth",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782935957.6430569
+  }
+}

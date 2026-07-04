@@ -1,0 +1,151 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+You are given an existing PDDL domain file that was learned from a previous level. Your task is to EXTEND this domain by adding ONE new operator to handle new mechanics in the current level, then generate a new PDDL problem file for this level.
+
+IMPORTANT: DO NOT delete or modify the existing operators in the domain file. You are ADDING to the domain, not replacing it.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+When you DO declare an object, use its state-dict key name VERBATIM — do NOT invent variants like 'red_key_1', 'red_key_2'. If a state-dict entry is a single key with a list of positions (e.g. 'red_key': [[x1, y1], [x2, y2], [x3, y3]]), it is ONE PDDL object named 'red_key'.
+ONLY declare in (:objects ...) the objects that actually appear in (:init ...), (:goal ...), or are needed by an action's parameters. Do NOT include unrelated state-dict keys just to be exhaustive — extra objects with no matching type in the domain cause the planner to reject the problem file.
+
+Each PDDL object must be declared EXACTLY ONCE in (:objects ...) under one type. Do NOT list the same object name under multiple - type clauses. Pick the most specific type per object and use it ONCE.
+Correct form (each object appears once):
+  (:objects
+    obj_a obj_b - typeT
+    obj_c - typeU
+  )
+Incorrect form (rejected by the planner — same object under two types):
+  (:objects
+    obj_a obj_b obj_c - object
+    obj_a - typeT          ;; duplicate
+    obj_c - typeU          ;; duplicate
+  )
+
+There is no reference to coordinates or spatial concepts, like connections etc. For example, you can assume that there are objects and they can be ontop of one another
+but do not assume there are physical locations. For example, do NOT propose the predciate "at" or any other position style predicate. In order to express
+these types of relationship you can think of the objects being in the same position as overlapping or being on top of one another.
+
+DO NOT PROPOSE PREDCIATES THAT IMPLY SPATIAL RELATIONS LIKE FROM OR TO!!!!!
+
+ONLY propose ONE new operator and ONE new predicate. Make sure it only has 1 effect and 1 precondition!
+
+The raw state dictionary keys are considered traversable.
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Do NOT use symbols like "-" for the predicate names. For example, the predicate "avatar-at" should NOT be proposed since it has a "-".
+Please use all LOWERCASE for the operator names as well!!!!!!!!!!
+
+IMPORTANT: Use PROPER PDDL TYPING to distinguish between different categories of objects!
+Objects that play different roles in actions should have different types. This prevents the planner from making invalid substitutions.
+PRESERVE the existing types from the domain file and ADD new types if needed for new objects.
+
+TYPE COMPATIBILITY (avoid type mismatches with existing predicates):
+When your new operator's precondition references an EXISTING predicate from the prior domain, the argument types you pass MUST match that predicate's declared parameter types.
+If an existing predicate is declared as `(somepred ?x - typeT)` and your new operator's precondition includes `(somepred ?z)`, then `?z` must be declared as either:
+  (a) `?z - typeT` directly (reusing the existing type), OR
+  (b) `?z - newtype` where `newtype - typeT` is added to the :types section (declaring `newtype` as a subtype of `typeT`).
+Do NOT introduce a sibling type that is unrelated to `typeT` and then pass it where `typeT` is expected — the planner will ground zero operators and produce no plan.
+
+VARIABLES IN PRECONDITIONS AND EFFECTS (avoid hardcoded object names):
+An action's :precondition and :effect may ONLY reference variables declared in that action's :parameters (the `?` symbols). Do NOT use bare object names from the problem file (like `obj_a`) inside an action's :precondition or :effect — every entity referenced must be a declared parameter. If the action needs an extra entity, ADD it to the :parameters list.
+For example, this is INVALID and the planner will reject the domain:
+  (:action use_tool
+    :parameters (?a - agent ?t - target)
+    :precondition (holding ?a tool_a)   ;; `tool_a` is not a parameter — INVALID
+    :effect (used ?t))
+Correct form: declare every referenced entity as a parameter, e.g. `:parameters (?a - agent ?tool - item ?t - target)` and reference `?tool` in the precondition.
+
+Few shot example of what extending a domain should look like:
+
+BEGIN EXAMPLE
+
+Existing domain file from previous level:
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+)
+
+Current level state: 'table': [3, 4], 'mug': [4, 4], 'lid': [5, 5]
+
+Extended domain (NOTICE: kept the placeontopof operator and ADDED a new operator):
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+    (covering ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+
+  (:action cover
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (covering ?obj1 ?obj2))
+    :effect (covering ?obj1 ?obj2)
+  )
+)
+
+New problem file for current level:
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug lid - object
+  )
+
+  (:init
+    (not (ontop mug table))
+    (not (covering lid mug))
+  )
+
+  (:goal
+    (and
+      (ontop mug table)
+      (covering lid mug)
+    )
+  )
+)
+
+END EXAMPLE
+
+
+Existing Domain File (from previous level - DO NOT DELETE EXISTING OPERATORS):
+
+{domain_file}
+
+Raw state of current level (extend domain and generate problem for this):
+
+{raw_state}
+
+
+Mission for this level: {mission}
+
+
+REMEMBER:
+1. KEEP all existing operators and predicates from the domain file
+2. ADD exactly ONE new operator and ONE new predicate to handle new mechanics in this level
+3. Generate a new problem file for the current level's state and mission
+4. Make sure the new operator has only 1 precondition and 1 effect

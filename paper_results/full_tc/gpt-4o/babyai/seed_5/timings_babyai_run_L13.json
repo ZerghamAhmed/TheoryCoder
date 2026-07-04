@@ -1,0 +1,76 @@
+{
+  "events": [
+    {
+      "ts": 1781984844.689695,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 1.450042416996439,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 2567,
+      "completion_tokens": 264,
+      "total_tokens": 2831
+    },
+    {
+      "ts": 1781984844.8124769,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.12156466700253077,
+      "level": 13
+    },
+    {
+      "ts": 1781984883.5004008,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent purple_key",
+      "duration_s": 38.67318024999986
+    },
+    {
+      "ts": 1781984900.925697,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:unlockdoor red_agent purple_key purple_door_1",
+      "duration_s": 17.425344834002317
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 1.450042416996439,
+        "mean_s": 1.450042416996439,
+        "max_s": 1.450042416996439,
+        "min_s": 1.450042416996439
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.12156466700253077,
+        "mean_s": 0.12156466700253077,
+        "max_s": 0.12156466700253077,
+        "min_s": 0.12156466700253077
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickkey red_agent purple_key": {
+        "count": 1,
+        "total_s": 38.67318024999986,
+        "mean_s": 38.67318024999986,
+        "max_s": 38.67318024999986,
+        "min_s": 38.67318024999986
+      },
+      "exploit_subplan:unlockdoor red_agent purple_key purple_door_1": {
+        "count": 1,
+        "total_s": 17.425344834002317,
+        "mean_s": 17.425344834002317,
+        "max_s": 17.425344834002317,
+        "min_s": 17.425344834002317
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 13,
+    "started_ts": 1781984843.238796
+  }
+}

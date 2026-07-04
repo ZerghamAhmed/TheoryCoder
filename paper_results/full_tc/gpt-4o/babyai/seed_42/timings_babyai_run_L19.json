@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1781984613.176803,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 2.1954104589967756,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1319,
+      "completion_tokens": 408,
+      "total_tokens": 1727
+    },
+    {
+      "ts": 1781984613.303788,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.12423099999432452,
+      "level": 19
+    },
+    {
+      "ts": 1781984620.2276301,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 4.888110166997649,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 6995,
+      "completion_tokens": 1066,
+      "total_tokens": 8061
+    },
+    {
+      "ts": 1781984621.8654542,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 1.6290317499951925,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 701,
+      "completion_tokens": 307,
+      "total_tokens": 1008
+    },
+    {
+      "ts": 1781984621.888282,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent yellow_key",
+      "duration_s": 0.010780999989947304
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 2.1954104589967756,
+        "mean_s": 2.1954104589967756,
+        "max_s": 2.1954104589967756,
+        "min_s": 2.1954104589967756
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 4.888110166997649,
+        "mean_s": 4.888110166997649,
+        "max_s": 4.888110166997649,
+        "min_s": 4.888110166997649
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 1.6290317499951925,
+        "mean_s": 1.6290317499951925,
+        "max_s": 1.6290317499951925,
+        "min_s": 1.6290317499951925
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.12423099999432452,
+        "mean_s": 0.12423099999432452,
+        "max_s": 0.12423099999432452,
+        "min_s": 0.12423099999432452
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickkey red_agent yellow_key": {
+        "count": 1,
+        "total_s": 0.010780999989947304,
+        "mean_s": 0.010780999989947304,
+        "max_s": 0.010780999989947304,
+        "min_s": 0.010780999989947304
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 19,
+    "started_ts": 1781984610.980629
+  }
+}

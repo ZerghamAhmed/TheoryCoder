@@ -1,0 +1,8 @@
+
+        Level: 1
+        Revisions: 0
+        Attempts: 0
+        Final Status: Won
+        First Letters: dddddddddddddd
+        Actions: ['down_right', 'left', 'down_right', 'up_left', 'down', 'up', 'down', 'up', 'down_right', 'right', 'up_left', 'up_right', 'right', 'up', 'up_left', 'down', 'down', 'down', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right', 'down_right']
+                        

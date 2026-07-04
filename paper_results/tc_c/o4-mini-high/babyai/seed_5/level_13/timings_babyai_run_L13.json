@@ -1,0 +1,123 @@
+{
+  "events": [
+    {
+      "ts": 1783017807.542777,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 18.862941332976334,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2572,
+      "completion_tokens": 1896,
+      "total_tokens": 4468
+    },
+    {
+      "ts": 1783017807.678564,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13434770901221782,
+      "level": 13
+    },
+    {
+      "ts": 1783017842.99581,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 33.269466541998554,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 58334,
+      "completion_tokens": 3962,
+      "total_tokens": 62296
+    },
+    {
+      "ts": 1783017852.522527,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 9.523962500039488,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1909,
+      "completion_tokens": 772,
+      "total_tokens": 2681
+    },
+    {
+      "ts": 1783017912.854642,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open-door purple_door_1",
+      "duration_s": 60.326746791019104
+    },
+    {
+      "ts": 1783018037.1546502,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 122.33980850002263,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 4949,
+      "completion_tokens": 16384,
+      "total_tokens": 21333
+    },
+    {
+      "ts": 1783018097.5193322,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open-door purple_door_1",
+      "duration_s": 60.341738041024655
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 18.862941332976334,
+        "mean_s": 18.862941332976334,
+        "max_s": 18.862941332976334,
+        "min_s": 18.862941332976334
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 33.269466541998554,
+        "mean_s": 33.269466541998554,
+        "max_s": 33.269466541998554,
+        "min_s": 33.269466541998554
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 9.523962500039488,
+        "mean_s": 9.523962500039488,
+        "max_s": 9.523962500039488,
+        "min_s": 9.523962500039488
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 122.33980850002263,
+        "mean_s": 122.33980850002263,
+        "max_s": 122.33980850002263,
+        "min_s": 122.33980850002263
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13434770901221782,
+        "mean_s": 0.13434770901221782,
+        "max_s": 0.13434770901221782,
+        "min_s": 0.13434770901221782
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:open-door purple_door_1": {
+        "count": 2,
+        "total_s": 120.66848483204376,
+        "mean_s": 60.33424241602188,
+        "max_s": 60.341738041024655,
+        "min_s": 60.326746791019104
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 13,
+    "started_ts": 1783017788.6785731
+  }
+}

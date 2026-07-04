@@ -1,0 +1,206 @@
+{
+  "events": [
+    {
+      "ts": 1782937244.503343,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 37.518645540985744,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2196,
+      "completion_tokens": 4097,
+      "total_tokens": 6293
+    },
+    {
+      "ts": 1782937244.6777558,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.17099758295807987,
+      "level": 13
+    },
+    {
+      "ts": 1782937245.1915,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door yellow_door_1",
+      "duration_s": 0.49845158302923664
+    },
+    {
+      "ts": 1782937290.738278,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door red_door_3",
+      "duration_s": 45.546981624967884
+    },
+    {
+      "ts": 1782937335.9812732,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door red_door_2",
+      "duration_s": 45.243191292043775
+    },
+    {
+      "ts": 1782937345.73207,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door red_door_1",
+      "duration_s": 9.750826124974992
+    },
+    {
+      "ts": 1782937347.7556942,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door purple_door_1",
+      "duration_s": 2.023601624998264
+    },
+    {
+      "ts": 1782937392.988162,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door grey_door_1",
+      "duration_s": 45.23266575002344
+    },
+    {
+      "ts": 1782937438.6306639,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door blue_door_2",
+      "duration_s": 45.64269870799035
+    },
+    {
+      "ts": 1782937483.875305,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door blue_door_1",
+      "duration_s": 45.24483441701159
+    },
+    {
+      "ts": 1782937484.278435,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent yellow_key",
+      "duration_s": 0.40311999997356907
+    },
+    {
+      "ts": 1782937529.520433,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent red_key",
+      "duration_s": 45.24219749995973
+    },
+    {
+      "ts": 1782937574.7604082,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent purple_key",
+      "duration_s": 45.24017054098658
+    },
+    {
+      "ts": 1782937580.299237,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent grey_key",
+      "duration_s": 5.538821041001938
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 37.518645540985744,
+        "mean_s": 37.518645540985744,
+        "max_s": 37.518645540985744,
+        "min_s": 37.518645540985744
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.17099758295807987,
+        "mean_s": 0.17099758295807987,
+        "max_s": 0.17099758295807987,
+        "min_s": 0.17099758295807987
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:open_door yellow_door_1": {
+        "count": 1,
+        "total_s": 0.49845158302923664,
+        "mean_s": 0.49845158302923664,
+        "max_s": 0.49845158302923664,
+        "min_s": 0.49845158302923664
+      },
+      "exploit_subplan:open_door red_door_3": {
+        "count": 1,
+        "total_s": 45.546981624967884,
+        "mean_s": 45.546981624967884,
+        "max_s": 45.546981624967884,
+        "min_s": 45.546981624967884
+      },
+      "exploit_subplan:open_door red_door_2": {
+        "count": 1,
+        "total_s": 45.243191292043775,
+        "mean_s": 45.243191292043775,
+        "max_s": 45.243191292043775,
+        "min_s": 45.243191292043775
+      },
+      "exploit_subplan:open_door red_door_1": {
+        "count": 1,
+        "total_s": 9.750826124974992,
+        "mean_s": 9.750826124974992,
+        "max_s": 9.750826124974992,
+        "min_s": 9.750826124974992
+      },
+      "exploit_subplan:open_door purple_door_1": {
+        "count": 1,
+        "total_s": 2.023601624998264,
+        "mean_s": 2.023601624998264,
+        "max_s": 2.023601624998264,
+        "min_s": 2.023601624998264
+      },
+      "exploit_subplan:open_door grey_door_1": {
+        "count": 1,
+        "total_s": 45.23266575002344,
+        "mean_s": 45.23266575002344,
+        "max_s": 45.23266575002344,
+        "min_s": 45.23266575002344
+      },
+      "exploit_subplan:open_door blue_door_2": {
+        "count": 1,
+        "total_s": 45.64269870799035,
+        "mean_s": 45.64269870799035,
+        "max_s": 45.64269870799035,
+        "min_s": 45.64269870799035
+      },
+      "exploit_subplan:open_door blue_door_1": {
+        "count": 1,
+        "total_s": 45.24483441701159,
+        "mean_s": 45.24483441701159,
+        "max_s": 45.24483441701159,
+        "min_s": 45.24483441701159
+      },
+      "exploit_subplan:pickup red_agent yellow_key": {
+        "count": 1,
+        "total_s": 0.40311999997356907,
+        "mean_s": 0.40311999997356907,
+        "max_s": 0.40311999997356907,
+        "min_s": 0.40311999997356907
+      },
+      "exploit_subplan:pickup red_agent red_key": {
+        "count": 1,
+        "total_s": 45.24219749995973,
+        "mean_s": 45.24219749995973,
+        "max_s": 45.24219749995973,
+        "min_s": 45.24219749995973
+      },
+      "exploit_subplan:pickup red_agent purple_key": {
+        "count": 1,
+        "total_s": 45.24017054098658,
+        "mean_s": 45.24017054098658,
+        "max_s": 45.24017054098658,
+        "min_s": 45.24017054098658
+      },
+      "exploit_subplan:pickup red_agent grey_key": {
+        "count": 1,
+        "total_s": 5.538821041001938,
+        "mean_s": 5.538821041001938,
+        "max_s": 5.538821041001938,
+        "min_s": 5.538821041001938
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 13,
+    "started_ts": 1782937206.9840472
+  }
+}

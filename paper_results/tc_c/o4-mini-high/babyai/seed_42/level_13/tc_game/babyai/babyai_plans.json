@@ -1,0 +1,8 @@
+{
+  "babyai_13.pddl": {
+    "level": 13,
+    "actions": [
+      "opendoor red_door_1"
+    ]
+  }
+}

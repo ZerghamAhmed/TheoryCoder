@@ -1,0 +1,20 @@
+{
+  "labyrinth_0.pddl": {
+    "level": 0,
+    "actions": [
+      "moveonto avatar goal"
+    ]
+  },
+  "maze_0.pddl": {
+    "level": 0,
+    "actions": [
+      "moveonto avatar cheese"
+    ]
+  },
+  "sokoban_0.pddl": {
+    "level": 0,
+    "actions": [
+      "moveonto avatar hole"
+    ]
+  }
+}

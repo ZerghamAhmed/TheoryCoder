@@ -1,0 +1,63 @@
+{
+  "events": [
+    {
+      "ts": 1782152141.9641259,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 1.1204809579940047,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1682,
+      "completion_tokens": 87,
+      "total_tokens": 1769
+    },
+    {
+      "ts": 1782152142.0813289,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.11578487500082701,
+      "level": 0
+    },
+    {
+      "ts": 1782152142.102323,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar cheese",
+      "duration_s": 0.011771833000238985
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 1.1204809579940047,
+        "mean_s": 1.1204809579940047,
+        "max_s": 1.1204809579940047,
+        "min_s": 1.1204809579940047
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.11578487500082701,
+        "mean_s": 0.11578487500082701,
+        "max_s": 0.11578487500082701,
+        "min_s": 0.11578487500082701
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:moveonto avatar cheese": {
+        "count": 1,
+        "total_s": 0.011771833000238985,
+        "mean_s": 0.011771833000238985,
+        "max_s": 0.011771833000238985,
+        "min_s": 0.011771833000238985
+      }
+    }
+  },
+  "meta": {
+    "game": "maze",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782152140.8428538
+  }
+}

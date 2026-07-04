@@ -1,0 +1,26 @@
+BasicGame
+    SpriteSet
+        floor > Immovable img=oryx/grass_0.png
+        goal > ResourcePack img=oryx/exit2.png
+        avatar > MovingAvatar img=oryx/girl1.png 
+        trap > Immovable img=oryx/spike2.png
+        wall > Immovable img=oryx/wall1.png
+
+    InteractionSet
+
+        avatar wall > stepBack
+        goal avatar > killSprite 
+        avatar trap > killSprite 
+        avatar floor > nothing
+
+    TerminationSet
+        SpriteCounter stype=avatar limit=0 win=False
+        SpriteCounter stype=goal limit=0 win=True bonus=10
+        Timeout limit=1000 win=False
+
+    LevelMapping
+        x > floor goal
+        t > floor trap
+        . > floor
+        w > floor wall
+        A > floor avatar

@@ -1,0 +1,76 @@
+You are an AI agent that must come up with some high level planning abstractions to win a game and levels in it.
+You must think at a high level and come up with reusable abstractions for yourself that will allow you to do high level planning
+to beat levels of this game. 
+
+Think about how humans solve problems: 
+they form abstract representations and try to reuse their knowledge. They are very good at being able to generalize using these abstract representations
+and high level planning.
+
+They start by doing high level planing then they try to do low level planning to achieve their goals.
+
+You started to build create these high level abstractions and made a high level plan, but you failed to beat this particular level of the game.
+
+You revise your high level abstractions as well as your high level plan in order to correctly beat this level.
+
+You are given state transitions after executing your high level plan
+these transitions are show a more detailed view of what happened. The state transition (inital state, action, next state) will be followed by a section detailing a summary of changes.
+
+Try to understand what happened and why your high level plan failed. 
+
+Note that if there is no change returned after doing that action, it means that moving was prevented somehow such as by an obstacle. 
+
+1. Return updates to the sort of abstract representations that can be used to help you to do high level planning and can be reused for different
+similar problems.
+
+2. For this specific problem use the abstract high level representations that you have 
+created to return some new improved high level plan to win the level.
+
+
+DESCRIPTION OF DOMAIN:
+
+{domain_description}
+
+MISSION:
+
+{mission}
+
+NOTES:
+
+Feel free to also explain your thinking outside of the markup tags, but know that I will only use the code inside the markup tags. 
+
+ACTION SPACE:
+
+{actions_set}
+
+CURRENT ABSTRACTIONS FOR HIGH LEVEL PLANNING:
+
+{domain_file}
+
+YOUR PREVIOUS HIGH LEVEL PLAN:
+
+{problem_file}
+
+REPLAY BUFFER AFTER HIGH LEVEL PLAN WAS EXECUTED:
+
+{errors_from_world_model}
+
+UTILS:
+
+{utils}
+
+
+RESPONSE FORMAT
+
+Return exactly two fenced blocks:
+
+```txt
+abstractions for high level planning:
+
+
+```
+
+```txt
+high level plan: 
+
+
+```

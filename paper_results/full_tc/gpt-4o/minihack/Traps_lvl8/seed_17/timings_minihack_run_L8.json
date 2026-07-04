@@ -1,0 +1,43 @@
+{
+  "events": [
+    {
+      "ts": 1782507909.384216,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.10839358300000002,
+      "level": 8
+    },
+    {
+      "ts": 1782507909.590716,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 0.199529458
+    }
+  ],
+  "rollup": {
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.10839358300000002,
+        "mean_s": 0.10839358300000002,
+        "max_s": 0.10839358300000002,
+        "min_s": 0.10839358300000002
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_down": {
+        "count": 1,
+        "total_s": 0.199529458,
+        "mean_s": 0.199529458,
+        "max_s": 0.199529458,
+        "min_s": 0.199529458
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 8,
+    "started_ts": 1782507909.275131
+  }
+}

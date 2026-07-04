@@ -1,0 +1,26 @@
+BasicGame
+    SpriteSet
+        floor > Immovable img=oryx/floo1.png
+        cheese > ResourcePack img=newset/cheese.png
+        avatar > MovingAvatar img=oryx/rat1.png 
+        trap > Immovable img=oryx/spike2.png
+        wall > Immovable img=oryx/dirtWall_0.png
+
+    InteractionSet
+
+        avatar wall > stepBack
+        cheese avatar > killSprite 
+        avatar trap > killSprite 
+        avatar floor > nothing
+
+    TerminationSet
+        SpriteCounter stype=avatar limit=0 win=False
+        SpriteCounter stype=cheese limit=0 win=True bonus=10
+        Timeout limit=1000 win=False
+
+    LevelMapping
+        x > floor cheese
+        t > floor trap
+        . > floor
+        w > floor wall
+        A > floor avatar

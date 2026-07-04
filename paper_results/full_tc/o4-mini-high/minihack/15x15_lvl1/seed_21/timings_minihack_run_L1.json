@@ -1,0 +1,76 @@
+{
+  "events": [
+    {
+      "ts": 1782938831.6942122,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 14.352802208,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1229,
+      "completion_tokens": 1734,
+      "total_tokens": 2963
+    },
+    {
+      "ts": 1782938831.857686,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15904604099999986,
+      "level": 1
+    },
+    {
+      "ts": 1782938831.9068632,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_up",
+      "duration_s": 0.04180824999999899
+    },
+    {
+      "ts": 1782938832.0496068,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 0.14274062500000184
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 14.352802208,
+        "mean_s": 14.352802208,
+        "max_s": 14.352802208,
+        "min_s": 14.352802208
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15904604099999986,
+        "mean_s": 0.15904604099999986,
+        "max_s": 0.15904604099999986,
+        "min_s": 0.15904604099999986
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_up": {
+        "count": 1,
+        "total_s": 0.04180824999999899,
+        "mean_s": 0.04180824999999899,
+        "max_s": 0.04180824999999899,
+        "min_s": 0.04180824999999899
+      },
+      "exploit_subplan:descend human_rogue_called_agent staircase_down": {
+        "count": 1,
+        "total_s": 0.14274062500000184,
+        "mean_s": 0.14274062500000184,
+        "max_s": 0.14274062500000184,
+        "min_s": 0.14274062500000184
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 1,
+    "started_ts": 1782938817.340595
+  }
+}

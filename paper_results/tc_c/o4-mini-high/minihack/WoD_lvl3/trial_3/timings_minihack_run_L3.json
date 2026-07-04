@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1783018746.264422,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 15.173175166000002,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1392,
+      "completion_tokens": 1346,
+      "total_tokens": 2738
+    },
+    {
+      "ts": 1783018746.3942919,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.12834608400000036,
+      "level": 3
+    },
+    {
+      "ts": 1783018782.1325681,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 35.716926875,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 6558,
+      "completion_tokens": 4153,
+      "total_tokens": 10711
+    },
+    {
+      "ts": 1783018789.801472,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 7.666768667000007,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2423,
+      "completion_tokens": 878,
+      "total_tokens": 3301
+    },
+    {
+      "ts": 1783018807.456067,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:kill agent minotaur",
+      "duration_s": 17.650470917000007
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 15.173175166000002,
+        "mean_s": 15.173175166000002,
+        "max_s": 15.173175166000002,
+        "min_s": 15.173175166000002
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 35.716926875,
+        "mean_s": 35.716926875,
+        "max_s": 35.716926875,
+        "min_s": 35.716926875
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 7.666768667000007,
+        "mean_s": 7.666768667000007,
+        "max_s": 7.666768667000007,
+        "min_s": 7.666768667000007
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.12834608400000036,
+        "mean_s": 0.12834608400000036,
+        "max_s": 0.12834608400000036,
+        "min_s": 0.12834608400000036
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:kill agent minotaur": {
+        "count": 1,
+        "total_s": 17.650470917000007,
+        "mean_s": 17.650470917000007,
+        "max_s": 17.650470917000007,
+        "min_s": 17.650470917000007
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 3,
+    "started_ts": 1783018731.090189
+  }
+}

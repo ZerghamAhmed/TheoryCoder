@@ -1,0 +1,134 @@
+{
+  "events": [
+    {
+      "ts": 1782792956.2389581,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 4.936845207999999,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1393,
+      "completion_tokens": 256,
+      "total_tokens": 1649
+    },
+    {
+      "ts": 1782792956.367054,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.12670712500000025,
+      "level": 3
+    },
+    {
+      "ts": 1782792968.816639,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 12.427856749999998,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 6596,
+      "completion_tokens": 960,
+      "total_tokens": 7556
+    },
+    {
+      "ts": 1782792971.690231,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 2.8715589170000015,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1940,
+      "completion_tokens": 161,
+      "total_tokens": 2101
+    },
+    {
+      "ts": 1782793092.327395,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:slay agent minotaur",
+      "duration_s": 120.63728575
+    },
+    {
+      "ts": 1782793108.190401,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 15.843231583999994,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 7113,
+      "completion_tokens": 881,
+      "total_tokens": 7994
+    },
+    {
+      "ts": 1782793110.2747982,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 2.0825145830000054,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1821,
+      "completion_tokens": 155,
+      "total_tokens": 1976
+    },
+    {
+      "ts": 1782793110.514312,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:slay agent minotaur",
+      "duration_s": 0.23179604200001336
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 4.936845207999999,
+        "mean_s": 4.936845207999999,
+        "max_s": 4.936845207999999,
+        "min_s": 4.936845207999999
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 12.427856749999998,
+        "mean_s": 12.427856749999998,
+        "max_s": 12.427856749999998,
+        "min_s": 12.427856749999998
+      },
+      "init_predicates": {
+        "count": 2,
+        "total_s": 4.954073500000007,
+        "mean_s": 2.4770367500000035,
+        "max_s": 2.8715589170000015,
+        "min_s": 2.0825145830000054
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 15.843231583999994,
+        "mean_s": 15.843231583999994,
+        "max_s": 15.843231583999994,
+        "min_s": 15.843231583999994
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.12670712500000025,
+        "mean_s": 0.12670712500000025,
+        "max_s": 0.12670712500000025,
+        "min_s": 0.12670712500000025
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:slay agent minotaur": {
+        "count": 2,
+        "total_s": 120.86908179200002,
+        "mean_s": 60.43454089600001,
+        "max_s": 120.63728575,
+        "min_s": 0.23179604200001336
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 3,
+    "started_ts": 1782792951.3016949
+  }
+}

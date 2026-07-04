@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1782500087.987295,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 2.952463042,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1058,
+      "completion_tokens": 149,
+      "total_tokens": 1207
+    },
+    {
+      "ts": 1782500088.1380439,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.14458466700000017,
+      "level": 0
+    },
+    {
+      "ts": 1782500094.941165,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 6.787920458,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 2556,
+      "completion_tokens": 511,
+      "total_tokens": 3067
+    },
+    {
+      "ts": 1782500100.536195,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 5.592640708000001,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 886,
+      "completion_tokens": 338,
+      "total_tokens": 1224
+    },
+    {
+      "ts": 1782500100.5720372,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human",
+      "duration_s": 0.02580570800000004
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 2.952463042,
+        "mean_s": 2.952463042,
+        "max_s": 2.952463042,
+        "min_s": 2.952463042
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 6.787920458,
+        "mean_s": 6.787920458,
+        "max_s": 6.787920458,
+        "min_s": 6.787920458
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 5.592640708000001,
+        "mean_s": 5.592640708000001,
+        "max_s": 5.592640708000001,
+        "min_s": 5.592640708000001
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.14458466700000017,
+        "mean_s": 0.14458466700000017,
+        "max_s": 0.14458466700000017,
+        "min_s": 0.14458466700000017
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human": {
+        "count": 1,
+        "total_s": 0.02580570800000004,
+        "mean_s": 0.02580570800000004,
+        "max_s": 0.02580570800000004,
+        "min_s": 0.02580570800000004
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782500085.032725
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "events": [
+    {
+      "ts": 1782938650.821939,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 11.941283666,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1231,
+      "completion_tokens": 1531,
+      "total_tokens": 2762
+    },
+    {
+      "ts": 1782938650.953353,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13023700000000105,
+      "level": 1
+    },
+    {
+      "ts": 1782938651.006382,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:gotostair human_rogue_called_agent staircase_up",
+      "duration_s": 0.045925540999999015
+    },
+    {
+      "ts": 1782938651.1623092,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:gotostair human_rogue_called_agent staircase_down",
+      "duration_s": 0.15592324999999896
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 11.941283666,
+        "mean_s": 11.941283666,
+        "max_s": 11.941283666,
+        "min_s": 11.941283666
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13023700000000105,
+        "mean_s": 0.13023700000000105,
+        "max_s": 0.13023700000000105,
+        "min_s": 0.13023700000000105
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:gotostair human_rogue_called_agent staircase_up": {
+        "count": 1,
+        "total_s": 0.045925540999999015,
+        "mean_s": 0.045925540999999015,
+        "max_s": 0.045925540999999015,
+        "min_s": 0.045925540999999015
+      },
+      "exploit_subplan:gotostair human_rogue_called_agent staircase_down": {
+        "count": 1,
+        "total_s": 0.15592324999999896,
+        "mean_s": 0.15592324999999896,
+        "max_s": 0.15592324999999896,
+        "min_s": 0.15592324999999896
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 1,
+    "started_ts": 1782938638.8793468
+  }
+}

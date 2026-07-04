@@ -1,0 +1,22 @@
+{
+  "babyai_19.pddl": {
+    "level": 19,
+    "actions": [
+      "pickkey red_agent yellow_key"
+    ]
+  },
+  "babyai_23.pddl": {
+    "level": 23,
+    "actions": [
+      "pickkey red_agent red_key",
+      "unlockdoor red_agent red_key red_door_1"
+    ]
+  },
+  "babyai_13.pddl": {
+    "level": 13,
+    "actions": [
+      "pickkey red_agent red_key",
+      "unlockdoor red_agent red_key red_door_1"
+    ]
+  }
+}

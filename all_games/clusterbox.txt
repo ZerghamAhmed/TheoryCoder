@@ -1,0 +1,48 @@
+BasicGame
+    SpriteSet
+        floor       > Immovable       img=newset/whiteback.png
+        wall        > Immovable       img=oryx/wall1.png     autotiling=True
+        greenbox    > Passive         img=newset/blockG.png
+        yellowbox   > Passive         img=newset/blockY.png
+        bluebox     > Passive         img=newset/blockB.png
+        avatar      > MovingAvatar    img=oryx/girl1_noback.png
+
+    LevelMapping
+        A > avatar floor
+        G > greenbox floor
+        Y > yellowbox floor
+        B > bluebox floor
+        . > floor
+        W > wall
+
+    InteractionSet
+        # avatar “pushes” boxes by making the box bounce forward
+        greenbox    avatar    > bounceForward
+        yellowbox   avatar    > bounceForward
+        bluebox     avatar    > bounceForward
+
+        # solid blocking against walls
+        avatar      wall      > stepBack
+        greenbox    wall      > stepBack
+        yellowbox   wall      > stepBack
+        bluebox   wall      > stepBack
+
+
+
+        # make boxes block each other
+        greenbox    greenbox    > stepBack
+        yellowbox   yellowbox   > stepBack
+        greenbox    yellowbox   > stepBack
+        yellowbox   greenbox    > stepBack
+
+        bluebox   greenbox    > stepBack
+        greenbox   bluebox    > stepBack
+        bluebox   yellowbox   > stepBack
+        yellowbox   bluebox   > stepBack
+        bluebox   bluebox   > stepBack
+
+
+
+
+    TerminationSet
+        Timeout     limit=2000  win=False

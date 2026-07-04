@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "ts": 1783018566.197711,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 21.266448625,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 830,
+      "completion_tokens": 2521,
+      "total_tokens": 3351
+    },
+    {
+      "ts": 1783018566.353875,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.1493317079999983,
+      "level": 1
+    },
+    {
+      "ts": 1783018586.0435991,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 19.671958999999998,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1260,
+      "completion_tokens": 2257,
+      "total_tokens": 3517
+    },
+    {
+      "ts": 1783018589.832203,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 3.786942541000002,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1072,
+      "completion_tokens": 444,
+      "total_tokens": 1516
+    },
+    {
+      "ts": 1783018589.8356469,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent",
+      "duration_s": 0.0004000000000061732,
+      "error": "\"No matching parameter set for won. Grounding: {'?x': 'human_rogue_called_agent'}. Available predicates: ['won']\""
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 21.266448625,
+        "mean_s": 21.266448625,
+        "max_s": 21.266448625,
+        "min_s": 21.266448625
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 19.671958999999998,
+        "mean_s": 19.671958999999998,
+        "max_s": 19.671958999999998,
+        "min_s": 19.671958999999998
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 3.786942541000002,
+        "mean_s": 3.786942541000002,
+        "max_s": 3.786942541000002,
+        "min_s": 3.786942541000002
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.1493317079999983,
+        "mean_s": 0.1493317079999983,
+        "max_s": 0.1493317079999983,
+        "min_s": 0.1493317079999983
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent": {
+        "count": 1,
+        "total_s": 0.0004000000000061732,
+        "mean_s": 0.0004000000000061732,
+        "max_s": 0.0004000000000061732,
+        "min_s": 0.0004000000000061732
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 1,
+    "started_ts": 1783018544.9298072
+  }
+}

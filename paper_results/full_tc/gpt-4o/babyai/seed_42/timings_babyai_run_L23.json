@@ -1,0 +1,94 @@
+{
+  "events": [
+    {
+      "ts": 1781984624.503767,
+      "category": "llm",
+      "detail": "extend_domain_and_problem",
+      "duration_s": 2.0627370410074946,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1948,
+      "completion_tokens": 452,
+      "total_tokens": 2400
+    },
+    {
+      "ts": 1781984624.64882,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13948891700420063,
+      "level": 23
+    },
+    {
+      "ts": 1781984626.708909,
+      "category": "llm",
+      "detail": "extend_predicates",
+      "duration_s": 2.058780374994967,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1107,
+      "completion_tokens": 405,
+      "total_tokens": 1512
+    },
+    {
+      "ts": 1781984626.7449448,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent red_key",
+      "duration_s": 0.011744125004042871
+    },
+    {
+      "ts": 1781984626.827214,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:unlockdoor red_agent red_key red_door_1",
+      "duration_s": 0.08226266699784901
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "extend_domain_and_problem": {
+        "count": 1,
+        "total_s": 2.0627370410074946,
+        "mean_s": 2.0627370410074946,
+        "max_s": 2.0627370410074946,
+        "min_s": 2.0627370410074946
+      },
+      "extend_predicates": {
+        "count": 1,
+        "total_s": 2.058780374994967,
+        "mean_s": 2.058780374994967,
+        "max_s": 2.058780374994967,
+        "min_s": 2.058780374994967
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13948891700420063,
+        "mean_s": 0.13948891700420063,
+        "max_s": 0.13948891700420063,
+        "min_s": 0.13948891700420063
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickkey red_agent red_key": {
+        "count": 1,
+        "total_s": 0.011744125004042871,
+        "mean_s": 0.011744125004042871,
+        "max_s": 0.011744125004042871,
+        "min_s": 0.011744125004042871
+      },
+      "exploit_subplan:unlockdoor red_agent red_key red_door_1": {
+        "count": 1,
+        "total_s": 0.08226266699784901,
+        "mean_s": 0.08226266699784901,
+        "max_s": 0.08226266699784901,
+        "min_s": 0.08226266699784901
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 23,
+    "started_ts": 1781984622.440468
+  }
+}

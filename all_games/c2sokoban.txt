@@ -1,0 +1,20 @@
+BasicGame key_handler=Pulse square_size=40
+    SpriteSet
+        hole   > Immovable img=oryx/cspell4.png
+        avatar > MovingAvatar img=oryx/knight1.png
+        box    > Passive img=newset/block1.png
+        wall > Immovable img=oryx/wall3.png
+    LevelMapping
+        0 > hole
+        1 > box
+        w > wall
+    InteractionSet
+        avatar wall > stepBack
+        box avatar  > bounceForward
+        box wall > stepBack
+        box box > stepBack
+        avatar hole > nothing
+        box hole    > killSprite scoreChange=1
+    TerminationSet
+        SpriteCounter stype=box    limit=0 win=True bonus=10
+        Timeout limit=2000 win=False

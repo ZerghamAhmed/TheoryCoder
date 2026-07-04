@@ -1,0 +1,8 @@
+
+        Level: 9
+        Revisions: 0
+        Attempts: 0
+        Final Status: Won
+        First Letters: d
+        Actions: ['up_left', 'right', 'down_left', 'down', 'left', 'down_left', 'down', 'left', 'up', 'up_left', 'up_left', 'down_right', 'down_left', 'down_right', 'up', 'down_left']
+                        

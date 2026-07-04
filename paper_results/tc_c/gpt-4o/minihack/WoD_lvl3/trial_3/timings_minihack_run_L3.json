@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1782793119.171873,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 7.092760791,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1393,
+      "completion_tokens": 420,
+      "total_tokens": 1813
+    },
+    {
+      "ts": 1782793119.301151,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.1279115829999995,
+      "level": 3
+    },
+    {
+      "ts": 1782793128.3929658,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 9.071840166000001,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 6471,
+      "completion_tokens": 891,
+      "total_tokens": 7362
+    },
+    {
+      "ts": 1782793130.9971268,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 2.602569916,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1769,
+      "completion_tokens": 145,
+      "total_tokens": 1914
+    },
+    {
+      "ts": 1782793131.2560692,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:usewand agent minotaur",
+      "duration_s": 0.2557169169999973
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 7.092760791,
+        "mean_s": 7.092760791,
+        "max_s": 7.092760791,
+        "min_s": 7.092760791
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 9.071840166000001,
+        "mean_s": 9.071840166000001,
+        "max_s": 9.071840166000001,
+        "min_s": 9.071840166000001
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 2.602569916,
+        "mean_s": 2.602569916,
+        "max_s": 2.602569916,
+        "min_s": 2.602569916
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.1279115829999995,
+        "mean_s": 0.1279115829999995,
+        "max_s": 0.1279115829999995,
+        "min_s": 0.1279115829999995
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:usewand agent minotaur": {
+        "count": 1,
+        "total_s": 0.2557169169999973,
+        "mean_s": 0.2557169169999973,
+        "max_s": 0.2557169169999973,
+        "min_s": 0.2557169169999973
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 3,
+    "started_ts": 1782793112.078758
+  }
+}

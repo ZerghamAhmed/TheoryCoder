@@ -1,0 +1,8 @@
+
+        Level: 8
+        Revisions: 0
+        Attempts: 0
+        Final Status: Won
+        First Letters: uuuuuuuuuuuuuu
+        Actions: ['left', 'right', 'up_right', 'left', 'up_right', 'down', 'up_right', 'left', 'right', 'down_left', 'up', 'down_left', 'left', 'right', 'down', 'up', 'up', 'up', 'up', 'up', 'up', 'up', 'up', 'up', 'up', 'up', 'up_right', 'up_right', 'up_right']
+                        

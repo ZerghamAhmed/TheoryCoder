@@ -1,0 +1,14 @@
+{
+  "labyrinth_0.pddl": {
+    "level": 0,
+    "actions": [
+      "reaches avatar goal"
+    ]
+  },
+  "maze_0.pddl": {
+    "level": 0,
+    "actions": [
+      "reaches avatar cheese"
+    ]
+  }
+}

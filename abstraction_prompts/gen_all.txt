@@ -1,0 +1,173 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Can you give me a minimal PDDL domain and problem file for this setup that will allow the agent to win the game? Think in terms of the most minimal abstract files you can.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+
+
+DO NOT PROPOSE PREDCIATES THAT IMPLY SPATIAL RELATIONS LIKE FROM OR TO!!!!!
+
+Domain Description:
+
+You need to push all the boxes into the hole to win.
+Whenever a box goes into the hole, it will be removed from the state.
+
+
+In your PDDL problem file do not represent configuration attributes when writing objects 
+for example for unopened_black_jar you can represent it as black_jar. See example 2 and example 3!!!!!!!
+
+Feel free to propose multiple operators, and predicates at once. Also you may have two goals in the problem file.
+
+The raw state dictionary keys are considered traversable.
+
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Do NOT use symbols like "-" for the predicate names. For example, the predicate "avatar-at" should NOT be proposed since it has a "-".
+Please use all LOWERCASE for the operator names as well!!!!!!!!!!
+
+Do not name your PDDL DOMAIN FILE DO NOT name predicates:
+if, else, in, def, or any other typical python name
+
+predicate names should exactly be one word no underscores in it either
+
+Few shot example of what a nice abstraction domain and problem file should look like:
+
+BEGIN EXAMPLE
+
+state is 'table': [3, 4], 'mug', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+  
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (ontop mug table))
+  )
+
+  (:goal
+  ; mug will overlap with table 'table': [4, 4], 'mug', [4, 4]
+    (ontop mug table) 
+  )
+)
+
+END EXAMPLE
+
+BEGIN EXAMPLE 2
+
+state is 'agent': [3, 4], 'apple': [5, 4], 'vines': [4,4], 'axe'[1,4], 'unopened_black_jar: [0,1]'
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+  
+  (:types
+    object
+  )
+
+  (:predicates
+    (eaten ?x - object ?y - object)
+  )
+
+  (:action eat
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (eaten ?obj1 ?obj2))
+    :effect (eaten ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple black_jar - object
+  )
+
+  (:init
+    ; the end goal is to eat the apple
+    (not (eaten agent apple))
+  )
+
+  (:goal
+    (eaten agent apple)
+  )
+)
+
+PAY CLOSE ATTENTION TO HOW THE WINDOW OBJECTS ARE REPRESENTED HERE
+
+BEGIN EXAMPLE 3
+
+state is 'agent': [6, 3], 'blocked_gold_window': [4,4], 'unblocked_silver_window': [1,4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+  
+  (:types
+    object
+  )
+
+  (:predicates
+    (unblocked ?x - object)
+  )
+
+  (:action clear
+    :parameters (?x - object)
+    :precondition (not (unblocked ?x))
+    :effect (unblocked ?x)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple gold_window - object
+  )
+
+  (:init
+    ; the end goal is to eat the apple
+    (not (unblocked gold_window))
+  )
+
+  (:goal
+    (unblocked gold_window)
+  )
+)
+
+
+
+Raw state of game (generate the files for this):
+
+{raw_state}
+
+MISSION:
+
+{mission}
+
+YOUR CURRENT DOMAIN FILE YOU HAVE SYNTHESIZED:
+
+{current_domain}
+
+

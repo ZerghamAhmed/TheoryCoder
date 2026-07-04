@@ -1,0 +1,87 @@
+{
+  "events": [
+    {
+      "ts": 1782239830.231372,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 2.4214458749920595,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1108,
+      "completion_tokens": 299,
+      "total_tokens": 1407
+    },
+    {
+      "ts": 1782239830.3715289,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13787008298095316,
+      "level": 0
+    },
+    {
+      "ts": 1782239830.39231,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move box hole",
+      "duration_s": 0.011126875004265457
+    },
+    {
+      "ts": 1782239836.42327,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 5.966342375002569,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 4003,
+      "completion_tokens": 822,
+      "total_tokens": 4825
+    },
+    {
+      "ts": 1782239836.472076,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move box hole",
+      "duration_s": 0.02720262500224635
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 2.4214458749920595,
+        "mean_s": 2.4214458749920595,
+        "max_s": 2.4214458749920595,
+        "min_s": 2.4214458749920595
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 5.966342375002569,
+        "mean_s": 5.966342375002569,
+        "max_s": 5.966342375002569,
+        "min_s": 5.966342375002569
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13787008298095316,
+        "mean_s": 0.13787008298095316,
+        "max_s": 0.13787008298095316,
+        "min_s": 0.13787008298095316
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:move box hole": {
+        "count": 2,
+        "total_s": 0.03832950000651181,
+        "mean_s": 0.019164750003255904,
+        "max_s": 0.02720262500224635,
+        "min_s": 0.011126875004265457
+      }
+    }
+  },
+  "meta": {
+    "game": "sokoban",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782239827.809258
+  }
+}

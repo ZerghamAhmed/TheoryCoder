@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "ts": 1783019240.6147132,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 15.636475707999999,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 850,
+      "completion_tokens": 1220,
+      "total_tokens": 2070
+    },
+    {
+      "ts": 1783019240.746847,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13070812499999818,
+      "level": 9
+    },
+    {
+      "ts": 1783019261.343616,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 20.578719875000004,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1588,
+      "completion_tokens": 2425,
+      "total_tokens": 4013
+    },
+    {
+      "ts": 1783019267.85303,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 6.507700624999998,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 984,
+      "completion_tokens": 721,
+      "total_tokens": 1705
+    },
+    {
+      "ts": 1783019267.856257,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 0.00043387500000591217,
+      "error": "\"No matching parameter set for won. Grounding: {'?human_rogue_called_agent': 'human_rogue_called_agent', '?staircase_down': 'staircase_down'}. Available predicates: ['overlap', 'won']\""
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 15.636475707999999,
+        "mean_s": 15.636475707999999,
+        "max_s": 15.636475707999999,
+        "min_s": 15.636475707999999
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 20.578719875000004,
+        "mean_s": 20.578719875000004,
+        "max_s": 20.578719875000004,
+        "min_s": 20.578719875000004
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 6.507700624999998,
+        "mean_s": 6.507700624999998,
+        "max_s": 6.507700624999998,
+        "min_s": 6.507700624999998
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13070812499999818,
+        "mean_s": 0.13070812499999818,
+        "max_s": 0.13070812499999818,
+        "min_s": 0.13070812499999818
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_down": {
+        "count": 1,
+        "total_s": 0.00043387500000591217,
+        "mean_s": 0.00043387500000591217,
+        "max_s": 0.00043387500000591217,
+        "min_s": 0.00043387500000591217
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 9,
+    "started_ts": 1783019224.977265
+  }
+}

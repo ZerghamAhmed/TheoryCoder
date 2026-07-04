@@ -1,0 +1,117 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Can you give me a PDDL problem file for this given PDDL domain file that will allow the agent to win the game?
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+
+You are allowed to specify multiple goals in your problem file! Please think about the preconditions and effects carefully.
+
+IMPORTANT: Use PROPER PDDL TYPING in the problem file to match the domain's type hierarchy!
+Objects that play different roles should have different types as defined in the domain.
+
+Return EXACTLY ONE complete PDDL problem file in a single ```pddl ``` code block.
+The problem file MUST include ALL sections: (define (problem ...) (:domain ...) (:objects ...) (:init ...) (:goal ...)).
+Do NOT return partial snippets or multiple code blocks -- return ONE complete problem file only.
+
+
+BEGIN EXAMPLE
+
+state is 'table': [3, 4], 'mug', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (ontop mug table))
+  )
+
+  (:goal
+    (ontop mug table)
+  )
+)
+
+END EXAMPLE
+
+BEGIN EXAMPLE 2
+
+
+state is 'agent': [0,0], 'shrimp': [0,0]
+
+(define (domain eat-the-shrimp)
+  (:requirements :strips :typing)
+  (:types agent object)
+
+  (:predicates
+    (has ?a - agent ?o - object)
+    (eaten ?o - object)
+    (available ?o - object)
+  )
+
+  (:action cook
+    :parameters (?a - agent ?o - object)
+    :precondition (and (available ?o) (not (has ?a ?o)))
+    :effect (and (has ?a ?o) (not (available ?o)))
+  )
+
+  (:action eat
+    :parameters (?a - agent ?o - object)
+    :precondition (and (has ?a ?o) (not (eaten ?o)))
+    :effect (eaten ?o)
+  )
+)
+
+
+(define (problem shrimp-problem)
+  (:domain eat-the-shrimp)
+
+  (:objects
+    agent - agent
+    shrimp - object
+  )
+
+  (:init
+    (available shrimp)
+  )
+
+  (:goal
+    (and
+    (has agent shrimp)
+    (eaten shrimp)
+    )
+  )
+)
+
+
+END EXAMPLE 2
+
+Domain file you need to use (generate the problem file for this):
+
+{domain_file}
+
+Raw state of game (generate the problem file for this):
+
+{raw_state}
+
+

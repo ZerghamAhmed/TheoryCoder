@@ -1,0 +1,8 @@
+{
+  "minihack_0.pddl": {
+    "level": 0,
+    "actions": [
+      "descend human"
+    ]
+  }
+}

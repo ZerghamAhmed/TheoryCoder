@@ -1,0 +1,8 @@
+
+        Level: 9
+        Revisions: 0
+        Attempts: 0
+        Final Status: Won
+        First Letters: uu
+        Actions: ['right', 'right', 'up_right', 'down', 'up', 'down_right', 'up_left', 'up_left', 'up', 'up_right', 'up_left', 'right', 'down_left', 'down_right', 'down_left', 'up_right', 'up_right']
+                        

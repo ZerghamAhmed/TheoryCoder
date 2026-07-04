@@ -1,0 +1,63 @@
+You are an AI agent that must come up with some high level planning abstractions to win a game and levels in it.
+You must think at a high level and come up with reusable abstractions for yourself that will allow you to do high level planning
+to beat levels of this game. 
+
+Think about how humans solve problems: 
+they form abstract representations and try to reuse their knowledge. They are very good at being able to generalize using these abstract representations
+and high level planning.
+
+They start by doing high level planing then they try to do low level planning to achieve their goals.
+
+You are also given state transitions after executing random actions that will help you understand the mechanics of this domain.
+Note that if there is no change returned after doing that action, it means that moving was prevented somehow such as by an obstacle. 
+
+1. For now return some sort of abstract representations that can be used to help you to do high level planning and can be reused for different
+similar problems.
+
+2. For this specific problem use the abstract high level representations that you have 
+created to return some high level plan to win the level.
+
+DESCRIPTION OF DOMAIN:
+
+{domain_description}
+
+CURRENT STATE:
+
+{current_state}
+
+MISSION:
+
+{mission}
+
+ACTION SPACE:
+
+{actions_set}
+
+Replay Buffer (last {num_random_actions} transitions):
+
+{errors_from_world_model}
+
+UTILS:
+
+{utils}
+
+YOUR CURRENT HIGH LEVEL PLANNING ABSTRACTIONS:
+
+{current_domain}
+
+
+RESPONSE FORMAT
+
+Return exactly two fenced blocks:
+
+```txt
+abstractions for high level planning:
+
+
+```
+
+```txt
+high level plan: 
+
+
+```

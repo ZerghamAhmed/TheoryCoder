@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1783017311.106963,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 34.68455516704125,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1445,
+      "completion_tokens": 4264,
+      "total_tokens": 5709
+    },
+    {
+      "ts": 1783017311.27299,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.16125833301339298,
+      "level": 23
+    },
+    {
+      "ts": 1783017394.4030132,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 81.08792970899958,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 12225,
+      "completion_tokens": 10120,
+      "total_tokens": 22345
+    },
+    {
+      "ts": 1783017402.807489,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 8.395661000045948,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 790,
+      "completion_tokens": 901,
+      "total_tokens": 1691
+    },
+    {
+      "ts": 1783017402.9694452,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door red_door_1",
+      "duration_s": 0.14752712502377108
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 34.68455516704125,
+        "mean_s": 34.68455516704125,
+        "max_s": 34.68455516704125,
+        "min_s": 34.68455516704125
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 81.08792970899958,
+        "mean_s": 81.08792970899958,
+        "max_s": 81.08792970899958,
+        "min_s": 81.08792970899958
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 8.395661000045948,
+        "mean_s": 8.395661000045948,
+        "max_s": 8.395661000045948,
+        "min_s": 8.395661000045948
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.16125833301339298,
+        "mean_s": 0.16125833301339298,
+        "max_s": 0.16125833301339298,
+        "min_s": 0.16125833301339298
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:open_door red_door_1": {
+        "count": 1,
+        "total_s": 0.14752712502377108,
+        "mean_s": 0.14752712502377108,
+        "max_s": 0.14752712502377108,
+        "min_s": 0.14752712502377108
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 23,
+    "started_ts": 1783017276.4205508
+  }
+}

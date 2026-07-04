@@ -1,0 +1,43 @@
+{
+  "events": [
+    {
+      "ts": 1782500107.198048,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13159795900000004,
+      "level": 9
+    },
+    {
+      "ts": 1782500107.3453498,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human",
+      "duration_s": 0.14079983299999999
+    }
+  ],
+  "rollup": {
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13159795900000004,
+        "mean_s": 0.13159795900000004,
+        "max_s": 0.13159795900000004,
+        "min_s": 0.13159795900000004
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human": {
+        "count": 1,
+        "total_s": 0.14079983299999999,
+        "mean_s": 0.14079983299999999,
+        "max_s": 0.14079983299999999,
+        "min_s": 0.14079983299999999
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 9,
+    "started_ts": 1782500107.0655448
+  }
+}

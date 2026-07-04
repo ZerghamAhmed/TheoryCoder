@@ -1,0 +1,115 @@
+{
+  "events": [
+    {
+      "ts": 1782938496.751512,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 10.205445124999999,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1392,
+      "completion_tokens": 1144,
+      "total_tokens": 2536
+    },
+    {
+      "ts": 1782938496.9039109,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.14813445799999947,
+      "level": 3
+    },
+    {
+      "ts": 1782938528.8180459,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 31.894195625000002,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 6429,
+      "completion_tokens": 3831,
+      "total_tokens": 10260
+    },
+    {
+      "ts": 1782938537.696762,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 8.868956416000003,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2243,
+      "completion_tokens": 834,
+      "total_tokens": 3077
+    },
+    {
+      "ts": 1782938539.712946,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:kill agent minotaur",
+      "duration_s": 2.0049180840000034
+    },
+    {
+      "ts": 1782938599.7667,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 60.032918249999994,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "error": "HTTPSConnectionPool(host='go.apis.huit.harvard.edu', port=443): Read timed out. (read timeout=60)"
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 10.205445124999999,
+        "mean_s": 10.205445124999999,
+        "max_s": 10.205445124999999,
+        "min_s": 10.205445124999999
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 31.894195625000002,
+        "mean_s": 31.894195625000002,
+        "max_s": 31.894195625000002,
+        "min_s": 31.894195625000002
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 8.868956416000003,
+        "mean_s": 8.868956416000003,
+        "max_s": 8.868956416000003,
+        "min_s": 8.868956416000003
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 60.032918249999994,
+        "mean_s": 60.032918249999994,
+        "max_s": 60.032918249999994,
+        "min_s": 60.032918249999994
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.14813445799999947,
+        "mean_s": 0.14813445799999947,
+        "max_s": 0.14813445799999947,
+        "min_s": 0.14813445799999947
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:kill agent minotaur": {
+        "count": 1,
+        "total_s": 2.0049180840000034,
+        "mean_s": 2.0049180840000034,
+        "max_s": 2.0049180840000034,
+        "min_s": 2.0049180840000034
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 3,
+    "started_ts": 1782938486.544859
+  }
+}

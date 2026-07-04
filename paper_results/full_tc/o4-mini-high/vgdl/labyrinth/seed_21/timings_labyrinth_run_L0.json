@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1782936244.621228,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 20.85824016702827,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2102,
+      "completion_tokens": 2091,
+      "total_tokens": 4193
+    },
+    {
+      "ts": 1782936244.787431,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15935916698072106,
+      "level": 0
+    },
+    {
+      "ts": 1782936265.809535,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 20.822809290955774,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 24011,
+      "completion_tokens": 2033,
+      "total_tokens": 26044
+    },
+    {
+      "ts": 1782936280.010216,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 14.196019166964106,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1491,
+      "completion_tokens": 1484,
+      "total_tokens": 2975
+    },
+    {
+      "ts": 1782936280.051525,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:reach avatar goal",
+      "duration_s": 0.028494957950897515
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 20.85824016702827,
+        "mean_s": 20.85824016702827,
+        "max_s": 20.85824016702827,
+        "min_s": 20.85824016702827
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 20.822809290955774,
+        "mean_s": 20.822809290955774,
+        "max_s": 20.822809290955774,
+        "min_s": 20.822809290955774
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 14.196019166964106,
+        "mean_s": 14.196019166964106,
+        "max_s": 14.196019166964106,
+        "min_s": 14.196019166964106
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15935916698072106,
+        "mean_s": 0.15935916698072106,
+        "max_s": 0.15935916698072106,
+        "min_s": 0.15935916698072106
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:reach avatar goal": {
+        "count": 1,
+        "total_s": 0.028494957950897515,
+        "mean_s": 0.028494957950897515,
+        "max_s": 0.028494957950897515,
+        "min_s": 0.028494957950897515
+      }
+    }
+  },
+  "meta": {
+    "game": "labyrinth",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782936223.7626061
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1782938797.839165,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 11.450264375,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 830,
+      "completion_tokens": 1416,
+      "total_tokens": 2246
+    },
+    {
+      "ts": 1782938798.004971,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15788524999999964,
+      "level": 0
+    },
+    {
+      "ts": 1782938806.481832,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 8.461649333,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1227,
+      "completion_tokens": 1054,
+      "total_tokens": 2281
+    },
+    {
+      "ts": 1782938814.7583911,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 8.267958375000003,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1073,
+      "completion_tokens": 954,
+      "total_tokens": 2027
+    },
+    {
+      "ts": 1782938814.783415,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 0.015199541000001204
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 11.450264375,
+        "mean_s": 11.450264375,
+        "max_s": 11.450264375,
+        "min_s": 11.450264375
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 8.461649333,
+        "mean_s": 8.461649333,
+        "max_s": 8.461649333,
+        "min_s": 8.461649333
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 8.267958375000003,
+        "mean_s": 8.267958375000003,
+        "max_s": 8.267958375000003,
+        "min_s": 8.267958375000003
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15788524999999964,
+        "mean_s": 0.15788524999999964,
+        "max_s": 0.15788524999999964,
+        "min_s": 0.15788524999999964
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_down": {
+        "count": 1,
+        "total_s": 0.015199541000001204,
+        "mean_s": 0.015199541000001204,
+        "max_s": 0.015199541000001204,
+        "min_s": 0.015199541000001204
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782938786.388145
+  }
+}

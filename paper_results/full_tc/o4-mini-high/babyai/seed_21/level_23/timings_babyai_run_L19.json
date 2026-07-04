@@ -1,0 +1,105 @@
+{
+  "events": [
+    {
+      "ts": 1782937104.7495759,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 20.112090249953326,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1318,
+      "completion_tokens": 2423,
+      "total_tokens": 3741
+    },
+    {
+      "ts": 1782937104.8965619,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.143286291975528,
+      "level": 19
+    },
+    {
+      "ts": 1782937152.083356,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 45.15408266696613,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 6979,
+      "completion_tokens": 5512,
+      "total_tokens": 12491
+    },
+    {
+      "ts": 1782937165.7700531,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 13.677670917008072,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 667,
+      "completion_tokens": 1559,
+      "total_tokens": 2226
+    },
+    {
+      "ts": 1782937165.784211,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent yellow_key",
+      "duration_s": 0.0007893750444054604
+    },
+    {
+      "ts": 1782937165.9386098,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent yellow_key",
+      "duration_s": 0.008799124974757433
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 20.112090249953326,
+        "mean_s": 20.112090249953326,
+        "max_s": 20.112090249953326,
+        "min_s": 20.112090249953326
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 45.15408266696613,
+        "mean_s": 45.15408266696613,
+        "max_s": 45.15408266696613,
+        "min_s": 45.15408266696613
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 13.677670917008072,
+        "mean_s": 13.677670917008072,
+        "max_s": 13.677670917008072,
+        "min_s": 13.677670917008072
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.143286291975528,
+        "mean_s": 0.143286291975528,
+        "max_s": 0.143286291975528,
+        "min_s": 0.143286291975528
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickup red_agent yellow_key": {
+        "count": 2,
+        "total_s": 0.009588500019162893,
+        "mean_s": 0.004794250009581447,
+        "max_s": 0.008799124974757433,
+        "min_s": 0.0007893750444054604
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 19,
+    "started_ts": 1782937084.636838
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "events": [
+    {
+      "ts": 1782936221.432354,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 16.66026299999794,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1086,
+      "completion_tokens": 1882,
+      "total_tokens": 2968
+    },
+    {
+      "ts": 1782936221.590574,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15492816700134426,
+      "level": 0
+    },
+    {
+      "ts": 1782936221.6134799,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:reaches box hole",
+      "duration_s": 0.01371483301045373
+    },
+    {
+      "ts": 1782936221.6988301,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:reaches box hole",
+      "duration_s": 0.014168458001222461
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 16.66026299999794,
+        "mean_s": 16.66026299999794,
+        "max_s": 16.66026299999794,
+        "min_s": 16.66026299999794
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15492816700134426,
+        "mean_s": 0.15492816700134426,
+        "max_s": 0.15492816700134426,
+        "min_s": 0.15492816700134426
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:reaches box hole": {
+        "count": 2,
+        "total_s": 0.027883291011676192,
+        "mean_s": 0.013941645505838096,
+        "max_s": 0.014168458001222461,
+        "min_s": 0.01371483301045373
+      }
+    }
+  },
+  "meta": {
+    "game": "sokoban",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782936204.771488
+  }
+}

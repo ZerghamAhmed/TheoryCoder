@@ -1,0 +1,58 @@
+You previously failed this game's level
+
+You have access to a world model and library of abstract predicate functions 
+which represent goals that you need to use to win.
+
+You previously proposed that the winning goal is represented by this predicate function
+
+Predicate Function:
+
+{last_predicate_proposed}
+
+
+But this was a failure. Here is the state and replay buffer.
+
+Current State:
+
+{raw_state}
+
+Available Actions
+
+{action_space}
+
+Replay Buffer:
+
+{errors_from_world_model}
+
+All Predicate Functions in Your Library:
+
+{predicates}
+
+
+Your Current World Model:
+
+{world_model}
+
+This is how the predicate function is used by the planner to check if the goal state is reached:
+
+new_state = transition_model(state, action)
+if predicate_function(new_state, ...):
+    print("Goal reached")
+
+
+
+You need to either REVISE your world model and or PROPOSE new predicate functions to add OR EXPLORE the environment
+by proposing new exploratory goals by directly outputting a list of actions.
+
+If you propose a new predicate function, return your predicate function with python markup tags
+```python ```
+
+If you propose a new world model, return your world model with python markup tags
+```python ```
+
+If you want to explore by outputting a list of actions, output the actions ONLY with txt markup tags
+and make it a list (even though its a string) and separate each action with commas
+```txt  ```
+
+If you propose new versions for both, make them be in separate ```python ```
+markup tags.

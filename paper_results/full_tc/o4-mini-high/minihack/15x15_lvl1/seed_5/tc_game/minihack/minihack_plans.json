@@ -1,0 +1,15 @@
+{
+  "minihack_0.pddl": {
+    "level": 0,
+    "actions": [
+      "gotostair human_rogue_called_agent staircase_down"
+    ]
+  },
+  "minihack_1.pddl": {
+    "level": 1,
+    "actions": [
+      "gotostair human_rogue_called_agent staircase_up",
+      "gotostair human_rogue_called_agent staircase_down"
+    ]
+  }
+}

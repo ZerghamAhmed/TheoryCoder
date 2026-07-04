@@ -1,0 +1,163 @@
+{
+  "events": [
+    {
+      "ts": 1782938871.978579,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 9.059843083,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1392,
+      "completion_tokens": 1146,
+      "total_tokens": 2538
+    },
+    {
+      "ts": 1782938872.146581,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.1622231670000005,
+      "level": 3
+    },
+    {
+      "ts": 1782938890.905189,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 18.738985209,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 6488,
+      "completion_tokens": 2349,
+      "total_tokens": 8837
+    },
+    {
+      "ts": 1782938902.4552479,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 11.548384499999997,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2007,
+      "completion_tokens": 1253,
+      "total_tokens": 3260
+    },
+    {
+      "ts": 1782938921.8860228,
+      "category": "llm",
+      "detail": "debug_world_model",
+      "duration_s": 19.414580292000004,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1673,
+      "completion_tokens": 2674,
+      "total_tokens": 4347
+    },
+    {
+      "ts": 1782938921.8881762,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:kill agent minotaur",
+      "duration_s": 19.419439542
+    },
+    {
+      "ts": 1782938951.751293,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 29.859761666999994,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 7544,
+      "completion_tokens": 3884,
+      "total_tokens": 11428
+    },
+    {
+      "ts": 1782938984.253291,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 32.48863333300001,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 7225,
+      "completion_tokens": 3807,
+      "total_tokens": 11032
+    },
+    {
+      "ts": 1782938994.426137,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 10.166010416999981,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2012,
+      "completion_tokens": 1237,
+      "total_tokens": 3249
+    },
+    {
+      "ts": 1782938994.950603,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:kill agent minotaur",
+      "duration_s": 0.502938333000003
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 9.059843083,
+        "mean_s": 9.059843083,
+        "max_s": 9.059843083,
+        "min_s": 9.059843083
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 18.738985209,
+        "mean_s": 18.738985209,
+        "max_s": 18.738985209,
+        "min_s": 18.738985209
+      },
+      "init_predicates": {
+        "count": 2,
+        "total_s": 21.71439491699998,
+        "mean_s": 10.85719745849999,
+        "max_s": 11.548384499999997,
+        "min_s": 10.166010416999981
+      },
+      "debug_world_model": {
+        "count": 1,
+        "total_s": 19.414580292000004,
+        "mean_s": 19.414580292000004,
+        "max_s": 19.414580292000004,
+        "min_s": 19.414580292000004
+      },
+      "revise_world_model": {
+        "count": 2,
+        "total_s": 62.348395000000004,
+        "mean_s": 31.174197500000002,
+        "max_s": 32.48863333300001,
+        "min_s": 29.859761666999994
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.1622231670000005,
+        "mean_s": 0.1622231670000005,
+        "max_s": 0.1622231670000005,
+        "min_s": 0.1622231670000005
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:kill agent minotaur": {
+        "count": 2,
+        "total_s": 19.922377875000002,
+        "mean_s": 9.961188937500001,
+        "max_s": 19.419439542,
+        "min_s": 0.502938333000003
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 3,
+    "started_ts": 1782938862.917923
+  }
+}

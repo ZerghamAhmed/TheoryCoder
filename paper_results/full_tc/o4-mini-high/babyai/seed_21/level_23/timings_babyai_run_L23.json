@@ -1,0 +1,81 @@
+{
+  "events": [
+    {
+      "ts": 1782937193.575252,
+      "category": "llm",
+      "detail": "extend_domain_and_problem",
+      "duration_s": 27.018184832995757,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1941,
+      "completion_tokens": 3309,
+      "total_tokens": 5250
+    },
+    {
+      "ts": 1782937193.737997,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15801012504380196,
+      "level": 23
+    },
+    {
+      "ts": 1782937205.656318,
+      "category": "llm",
+      "detail": "extend_predicates",
+      "duration_s": 11.917089416994713,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1125,
+      "completion_tokens": 1082,
+      "total_tokens": 2207
+    },
+    {
+      "ts": 1782937205.805745,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door red_door_1",
+      "duration_s": 0.11003054201137275
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "extend_domain_and_problem": {
+        "count": 1,
+        "total_s": 27.018184832995757,
+        "mean_s": 27.018184832995757,
+        "max_s": 27.018184832995757,
+        "min_s": 27.018184832995757
+      },
+      "extend_predicates": {
+        "count": 1,
+        "total_s": 11.917089416994713,
+        "mean_s": 11.917089416994713,
+        "max_s": 11.917089416994713,
+        "min_s": 11.917089416994713
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15801012504380196,
+        "mean_s": 0.15801012504380196,
+        "max_s": 0.15801012504380196,
+        "min_s": 0.15801012504380196
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:open_door red_door_1": {
+        "count": 1,
+        "total_s": 0.11003054201137275,
+        "mean_s": 0.11003054201137275,
+        "max_s": 0.11003054201137275,
+        "min_s": 0.11003054201137275
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 23,
+    "started_ts": 1782937166.556628
+  }
+}

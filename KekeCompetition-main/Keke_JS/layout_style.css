@@ -1,0 +1,61 @@
+
+:root{
+	--text:#fffef9;
+}
+
+/* vertical spacing */
+
+.top-buffer025{
+	margin-top: 0.25em;
+}
+.top-buffer05{
+	margin-top: 0.5em;
+}
+.top-buffer1{
+	margin-top: 1em;
+}
+.top-buffer2{
+	margin-top: 2em;
+}
+.top-buffer3{
+	margin-top: 3em;
+}
+.top-buffer4{
+	margin-top: 4em;
+}
+.top-buffer5{
+	margin-top: 5em;
+}
+
+.bottom-buffer1{
+	margin-bottom: 1em;
+}
+.bottom-buffer5{
+	margin-bottom: 5em;
+}
+
+.vcenter {
+   display: inline-block;
+   vertical-align: middle;
+   float: none;
+}
+
+.equal-col{
+	display: flex;
+	display: -webkit-flex;
+	flex-wrap: wrap;
+}
+
+/* pill navigation */
+
+.center-pills{
+	display: inline-block;
+}
+
+
+
+img{
+	image-rendering: pixelated;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: crisp-edges;
+}

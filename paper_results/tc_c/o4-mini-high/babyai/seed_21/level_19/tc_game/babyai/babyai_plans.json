@@ -1,0 +1,8 @@
+{
+  "babyai_19.pddl": {
+    "level": 19,
+    "actions": [
+      "pick red_agent yellow_key"
+    ]
+  }
+}

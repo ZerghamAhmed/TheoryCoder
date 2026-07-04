@@ -1,0 +1,149 @@
+{
+  "events": [
+    {
+      "ts": 1782152145.399571,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 2.1010644170164596,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1281,
+      "completion_tokens": 87,
+      "total_tokens": 1368
+    },
+    {
+      "ts": 1782152145.5332491,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.1310134579834994,
+      "level": 0
+    },
+    {
+      "ts": 1782152145.542913,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar hole",
+      "duration_s": 0.0004520840011537075
+    },
+    {
+      "ts": 1782152152.3599548,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 6.790795917011565,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1297,
+      "completion_tokens": 877,
+      "total_tokens": 2174
+    },
+    {
+      "ts": 1782152152.382252,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar hole",
+      "duration_s": 0.0008900829998310655
+    },
+    {
+      "ts": 1782152158.70868,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 6.3153650000167545,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1555,
+      "completion_tokens": 940,
+      "total_tokens": 2495
+    },
+    {
+      "ts": 1782152158.7693162,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar hole",
+      "duration_s": 0.0007144999981392175
+    },
+    {
+      "ts": 1782152162.0886269,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 3.309905332978815,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1540,
+      "completion_tokens": 679,
+      "total_tokens": 2219
+    },
+    {
+      "ts": 1782152162.104697,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar hole",
+      "duration_s": 0.0005837499920744449
+    },
+    {
+      "ts": 1782152168.948898,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 6.832465332990978,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1572,
+      "completion_tokens": 851,
+      "total_tokens": 2423
+    },
+    {
+      "ts": 1782152168.9732108,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar hole",
+      "duration_s": 0.0009513749973848462
+    },
+    {
+      "ts": 1782152173.761913,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 4.776005082996562,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1580,
+      "completion_tokens": 818,
+      "total_tokens": 2398
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 2.1010644170164596,
+        "mean_s": 2.1010644170164596,
+        "max_s": 2.1010644170164596,
+        "min_s": 2.1010644170164596
+      },
+      "revise_world_model": {
+        "count": 5,
+        "total_s": 28.024536665994674,
+        "mean_s": 5.604907333198935,
+        "max_s": 6.832465332990978,
+        "min_s": 3.309905332978815
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.1310134579834994,
+        "mean_s": 0.1310134579834994,
+        "max_s": 0.1310134579834994,
+        "min_s": 0.1310134579834994
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:moveonto avatar hole": {
+        "count": 5,
+        "total_s": 0.0035917919885832816,
+        "mean_s": 0.0007183583977166564,
+        "max_s": 0.0009513749973848462,
+        "min_s": 0.0004520840011537075
+      }
+    }
+  },
+  "meta": {
+    "game": "sokoban",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782152143.2977679
+  }
+}

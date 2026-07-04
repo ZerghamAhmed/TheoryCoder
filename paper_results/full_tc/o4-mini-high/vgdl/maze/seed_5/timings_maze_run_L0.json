@@ -1,0 +1,87 @@
+{
+  "events": [
+    {
+      "ts": 1782936183.8585868,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 25.346369499980938,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1735,
+      "completion_tokens": 2460,
+      "total_tokens": 4195
+    },
+    {
+      "ts": 1782936184.019449,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15529170801164582,
+      "level": 0
+    },
+    {
+      "ts": 1782936184.067273,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:reaches avatar cheese",
+      "duration_s": 0.038989750028122216
+    },
+    {
+      "ts": 1782936202.627031,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 18.47486033302266,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 12716,
+      "completion_tokens": 2204,
+      "total_tokens": 14920
+    },
+    {
+      "ts": 1782936202.671743,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:reaches avatar cheese",
+      "duration_s": 0.02303987502818927
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 25.346369499980938,
+        "mean_s": 25.346369499980938,
+        "max_s": 25.346369499980938,
+        "min_s": 25.346369499980938
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 18.47486033302266,
+        "mean_s": 18.47486033302266,
+        "max_s": 18.47486033302266,
+        "min_s": 18.47486033302266
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15529170801164582,
+        "mean_s": 0.15529170801164582,
+        "max_s": 0.15529170801164582,
+        "min_s": 0.15529170801164582
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:reaches avatar cheese": {
+        "count": 2,
+        "total_s": 0.06202962505631149,
+        "mean_s": 0.031014812528155744,
+        "max_s": 0.038989750028122216,
+        "min_s": 0.02303987502818927
+      }
+    }
+  },
+  "meta": {
+    "game": "maze",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782936158.511708
+  }
+}

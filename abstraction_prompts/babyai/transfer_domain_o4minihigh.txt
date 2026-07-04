@@ -1,0 +1,102 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+You will be given:
+  * the actual MISSION text the game gives the agent on reset, and
+  * a PDDL domain file already synthesized for this game family.
+
+Your job: write a PDDL problem file whose `(:goal ...)` captures EXACTLY the
+end-state required to win THIS mission — nothing more.
+
+CRITICAL GOAL RULES
+- The `(:goal ...)` MUST encode the SINGLE end-state described by the mission.
+  Think: "what is the one terminal condition the game checks for `won = True`?"
+  Then write that, and only that.
+- DO NOT conjoin every visible object's predicate into the goal. The state
+  contains many distractors (extra doors, extra keys, walls). The mission
+  picks out one.
+- If the mission is "open the red door", the goal is `(open red_door)`.
+  It is NOT `(and (open red_door) (open green_door) (open yellow_door) ...)`.
+- If the mission is "pick up the key", the goal is `(has agent key)`.
+  It is NOT a list of every pickup-able object.
+- Prefer a single predicate. Only use `(and ...)` if the mission text itself
+  describes two distinct conditions ("pick up the red key AND go to the green
+  ball"). If the mission has one verb, the goal has one conjunct.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw
+state dictionary. Use PROPER PDDL TYPING in the problem file to match the
+domain's type hierarchy! Objects that play different roles should have
+different types as defined in the domain.
+
+Return EXACTLY ONE complete PDDL problem file in a single ```pddl ``` code block.
+The problem file MUST include ALL sections: (define (problem ...) (:domain ...)
+(:objects ...) (:init ...) (:goal ...)). Do NOT return partial snippets or
+multiple code blocks — return ONE complete problem file only.
+
+
+BEGIN EXAMPLE 1 (single-predicate goal)
+
+mission: "open the red door"
+
+state has many doors and keys; only red_door is the target.
+
+(define (domain doors-domain)
+  (:requirements :strips :typing)
+  (:types agent key door)
+  (:predicates
+    (has ?a - agent ?k - key)
+    (open ?d - door))
+  (:action pickup
+    :parameters (?a - agent ?k - key)
+    :precondition (not (has ?a ?k))
+    :effect (has ?a ?k))
+  (:action open-door
+    :parameters (?a - agent ?k - key ?d - door)
+    :precondition (has ?a ?k)
+    :effect (open ?d)))
+
+(define (problem doors-problem)
+  (:domain doors-domain)
+  (:objects
+    agent - agent
+    red_key green_key yellow_key - key
+    red_door green_door_1 green_door_2 yellow_door_1 - door)
+  (:init
+    ;; agent starts empty-handed; no doors open
+  )
+  (:goal
+    ;; The mission says "open the red door" — that's the only conjunct.
+    (open red_door)))
+
+END EXAMPLE 1
+
+
+BEGIN EXAMPLE 2 (two-conjunct goal because the mission has two verbs)
+
+mission: "pick up the red key and go to the green ball"
+
+(define (problem two-step-problem)
+  (:domain ...)
+  (:objects red_agent - agent red_key - key green_ball - object ...)
+  (:init ...)
+  (:goal
+    (and
+      (has red_agent red_key)
+      (at red_agent green_ball))))
+
+END EXAMPLE 2
+
+
+MISSION (read this carefully — your goal must match it exactly):
+
+{mission}
+
+
+Domain file you need to use (generate the problem file for this):
+
+{domain_file}
+
+
+Raw state of game (generate the problem file for this — many of the visible
+objects are distractors that DO NOT belong in the goal):
+
+{raw_state}

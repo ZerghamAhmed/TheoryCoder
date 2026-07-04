@@ -1,0 +1,43 @@
+# Editor / OS
+*~
+*.pyc
+*.simg
+venv/
+__pycache__/
+.DS_Store
+.claude/
+
+# Sweep output trees at repo root — reproduce via wrappers/, don't commit
+# (Leading slash anchors to root so paper_winners/tc_* subdirs are NOT ignored.)
+/experiments/
+/tapes/
+/run_logs/
+
+# Log files at repo root
+/*.log
+
+# Dated sweep dirs at root
+/jun*/
+/apr*/
+/april*/
+/may*/
+/mar*/
+/feb*/
+/gpt4o_2026*/
+/gpt5_*/
+/o4mini_*_2026*/
+
+# Method-tagged sweep outputs at root (matches wrappers/ output naming)
+/tc_*/
+/tcc_*/
+/tcminusp_*/
+/tcmp_*/
+/wc_*/
+/worldcoder_*/
+/llmpi_*/
+/llmp_*/
+
+# Scratch / smoke
+/smoketest/
+/*_smoke*/
+/scratch/

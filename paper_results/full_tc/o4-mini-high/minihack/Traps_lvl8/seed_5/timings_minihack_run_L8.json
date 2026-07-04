@@ -1,0 +1,69 @@
+{
+  "events": [
+    {
+      "ts": 1782938662.028219,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 8.559080417,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1219,
+      "completion_tokens": 1131,
+      "total_tokens": 2350
+    },
+    {
+      "ts": 1782938662.1947782,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.16221975000000022,
+      "level": 8
+    },
+    {
+      "ts": 1782938662.2384372,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:gotostair human_rogue_called_agent staircase_down",
+      "duration_s": 0.03717570800000125
+    },
+    {
+      "ts": 1782938662.291605,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:gotostair human_rogue_called_agent staircase_down",
+      "duration_s": 0.04457049999999896
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 8.559080417,
+        "mean_s": 8.559080417,
+        "max_s": 8.559080417,
+        "min_s": 8.559080417
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.16221975000000022,
+        "mean_s": 0.16221975000000022,
+        "max_s": 0.16221975000000022,
+        "min_s": 0.16221975000000022
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:gotostair human_rogue_called_agent staircase_down": {
+        "count": 2,
+        "total_s": 0.08174620800000021,
+        "mean_s": 0.040873104000000104,
+        "max_s": 0.04457049999999896,
+        "min_s": 0.03717570800000125
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 8,
+    "started_ts": 1782938653.468014
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "events": [
+    {
+      "ts": 1783018607.34356,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 15.033589417,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 830,
+      "completion_tokens": 1971,
+      "total_tokens": 2801
+    },
+    {
+      "ts": 1783018607.461165,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.11632095799999931,
+      "level": 1,
+      "error": "Command '['python3', '/Users/zea774/Desktop/downward/fast-downward.py', 'experiments/tcc_o4mini_high/minihack/15x15_lvl1/trial_3/tc_game/minihack/minihack_domain.pddl', 'experiments/tcc_o4mini_high/minihack/15x15_lvl1/trial_3/tc_game/minihack/minihack_1.pddl', '--search', 'astar(blind())']' returned non-zero exit status 31."
+    },
+    {
+      "ts": 1783018617.36394,
+      "category": "llm",
+      "detail": "regen_pddl",
+      "duration_s": 9.901209999999999,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 467,
+      "completion_tokens": 1241,
+      "total_tokens": 1708
+    },
+    {
+      "ts": 1783018617.4970932,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.131915541999998,
+      "level": 1
+    },
+    {
+      "ts": 1783018624.722234,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 7.207043125000002,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1193,
+      "completion_tokens": 926,
+      "total_tokens": 2119
+    },
+    {
+      "ts": 1783018634.353934,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 9.629946959000002,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1099,
+      "completion_tokens": 1131,
+      "total_tokens": 2230
+    },
+    {
+      "ts": 1783018634.665739,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 0.3090629579999984
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 15.033589417,
+        "mean_s": 15.033589417,
+        "max_s": 15.033589417,
+        "min_s": 15.033589417
+      },
+      "regen_pddl": {
+        "count": 1,
+        "total_s": 9.901209999999999,
+        "mean_s": 9.901209999999999,
+        "max_s": 9.901209999999999,
+        "min_s": 9.901209999999999
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 7.207043125000002,
+        "mean_s": 7.207043125000002,
+        "max_s": 7.207043125000002,
+        "min_s": 7.207043125000002
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 9.629946959000002,
+        "mean_s": 9.629946959000002,
+        "max_s": 9.629946959000002,
+        "min_s": 9.629946959000002
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 2,
+        "total_s": 0.2482364999999973,
+        "mean_s": 0.12411824999999865,
+        "max_s": 0.131915541999998,
+        "min_s": 0.11632095799999931
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_down": {
+        "count": 1,
+        "total_s": 0.3090629579999984,
+        "mean_s": 0.3090629579999984,
+        "max_s": 0.3090629579999984,
+        "min_s": 0.3090629579999984
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 1,
+    "started_ts": 1783018592.309001
+  }
+}

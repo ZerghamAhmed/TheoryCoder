@@ -1,0 +1,63 @@
+{
+  "events": [
+    {
+      "ts": 1782239854.60507,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 1.0564353749796283,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1741,
+      "completion_tokens": 85,
+      "total_tokens": 1826
+    },
+    {
+      "ts": 1782239854.7215328,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.1153257499972824,
+      "level": 0
+    },
+    {
+      "ts": 1782239854.742501,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:reach avatar cheese",
+      "duration_s": 0.011679084011120722
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 1.0564353749796283,
+        "mean_s": 1.0564353749796283,
+        "max_s": 1.0564353749796283,
+        "min_s": 1.0564353749796283
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.1153257499972824,
+        "mean_s": 0.1153257499972824,
+        "max_s": 0.1153257499972824,
+        "min_s": 0.1153257499972824
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:reach avatar cheese": {
+        "count": 1,
+        "total_s": 0.011679084011120722,
+        "mean_s": 0.011679084011120722,
+        "max_s": 0.011679084011120722,
+        "min_s": 0.011679084011120722
+      }
+    }
+  },
+  "meta": {
+    "game": "maze",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782239853.5478468
+  }
+}

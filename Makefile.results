@@ -1,0 +1,15 @@
+.PHONY: results.pdf clean
+
+# Build the results PDF from the per-trial CSV.
+# Usage: make -f Makefile.results
+results.pdf: results.tex
+	pdflatex -interaction=nonstopmode results.tex
+	pdflatex -interaction=nonstopmode results.tex
+	@echo "Built results.pdf"
+
+results.tex: per_trial_breakdown.py gen_results_tex.py
+	python3 per_trial_breakdown.py
+	python3 gen_results_tex.py
+
+clean:
+	rm -f results.aux results.log results.out results.toc results.tex results.pdf

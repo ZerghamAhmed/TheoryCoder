@@ -1,0 +1,31 @@
+{
+  "babyai_19.pddl": {
+    "level": 19,
+    "actions": [
+      "pickup red_agent yellow_key"
+    ]
+  },
+  "babyai_23.pddl": {
+    "level": 23,
+    "actions": [
+      "open_door red_door_1"
+    ]
+  },
+  "babyai_13.pddl": {
+    "level": 13,
+    "actions": [
+      "open_door yellow_door_1",
+      "open_door red_door_3",
+      "open_door red_door_2",
+      "open_door red_door_1",
+      "open_door purple_door_1",
+      "open_door grey_door_1",
+      "open_door blue_door_2",
+      "open_door blue_door_1",
+      "pickup red_agent yellow_key",
+      "pickup red_agent red_key",
+      "pickup red_agent purple_key",
+      "pickup red_agent grey_key"
+    ]
+  }
+}

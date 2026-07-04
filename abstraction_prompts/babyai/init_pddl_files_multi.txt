@@ -1,0 +1,156 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Can you give me a minimal PDDL domain and problem file for this setup that will allow the agent to win the game? Think in terms of the most minimal abstract files you can.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+When you DO declare an object, use its state-dict key name VERBATIM — do NOT invent variants like 'red_key_1', 'red_key_2'. If a state-dict entry is a single key with a list of positions (e.g. 'red_key': [[x1, y1], [x2, y2], [x3, y3]]), it is ONE PDDL object named 'red_key'.
+ONLY declare in (:objects ...) the objects that actually appear in (:init ...), (:goal ...), or are needed by an action's parameters. Do NOT include unrelated state-dict keys just to be exhaustive — extra objects with no matching type in the domain cause the planner to reject the problem file.
+
+Each PDDL object must be declared EXACTLY ONCE in (:objects ...) under one type. Do NOT list the same object name under multiple - type clauses. Pick the most specific type per object and use it ONCE.
+Correct form (each object appears once):
+  (:objects
+    obj_a obj_b - typeT
+    obj_c - typeU
+  )
+Incorrect form (rejected by the planner — same object under two types):
+  (:objects
+    obj_a obj_b obj_c - object
+    obj_a - typeT          ;; duplicate
+    obj_c - typeU          ;; duplicate
+  )
+
+There is no reference to coordinates or spatial concepts, like connections etc. For example, you can assume that there are objects and they can be ontop of one another
+but do not assume there are physical locations. For example, do NOT propose the predciate "at" or any other position style predicate. In order to express
+these types of relationship you can think of the objects being in the same position as overlapping or being on top of one another.
+
+DO NOT PROPOSE PREDCIATES THAT IMPLY SPATIAL RELATIONS LIKE FROM OR TO!!!!!
+
+Propose as many operators and predicates as the task requires — typically one operator per distinct subgoal the agent must achieve. Each operator should still have exactly 1 effect and 1 precondition (just compose multiple operators if the task needs multi-step reasoning, e.g., a pickup operator AND an unlock operator AND a goto operator).
+
+PDDL-SYNTAX REQUIREMENTS (so the planner doesn't reject your domain):
+
+1. REACHABILITY: every predicate you put in an action's :precondition MUST be either
+   (a) already true in (:init ...) of the problem file, OR
+   (b) the :effect of some other action you defined.
+   If a precondition is neither, the planner cannot find a plan because there is no
+   way to make that precondition true.
+
+2. PREDICATE NAMES: use lowercase letters and underscores only. NO hyphens
+   (`-` is reserved in PDDL for typing). E.g., write `has_key` not `has-key`,
+   `door_open` not `door-open`.
+
+3. OPERATOR NAMES: same rule — lowercase with underscores, no hyphens. E.g.,
+   write `pick_up_key` not `pick-up-key`.
+
+4. STRIPS-FRIENDLY PRECONDITIONS: avoid `(not ...)` inside preconditions.
+   If you need to express "the agent is NOT carrying X", define a separate
+   positive predicate like `(not_carrying ?a ?o)` that gets toggled by your
+   actions, instead of writing `(not (carrying ?a ?o))` in a precondition.
+
+5. EFFECTS may include `(not ...)` for delete effects — that's standard STRIPS.
+   But keep effects compact: an action's :effect is typically just `(and (P) (not (Q)))`
+   or similar — don't over-nest.
+
+The raw state dictionary keys are considered traversable.
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+VARIABLES IN PRECONDITIONS AND EFFECTS (no hardcoded object names):
+An action's :precondition and :effect may ONLY reference variables declared in that action's :parameters (the `?` symbols). Do NOT use bare object names from the problem file (like `obj_a`) inside an action's :precondition or :effect — every entity referenced must be a declared parameter. If the action needs an extra entity, ADD it to the :parameters list.
+
+IMPORTANT: Use PROPER PDDL TYPING to distinguish between different categories of objects!
+Objects that play different roles in actions should have different types. This prevents the planner from making invalid substitutions (e.g., using one kind of object where another kind is expected).
+Analyze the state to identify distinct categories of objects based on their names and roles.
+
+Few shot example of what a nice abstraction domain and problem file should look like:
+
+BEGIN EXAMPLE
+
+state is 'table': [3, 4], 'mug', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (ontop mug table))
+  )
+
+  (:goal
+  ; mug will overlap with table 'table': [4, 4], 'mug', [4, 4]
+    (ontop mug table)
+  )
+)
+
+END EXAMPLE
+
+BEGIN EXAMPLE 2
+
+state is 'agent': [3, 4], 'apple', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (eaten ?x - object ?y - object)
+  )
+
+  (:action eat
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (eaten ?obj1 ?obj2))
+    :effect (eaten ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (eaten agent apple))
+  )
+
+  (:goal
+    (eaten agent apple)
+  )
+)
+
+END EXAMPLE 2
+
+Raw state of game (generate the files for this):
+
+{raw_state}
+
+
+Mission for this level: {mission}

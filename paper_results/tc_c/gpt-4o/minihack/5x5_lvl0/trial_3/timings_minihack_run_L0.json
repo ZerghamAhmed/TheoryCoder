@@ -1,0 +1,207 @@
+{
+  "events": [
+    {
+      "ts": 1782792775.778903,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 2.935215292,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 831,
+      "completion_tokens": 199,
+      "total_tokens": 1030
+    },
+    {
+      "ts": 1782792775.907469,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.12728375000000014,
+      "level": 0
+    },
+    {
+      "ts": 1782792783.6932669,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 7.769878208,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1164,
+      "completion_tokens": 576,
+      "total_tokens": 1740
+    },
+    {
+      "ts": 1782792786.1978822,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 2.5032126659999996,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1032,
+      "completion_tokens": 187,
+      "total_tokens": 1219
+    },
+    {
+      "ts": 1782792789.809433,
+      "category": "llm",
+      "detail": "debug_predicate",
+      "duration_s": 3.5870724590000016,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 311,
+      "completion_tokens": 298,
+      "total_tokens": 609
+    },
+    {
+      "ts": 1782792792.55071,
+      "category": "llm",
+      "detail": "debug_predicate",
+      "duration_s": 2.7393791249999992,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 296,
+      "completion_tokens": 276,
+      "total_tokens": 572
+    },
+    {
+      "ts": 1782792795.6742961,
+      "category": "llm",
+      "detail": "debug_predicate",
+      "duration_s": 3.121564457999998,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 296,
+      "completion_tokens": 329,
+      "total_tokens": 625
+    },
+    {
+      "ts": 1782792795.67633,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 9.475956209
+    },
+    {
+      "ts": 1782792802.5261178,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 6.848982625000001,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1753,
+      "completion_tokens": 600,
+      "total_tokens": 2353
+    },
+    {
+      "ts": 1782792807.7593532,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 5.227063083999997,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 1673,
+      "completion_tokens": 478,
+      "total_tokens": 2151
+    },
+    {
+      "ts": 1782792811.0654871,
+      "category": "llm",
+      "detail": "debug_predicate",
+      "duration_s": 3.2856426669999976,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 296,
+      "completion_tokens": 260,
+      "total_tokens": 556
+    },
+    {
+      "ts": 1782792814.164501,
+      "category": "llm",
+      "detail": "debug_predicate",
+      "duration_s": 3.0969495410000007,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 296,
+      "completion_tokens": 285,
+      "total_tokens": 581
+    },
+    {
+      "ts": 1782792817.216025,
+      "category": "llm",
+      "detail": "debug_predicate",
+      "duration_s": 3.048931291999999,
+      "model": "gpt-4o",
+      "provider": "custom",
+      "prompt_tokens": 296,
+      "completion_tokens": 272,
+      "total_tokens": 568
+    },
+    {
+      "ts": 1782792817.218774,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_down",
+      "duration_s": 9.452694082999997
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 2.935215292,
+        "mean_s": 2.935215292,
+        "max_s": 2.935215292,
+        "min_s": 2.935215292
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 7.769878208,
+        "mean_s": 7.769878208,
+        "max_s": 7.769878208,
+        "min_s": 7.769878208
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 2.5032126659999996,
+        "mean_s": 2.5032126659999996,
+        "max_s": 2.5032126659999996,
+        "min_s": 2.5032126659999996
+      },
+      "debug_predicate": {
+        "count": 6,
+        "total_s": 18.879539541999996,
+        "mean_s": 3.146589923666666,
+        "max_s": 3.5870724590000016,
+        "min_s": 2.7393791249999992
+      },
+      "revise_world_model": {
+        "count": 2,
+        "total_s": 12.076045708999999,
+        "mean_s": 6.038022854499999,
+        "max_s": 6.848982625000001,
+        "min_s": 5.227063083999997
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.12728375000000014,
+        "mean_s": 0.12728375000000014,
+        "max_s": 0.12728375000000014,
+        "min_s": 0.12728375000000014
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_down": {
+        "count": 2,
+        "total_s": 18.928650291999997,
+        "mean_s": 9.464325145999998,
+        "max_s": 9.475956209,
+        "min_s": 9.452694082999997
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782792772.8432589
+  }
+}

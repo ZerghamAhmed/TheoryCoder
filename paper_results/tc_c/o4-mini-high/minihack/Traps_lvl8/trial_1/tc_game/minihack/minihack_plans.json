@@ -1,0 +1,8 @@
+{
+  "minihack_8.pddl": {
+    "level": 8,
+    "actions": [
+      "descend human_rogue_called_agent"
+    ]
+  }
+}

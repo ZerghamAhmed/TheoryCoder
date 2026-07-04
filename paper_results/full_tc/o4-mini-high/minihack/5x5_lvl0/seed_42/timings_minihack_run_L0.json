@@ -1,0 +1,123 @@
+{
+  "events": [
+    {
+      "ts": 1782938195.5973172,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 34.070503249999994,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 830,
+      "completion_tokens": 4231,
+      "total_tokens": 5061
+    },
+    {
+      "ts": 1782938195.76445,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.162374542000002,
+      "level": 0
+    },
+    {
+      "ts": 1782938204.642426,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 8.861405083000001,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1194,
+      "completion_tokens": 978,
+      "total_tokens": 2172
+    },
+    {
+      "ts": 1782938213.952832,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 9.306975166,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1019,
+      "completion_tokens": 1172,
+      "total_tokens": 2191
+    },
+    {
+      "ts": 1782938335.272355,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_up",
+      "duration_s": 121.312300166
+    },
+    {
+      "ts": 1782938362.875699,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 27.54402812500001,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1832,
+      "completion_tokens": 3876,
+      "total_tokens": 5708
+    },
+    {
+      "ts": 1782938484.083178,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:descend human_rogue_called_agent staircase_up",
+      "duration_s": 121.20145099999999
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 34.070503249999994,
+        "mean_s": 34.070503249999994,
+        "max_s": 34.070503249999994,
+        "min_s": 34.070503249999994
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 8.861405083000001,
+        "mean_s": 8.861405083000001,
+        "max_s": 8.861405083000001,
+        "min_s": 8.861405083000001
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 9.306975166,
+        "mean_s": 9.306975166,
+        "max_s": 9.306975166,
+        "min_s": 9.306975166
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 27.54402812500001,
+        "mean_s": 27.54402812500001,
+        "max_s": 27.54402812500001,
+        "min_s": 27.54402812500001
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.162374542000002,
+        "mean_s": 0.162374542000002,
+        "max_s": 0.162374542000002,
+        "min_s": 0.162374542000002
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:descend human_rogue_called_agent staircase_up": {
+        "count": 2,
+        "total_s": 242.513751166,
+        "mean_s": 121.256875583,
+        "max_s": 121.312300166,
+        "min_s": 121.20145099999999
+      }
+    }
+  },
+  "meta": {
+    "game": "minihack",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782938161.526027
+  }
+}

@@ -1,0 +1,79 @@
+You are a software engineer that must write python predicates. These python predicates have to be python versions of the PDDL operators that are functions which take the states and arguments and returns either True or False. You will need to write Python predicates for all the predicates you see in the domain file. The problem file, and Raw State is also given to help guide you. 
+
+Return your code blocks with
+```python ```
+markup tags so I can easily extract it.
+
+BEING EXAMPLE
+
+predicate: predicate: isLeftOfop(arg1, arg2)
+
+def isLeftOf(state, arg1, arg2):
+    """
+    Returns True if arg1 is to the left of arg2, based on their x-coordinates.
+
+    Parameters:
+    - state: dict with keys as object names and values as [x, y] positions
+    - arg1: object name (e.g., 'book')
+    - arg2: object name (e.g., 'lamp')
+
+    Returns:
+    - bool: True if arg1's x-coordinate is less than arg2's, False otherwise
+    """
+    pos1 = state.get(arg1)
+    pos2 = state.get(arg2)
+    if pos1 is None or pos2 is None:
+        return False
+    return pos1[0] < pos2[0]
+
+
+
+END EXAMPLE
+
+
+
+Make sure that you always have state as one of the arguments!
+
+Only synthesize the predicate you see in the domain file and make sure
+to give it the same name!
+
+Domain File:
+
+{domain_file}
+
+Problem File:
+
+{problem_file}
+
+Raw State:
+
+{raw_state}
+
+Current Python Low Level World Model:
+
+{world_model}
+
+Game Description:
+
+The agent needs to navigate the maze to win. If the agent is facing a key, it can pick it up.
+The agent can also unlock doors in which case the door will become 
+open_COLORNAME_door in the state.
+
+If you are generating predicates make sure you disregard any status 
+for the object to strip it when actually doing predicate checks.
+
+So for example with locked_COLOR_door
+you should refer to the objects like COLOR_door not locked_COLOR_door
+or closed_COLOR_door in your PDDL files
+
+For this environment the state key `agent_carrying` is a list of object names the agent currently holds (e.g., `['red_key']`).
+When a door is unlocked it will turn from locked_ to open_ (e.g., 'locked_blue_door' -> 'open_blue_door').
+When a closed door is opened it will turn from closed_ to open_ (e.g., 'closed_blue_door' -> 'open_blue_door').
+
+FORMAT NOTES:
+
+first make sure to normalize the object state for doors in this game 
+when writing predicates for it.
+
+normalized_door_name = x.split('_', 1)[1]  # Removes the first part (e.g., 'locked_', 'closed_')
+

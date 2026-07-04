@@ -1,0 +1,66 @@
+You are a software engineer that must write python predicates. These python predicates have to be python versions of the PDDL operators that are functions which take the states and arguments and returns either True or False.
+
+You are given an existing predicates.py file that was written for a previous level. Your task is to ADD new predicate implementations for any NEW predicates that appear in the domain file but are NOT in the existing predicates.py file.
+
+IMPORTANT: DO NOT delete or modify the existing predicate implementations. You are ADDING to the file, not replacing it.
+
+Return your code blocks with
+```python ```
+markup tags so I can easily extract it.
+
+BEING EXAMPLE
+
+predicate: predicate: isLeftOfop(arg1, arg2)
+
+def isLeftOf(state, arg1, arg2):
+    """
+    Returns True if arg1 is to the left of arg2, based on their x-coordinates.
+
+    Parameters:
+    - state: dict with keys as object names and values as [x, y] positions
+    - arg1: object name (e.g., 'book')
+    - arg2: object name (e.g., 'lamp')
+
+    Returns:
+    - bool: True if arg1's x-coordinate is less than arg2's, False otherwise
+    """
+    pos1 = state.get(arg1)
+    pos2 = state.get(arg2)
+    if pos1 is None or pos2 is None:
+        return False
+    return pos1[0] < pos2[0]
+
+
+
+END EXAMPLE
+
+NOTES:
+
+DO NOT invent new dictionary keys, you MUST ONLY use the dictionary keys that are in the raw state dictionary
+
+Make sure that you always have state as one of the arguments!
+
+Only write a single function for the predicate, DO NOT write any function for the operator.
+
+Domain File:
+
+{domain_file}
+
+Problem File:
+
+{problem_file}
+
+Raw State:
+
+{raw_state}
+
+Existing Predicates File (DO NOT DELETE THESE, ONLY ADD NEW ONES):
+
+{existing_predicates}
+
+
+REMEMBER:
+1. KEEP all existing predicate implementations from the existing_predicates
+2. ONLY ADD implementations for NEW predicates that appear in the domain file but not in existing_predicates
+3. Follow the same coding style as the existing predicates
+4. Use only the dictionary keys that exist in the raw state

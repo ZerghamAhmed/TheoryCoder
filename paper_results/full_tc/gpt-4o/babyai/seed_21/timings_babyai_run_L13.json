@@ -1,0 +1,76 @@
+{
+  "events": [
+    {
+      "ts": 1782082173.484277,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 0.8148709160159342,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 2570,
+      "completion_tokens": 101,
+      "total_tokens": 2671
+    },
+    {
+      "ts": 1782082173.603942,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.11862754100002348,
+      "level": 13
+    },
+    {
+      "ts": 1782082173.634311,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickup red_agent yellow_key",
+      "duration_s": 0.016041082999436185
+    },
+    {
+      "ts": 1782082173.7898161,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:unlock red_agent yellow_key yellow_door_1",
+      "duration_s": 0.1555016660131514
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 0.8148709160159342,
+        "mean_s": 0.8148709160159342,
+        "max_s": 0.8148709160159342,
+        "min_s": 0.8148709160159342
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.11862754100002348,
+        "mean_s": 0.11862754100002348,
+        "max_s": 0.11862754100002348,
+        "min_s": 0.11862754100002348
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickup red_agent yellow_key": {
+        "count": 1,
+        "total_s": 0.016041082999436185,
+        "mean_s": 0.016041082999436185,
+        "max_s": 0.016041082999436185,
+        "min_s": 0.016041082999436185
+      },
+      "exploit_subplan:unlock red_agent yellow_key yellow_door_1": {
+        "count": 1,
+        "total_s": 0.1555016660131514,
+        "mean_s": 0.1555016660131514,
+        "max_s": 0.1555016660131514,
+        "min_s": 0.1555016660131514
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 13,
+    "started_ts": 1782082172.6680262
+  }
+}

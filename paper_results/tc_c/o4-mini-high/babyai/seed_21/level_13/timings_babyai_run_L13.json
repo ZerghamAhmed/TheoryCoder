@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "ts": 1783018363.722781,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 41.3350521249813,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 2556,
+      "completion_tokens": 4650,
+      "total_tokens": 7206
+    },
+    {
+      "ts": 1783018363.887149,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.15658912505023181,
+      "level": 13
+    },
+    {
+      "ts": 1783018419.177216,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 53.22413220797898,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 57712,
+      "completion_tokens": 6453,
+      "total_tokens": 64165
+    },
+    {
+      "ts": 1783018427.681281,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 8.49450008297572,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1902,
+      "completion_tokens": 1059,
+      "total_tokens": 2961
+    },
+    {
+      "ts": 1783018427.6971798,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:open_door yellow_door_1",
+      "duration_s": 0.0013577909558080137,
+      "error": "Unknown predicate: open (tried: open)"
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 41.3350521249813,
+        "mean_s": 41.3350521249813,
+        "max_s": 41.3350521249813,
+        "min_s": 41.3350521249813
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 53.22413220797898,
+        "mean_s": 53.22413220797898,
+        "max_s": 53.22413220797898,
+        "min_s": 53.22413220797898
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 8.49450008297572,
+        "mean_s": 8.49450008297572,
+        "max_s": 8.49450008297572,
+        "min_s": 8.49450008297572
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.15658912505023181,
+        "mean_s": 0.15658912505023181,
+        "max_s": 0.15658912505023181,
+        "min_s": 0.15658912505023181
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:open_door yellow_door_1": {
+        "count": 1,
+        "total_s": 0.0013577909558080137,
+        "mean_s": 0.0013577909558080137,
+        "max_s": 0.0013577909558080137,
+        "min_s": 0.0013577909558080137
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 13,
+    "started_ts": 1783018322.385443
+  }
+}

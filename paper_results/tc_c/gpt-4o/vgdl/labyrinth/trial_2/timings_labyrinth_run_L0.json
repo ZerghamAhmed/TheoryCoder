@@ -1,0 +1,125 @@
+{
+  "events": [
+    {
+      "ts": 1782152126.989653,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 3.335567625006661,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1752,
+      "completion_tokens": 409,
+      "total_tokens": 2161
+    },
+    {
+      "ts": 1782152127.131041,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13536220899550244,
+      "level": 0,
+      "error": "Command '['python3', '/Users/zea774/Desktop/downward/fast-downward.py', 'experiments/labyrinth_trial_2/tc_game/labyrinth/labyrinth_domain.pddl', 'experiments/labyrinth_trial_2/tc_game/labyrinth/labyrinth_0.pddl', '--search', 'astar(blind())']' returned non-zero exit status 12."
+    },
+    {
+      "ts": 1782152129.293548,
+      "category": "llm",
+      "detail": "regen_pddl",
+      "duration_s": 2.1616743330087047,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 931,
+      "completion_tokens": 380,
+      "total_tokens": 1311
+    },
+    {
+      "ts": 1782152129.437657,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13743458400131203,
+      "level": 0
+    },
+    {
+      "ts": 1782152137.4093492,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 7.76162450000993,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 23871,
+      "completion_tokens": 1269,
+      "total_tokens": 25140
+    },
+    {
+      "ts": 1782152139.6256351,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 2.2065631249861326,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1447,
+      "completion_tokens": 436,
+      "total_tokens": 1883
+    },
+    {
+      "ts": 1782152139.6608372,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:moveonto avatar goal",
+      "duration_s": 0.021907957998337224
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 3.335567625006661,
+        "mean_s": 3.335567625006661,
+        "max_s": 3.335567625006661,
+        "min_s": 3.335567625006661
+      },
+      "regen_pddl": {
+        "count": 1,
+        "total_s": 2.1616743330087047,
+        "mean_s": 2.1616743330087047,
+        "max_s": 2.1616743330087047,
+        "min_s": 2.1616743330087047
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 7.76162450000993,
+        "mean_s": 7.76162450000993,
+        "max_s": 7.76162450000993,
+        "min_s": 7.76162450000993
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 2.2065631249861326,
+        "mean_s": 2.2065631249861326,
+        "max_s": 2.2065631249861326,
+        "min_s": 2.2065631249861326
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 2,
+        "total_s": 0.2727967929968145,
+        "mean_s": 0.13639839649840724,
+        "max_s": 0.13743458400131203,
+        "min_s": 0.13536220899550244
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:moveonto avatar goal": {
+        "count": 1,
+        "total_s": 0.021907957998337224,
+        "mean_s": 0.021907957998337224,
+        "max_s": 0.021907957998337224,
+        "min_s": 0.021907957998337224
+      }
+    }
+  },
+  "meta": {
+    "game": "labyrinth",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782152123.6531699
+  }
+}

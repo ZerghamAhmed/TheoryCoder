@@ -1,0 +1,141 @@
+{
+  "events": [
+    {
+      "ts": 1781984812.74295,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 2.6635470839974005,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1319,
+      "completion_tokens": 478,
+      "total_tokens": 1797
+    },
+    {
+      "ts": 1781984812.887881,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13763266599562485,
+      "level": 19
+    },
+    {
+      "ts": 1781984822.369387,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 7.447210792000988,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 6927,
+      "completion_tokens": 1453,
+      "total_tokens": 8380
+    },
+    {
+      "ts": 1781984823.4386508,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 1.0621597080025822,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 706,
+      "completion_tokens": 166,
+      "total_tokens": 872
+    },
+    {
+      "ts": 1781984828.523607,
+      "category": "llm",
+      "detail": "debug_world_model",
+      "duration_s": 5.079752708988963,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 1354,
+      "completion_tokens": 1261,
+      "total_tokens": 2615
+    },
+    {
+      "ts": 1781984828.533769,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent yellow_key",
+      "duration_s": 5.090892541003996
+    },
+    {
+      "ts": 1781984832.915926,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 4.330708624998806,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 7815,
+      "completion_tokens": 884,
+      "total_tokens": 8699
+    },
+    {
+      "ts": 1781984832.935362,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent yellow_key",
+      "duration_s": 0.001270958993700333
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 2.6635470839974005,
+        "mean_s": 2.6635470839974005,
+        "max_s": 2.6635470839974005,
+        "min_s": 2.6635470839974005
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 7.447210792000988,
+        "mean_s": 7.447210792000988,
+        "max_s": 7.447210792000988,
+        "min_s": 7.447210792000988
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 1.0621597080025822,
+        "mean_s": 1.0621597080025822,
+        "max_s": 1.0621597080025822,
+        "min_s": 1.0621597080025822
+      },
+      "debug_world_model": {
+        "count": 1,
+        "total_s": 5.079752708988963,
+        "mean_s": 5.079752708988963,
+        "max_s": 5.079752708988963,
+        "min_s": 5.079752708988963
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 4.330708624998806,
+        "mean_s": 4.330708624998806,
+        "max_s": 4.330708624998806,
+        "min_s": 4.330708624998806
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13763266599562485,
+        "mean_s": 0.13763266599562485,
+        "max_s": 0.13763266599562485,
+        "min_s": 0.13763266599562485
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickkey red_agent yellow_key": {
+        "count": 2,
+        "total_s": 5.092163499997696,
+        "mean_s": 2.546081749998848,
+        "max_s": 5.090892541003996,
+        "min_s": 0.001270958993700333
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 19,
+    "started_ts": 1781984810.078652
+  }
+}

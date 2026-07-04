@@ -1,0 +1,67 @@
+You are an agent playing a 2D grid game, whose current state is shown below.
+
+Your task is to output a PDDL domain and problem file for this setup that will allow the agent to win the game.
+
+Your PDDL domain problem file will be used to output actions that will be executed in the game engine.
+
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Previously, you attempted to do this. The PDDL domain/problem file compiled but yielded no plan.
+You should fix either the PDDL domain or problem file or both in order to make it return a plan.
+Ideally, the refined PDDL files should output a plan that wins the game, but try to atleast output
+PDDL files that will return some plan even if it may not be fully correct for now.
+
+NOTES:
+-Make the **smallest edits** to domain/problem to make the instance solvable.
+-Ensure adjacency is present and consistent (undirected unless otherwise stated).
+-Ensure the goal matches the MISSION and is achievable from the provided init.
+-At least one operator **changes** the state (adds/removes facts) along the intended path.
+-The (:requirements ...) header may ONLY contain flags supported by Fast Downward:
+   :strips, :adl, :typing,
+   :negative-preconditions, :disjunctive-preconditions,
+   :existential-preconditions, :universal-preconditions, :quantified-preconditions,
+   :equality, :negation, :conditional-effects,
+   :derived-predicates, :action-costs.
+ Do NOT use :fluents, :numeric-fluents, :durative-actions, or :preferences.
+
+Domain File:
+
+{domain_file}
+
+Problem File:
+
+{problem_file}
+
+Current State:
+
+{raw_state}
+
+MISSION:
+
+{mission_goal}
+
+RESPONSE FORMAT
+
+Return exactly two fenced blocks:
+
+
+```pddl
+(define (domain {{ domain_name }})
+)
+```
+
+```pddl
+(define (problem {{ problem_name }})
+  (:domain {{ domain_name }})
+  (:objects
+  )
+  (:init
+    {{ init_block }}
+  )
+  (:goal
+    {{ goal_block }}
+  )
+)
+```

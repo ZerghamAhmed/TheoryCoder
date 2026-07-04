@@ -1,0 +1,182 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Can you give me a minimal PDDL domain and problem file for this setup that will allow the agent to win the game? Think in terms of the most minimal abstract files you can.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+When you DO declare an object, use its state-dict key name VERBATIM — do NOT invent variants like 'red_key_1', 'red_key_2'. If a state-dict entry is a single key with a list of positions (e.g. 'red_key': [[x1, y1], [x2, y2], [x3, y3]]), it is ONE PDDL object named 'red_key'.
+ONLY declare in (:objects ...) the objects that actually appear in (:init ...), (:goal ...), or are needed by an action's parameters. Do NOT include unrelated state-dict keys just to be exhaustive — extra objects with no matching type in the domain cause the planner to reject the problem file.
+
+Each PDDL object must be declared EXACTLY ONCE in (:objects ...) under one type. Do NOT list the same object name under multiple - type clauses. Pick the most specific type per object and use it ONCE.
+Correct form (each object appears once):
+  (:objects
+    obj_a obj_b - typeT
+    obj_c - typeU
+  )
+Incorrect form (rejected by the planner — same object under two types):
+  (:objects
+    obj_a obj_b obj_c - object
+    obj_a - typeT          ;; duplicate
+    obj_c - typeU          ;; duplicate
+  )
+
+There is no reference to coordinates or spatial concepts, like connections etc. For example, you can assume that there are objects and they can be ontop of one another
+but do not assume there are physical locations. For example, do NOT propose the predciate "at" or any other position style predicate. In order to express
+these types of relationship you can think of the objects being in the same position as overlapping or being on top of one another.
+
+DO NOT PROPOSE PREDCIATES THAT IMPLY SPATIAL RELATIONS LIKE FROM OR TO!!!!!
+
+ONLY propose ONE operator and ONE new predicate. Make sure it only has 1 effect and precondition!
+
+The raw state dictionary keys are considered traversable.
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Do NOT use symbols like "-" for the predicate names. For example, the predicate "avatar-at" should NOT be proposed since it has a "-".
+Please use all LOWERCASE for the operator names as well!!!!!!!!!!
+
+VARIABLES IN PRECONDITIONS AND EFFECTS (no hardcoded object names):
+An action's :precondition and :effect may ONLY reference variables declared in that action's :parameters (the `?` symbols). Do NOT use bare object names from the problem file (like `obj_a`) inside an action's :precondition or :effect — every entity referenced must be a declared parameter. If the action needs an extra entity, ADD it to the :parameters list.
+
+IMPORTANT: Use ONLY the generic `object` type. Do NOT introduce subtypes like `avatar`, `goal`, `agent`, etc. — the (:types ...) section MUST be exactly `(:types object)` and every parameter in :predicates and :action must be declared as `- object`. (Narrow typing locks the abstraction to specific entity names, which prevents it from generalizing.)
+
+LOWERCASE ENFORCEMENT (critical): operator names, predicate names, and parameter symbols MUST be entirely lowercase. Do NOT use camelCase (e.g. `moveTo`), PascalCase, or mixed case. Examples: `moveto` ✓, `moveTo` ✗, `Move_to` ✗.
+
+RESERVED KEYWORDS (critical): predicate and operator names must NOT be Python reserved keywords. The predicate becomes a Python function `def <name>(state, ...)`, so the name must be a valid Python identifier. Forbidden names include: `with`, `if`, `for`, `def`, `class`, `import`, `return`, `not`, `and`, `or`, `is`, `in`, `as`, `try`, `else`, `from`, `while`, `pass`, `lambda`, `yield`, `global`, `nonlocal`, `raise`, `assert`, `del`, `break`, `continue`, `True`, `False`, `None`. Use descriptive names like `ontop`, `touching`, `reaches`, `overlaps`, `colocated`.
+
+BINARY PREDICATES (critical): Your predicate MUST take TWO arguments and describe a relation between two distinct objects (e.g., `(ontop ?x - object ?y - object)`, `(touching ?x - object ?y - object)`). Do NOT propose arity-1 predicates that describe a property of a single object (e.g., `(avatarontop ?x)`) — these force self-referential init facts like `(avatarontop avatar)` that the planner cannot make false, leaving the abstract plan unsatisfiable.
+
+Few shot example of what a nice abstraction domain and problem file should look like:
+
+BEGIN EXAMPLE
+
+state is 'table': [3, 4], 'mug', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (ontop ?x - object ?y - object)
+  )
+
+  (:action placeontopof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (ontop ?obj1 ?obj2))
+    :effect (ontop ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (ontop mug table))
+  )
+
+  (:goal
+  ; mug will overlap with table 'table': [4, 4], 'mug', [4, 4]
+    (ontop mug table)
+  )
+)
+
+END EXAMPLE
+
+BEGIN EXAMPLE 2
+
+state is 'agent': [3, 4], 'apple', [4, 4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (eaten ?x - object ?y - object)
+  )
+
+  (:action eat
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (eaten ?obj1 ?obj2))
+    :effect (eaten ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple - object
+  )
+
+  (:init
+    ;; Initially nothing is on top of anything
+    (not (eaten agent apple))
+  )
+
+  (:goal
+    (eaten agent apple)
+  )
+)
+
+END EXAMPLE 2
+
+BEGIN EXAMPLE 3
+
+state is 'agent': [6, 3], 'blocked_gold_window': [4,4], 'unblocked_silver_window': [1,4]
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+
+  (:types
+    object
+  )
+
+  (:predicates
+    (unblocked ?x - object)
+  )
+
+  (:action clear
+    :parameters (?x - object)
+    :precondition (not (unblocked ?x))
+    :effect (unblocked ?x)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    agent apple gold_window - object
+  )
+
+  (:init
+    ; the end goal is to eat the apple
+    (not (unblocked gold_window))
+  )
+
+  (:goal
+    (unblocked gold_window)
+  )
+)
+
+END EXAMPLE 3
+
+Raw state of game (generate the files for this):
+
+{raw_state}
+
+
+DOMAIN DESCRIPTION:
+
+In this domain, you control the avatar and need to reach the goal.

@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "ts": 1783017042.3945868,
+      "category": "llm",
+      "detail": "generate initial pddl files",
+      "duration_s": 22.124880874995142,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1831,
+      "completion_tokens": 2795,
+      "total_tokens": 4626
+    },
+    {
+      "ts": 1783017042.522825,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.12681987503310665,
+      "level": 0
+    },
+    {
+      "ts": 1783017059.05875,
+      "category": "llm",
+      "detail": "initialize_world_model",
+      "duration_s": 16.41630908299703,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 12774,
+      "completion_tokens": 2107,
+      "total_tokens": 14881
+    },
+    {
+      "ts": 1783017066.519094,
+      "category": "llm",
+      "detail": "init_predicates",
+      "duration_s": 7.452898333023768,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1592,
+      "completion_tokens": 1020,
+      "total_tokens": 2612
+    },
+    {
+      "ts": 1783017066.588083,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:push box hole",
+      "duration_s": 0.01760279102018103
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "generate initial pddl files": {
+        "count": 1,
+        "total_s": 22.124880874995142,
+        "mean_s": 22.124880874995142,
+        "max_s": 22.124880874995142,
+        "min_s": 22.124880874995142
+      },
+      "initialize_world_model": {
+        "count": 1,
+        "total_s": 16.41630908299703,
+        "mean_s": 16.41630908299703,
+        "max_s": 16.41630908299703,
+        "min_s": 16.41630908299703
+      },
+      "init_predicates": {
+        "count": 1,
+        "total_s": 7.452898333023768,
+        "mean_s": 7.452898333023768,
+        "max_s": 7.452898333023768,
+        "min_s": 7.452898333023768
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.12681987503310665,
+        "mean_s": 0.12681987503310665,
+        "max_s": 0.12681987503310665,
+        "min_s": 0.12681987503310665
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:push box hole": {
+        "count": 1,
+        "total_s": 0.01760279102018103,
+        "mean_s": 0.01760279102018103,
+        "max_s": 0.01760279102018103,
+        "min_s": 0.01760279102018103
+      }
+    }
+  },
+  "meta": {
+    "game": "sokoban",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1783017020.2686248
+  }
+}

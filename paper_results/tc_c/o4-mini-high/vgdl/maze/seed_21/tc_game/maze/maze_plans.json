@@ -1,0 +1,8 @@
+{
+  "maze_0.pddl": {
+    "level": 0,
+    "actions": [
+      "touch avatar cheese"
+    ]
+  }
+}

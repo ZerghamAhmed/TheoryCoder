@@ -1,0 +1,106 @@
+{
+  "events": [
+    {
+      "ts": 1781984628.931125,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 1.0050854169967351,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 2569,
+      "completion_tokens": 128,
+      "total_tokens": 2697
+    },
+    {
+      "ts": 1781984629.075829,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.13902666700596455,
+      "level": 13
+    },
+    {
+      "ts": 1781984632.156262,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent red_key",
+      "duration_s": 3.054298707997077
+    },
+    {
+      "ts": 1781984682.781604,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:unlockdoor red_agent red_key red_door_1",
+      "duration_s": 50.625504666997585
+    },
+    {
+      "ts": 1781984693.208029,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 7.755964582989691,
+      "model": "gpt-4o-2024-11-20",
+      "provider": "custom",
+      "prompt_tokens": 36101,
+      "completion_tokens": 1049,
+      "total_tokens": 37150
+    },
+    {
+      "ts": 1781984697.394827,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:pickkey red_agent red_key",
+      "duration_s": 4.131929374998435
+    },
+    {
+      "ts": 1781984733.85509,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:unlockdoor red_agent red_key red_door_1",
+      "duration_s": 36.46037666598568
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 1.0050854169967351,
+        "mean_s": 1.0050854169967351,
+        "max_s": 1.0050854169967351,
+        "min_s": 1.0050854169967351
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 7.755964582989691,
+        "mean_s": 7.755964582989691,
+        "max_s": 7.755964582989691,
+        "min_s": 7.755964582989691
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.13902666700596455,
+        "mean_s": 0.13902666700596455,
+        "max_s": 0.13902666700596455,
+        "min_s": 0.13902666700596455
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:pickkey red_agent red_key": {
+        "count": 2,
+        "total_s": 7.1862280829955125,
+        "mean_s": 3.5931140414977563,
+        "max_s": 4.131929374998435,
+        "min_s": 3.054298707997077
+      },
+      "exploit_subplan:unlockdoor red_agent red_key red_door_1": {
+        "count": 2,
+        "total_s": 87.08588133298326,
+        "mean_s": 43.54294066649163,
+        "max_s": 50.625504666997585,
+        "min_s": 36.46037666598568
+      }
+    }
+  },
+  "meta": {
+    "game": "babyai",
+    "label": "run",
+    "level": 13,
+    "started_ts": 1781984627.9249291
+  }
+}

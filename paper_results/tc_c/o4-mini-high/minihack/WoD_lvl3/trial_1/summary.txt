@@ -1,0 +1,8 @@
+
+        Level: 3
+        Revisions: 0
+        Attempts: 0
+        Final Status: Won
+        First Letters: lprrrrrrrrrrrrrrrrrrrzss
+        Actions: ['pickup', 'select_f', 'zap', 'select_f', 'right', 'up', 'shoot_left', 'up_left', 'pickup', 'pickup', 'shoot_right', 'shoot_up', 'up_right', 'up_left', 'right', 'left', 'pickup', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'zap', 'select_f', 'shoot_right']
+                        

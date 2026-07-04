@@ -1,0 +1,8 @@
+
+        Level: 0
+        Revisions: 0
+        Attempts: 0
+        Final Status: Won
+        First Letters: rd
+        Actions: ['down_right', 'up_left', 'down_left', 'down_right', 'right', 'right', 'up_right', 'down_left', 'down_right', 'up_right', 'down_left', 'down', 'down', 'left', 'up', 'right', 'down_right']
+                        

@@ -1,0 +1,33 @@
+Pick a predicate function which properly represents the goal state for this game level.
+A planner will be used to solve the game, so pick the correct predicate function.
+
+State
+
+{raw_state}
+
+Transition Model 
+
+{world_model}
+
+Predicate Functions
+
+{predicates}
+
+This is how the predicate function will be used by the planner to check if the goal state is reached:
+
+new_state = transition_model(state, action)
+if predicate_function(new_state, ...):
+    print("Goal reached")
+
+Just return the exact name of the predicate function to use with txt markup tags
+```txt ```
+
+you can choose multiple in which case you should instead return the predicate function names 
+in a python list with python markup tags. order matters here, since they will be executed 
+starting from index 0
+```python ```
+
+if your predicate library does not contain 
+the proper predicates or enough predicates to win please propose a new predicate and put it in  
+python markup tags
+```python ``

@@ -1,0 +1,106 @@
+{
+  "events": [
+    {
+      "ts": 1782936049.1532102,
+      "category": "llm",
+      "detail": "gen_pddl_problem_existing",
+      "duration_s": 54.54704579198733,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 1738,
+      "completion_tokens": 6111,
+      "total_tokens": 7849
+    },
+    {
+      "ts": 1782936049.319442,
+      "category": "fd",
+      "detail": "astar(blind)",
+      "duration_s": 0.1610866249538958,
+      "level": 0
+    },
+    {
+      "ts": 1782936049.328806,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move avatar floor",
+      "duration_s": 0.0003838750417344272
+    },
+    {
+      "ts": 1782936049.3680441,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move avatar cheese",
+      "duration_s": 0.039231874980032444
+    },
+    {
+      "ts": 1782936068.291229,
+      "category": "llm",
+      "detail": "revise_world_model",
+      "duration_s": 18.832597707980312,
+      "model": "o4-mini-2025-04-16",
+      "provider": "custom",
+      "prompt_tokens": 13868,
+      "completion_tokens": 2305,
+      "total_tokens": 16173
+    },
+    {
+      "ts": 1782936068.316289,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move avatar floor",
+      "duration_s": 0.0007686670287512243
+    },
+    {
+      "ts": 1782936068.3389518,
+      "category": "planner_bfs",
+      "detail": "exploit_subplan:move avatar cheese",
+      "duration_s": 0.02265329100191593
+    }
+  ],
+  "rollup": {
+    "llm": {
+      "gen_pddl_problem_existing": {
+        "count": 1,
+        "total_s": 54.54704579198733,
+        "mean_s": 54.54704579198733,
+        "max_s": 54.54704579198733,
+        "min_s": 54.54704579198733
+      },
+      "revise_world_model": {
+        "count": 1,
+        "total_s": 18.832597707980312,
+        "mean_s": 18.832597707980312,
+        "max_s": 18.832597707980312,
+        "min_s": 18.832597707980312
+      }
+    },
+    "fd": {
+      "astar(blind)": {
+        "count": 1,
+        "total_s": 0.1610866249538958,
+        "mean_s": 0.1610866249538958,
+        "max_s": 0.1610866249538958,
+        "min_s": 0.1610866249538958
+      }
+    },
+    "planner_bfs": {
+      "exploit_subplan:move avatar floor": {
+        "count": 2,
+        "total_s": 0.0011525420704856515,
+        "mean_s": 0.0005762710352428257,
+        "max_s": 0.0007686670287512243,
+        "min_s": 0.0003838750417344272
+      },
+      "exploit_subplan:move avatar cheese": {
+        "count": 2,
+        "total_s": 0.061885165981948376,
+        "mean_s": 0.030942582990974188,
+        "max_s": 0.039231874980032444,
+        "min_s": 0.02265329100191593
+      }
+    }
+  },
+  "meta": {
+    "game": "maze",
+    "label": "run",
+    "level": 0,
+    "started_ts": 1782935994.60547
+  }
+}

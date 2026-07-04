@@ -1,0 +1,27 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Your task is to output a minimal PDDL domain and problem file for this setup that will allow the agent to win the game. Think in terms of the most minimal abstract files you can.
+
+Each object in your PDDL problem file is named using ONLY the keys of the raw state dictionary.
+
+There is no reference to coordinates or spatial concepts.
+
+The raw state dictionary keys are considered traversable.
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Previously, you attempted to do this but received an error where there was no solution found.
+Simplify the domain and problem file to make sure at least some solution is found.
+
+Domain File:
+
+{domain_file}
+
+Problem File:
+
+{problem_file}
+
+Raw State:
+
+{raw_state}
