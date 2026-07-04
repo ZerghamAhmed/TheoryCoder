@@ -41,3 +41,8 @@ __pycache__/
 /smoketest/
 /*_smoke*/
 /scratch/
+
+# Loose runtime artifacts written at repo root during a run
+/current_prompt*.txt
+/sas_plan
+/screenshot.png

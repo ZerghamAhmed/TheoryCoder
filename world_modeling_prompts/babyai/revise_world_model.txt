@@ -1,0 +1,96 @@
+You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
+will be a python program that captures the logic and mechanics of the game. You have begun this world model, but it did not capture everything. 
+Below is your current world model, the action space, and the state transition that your transition model handled wrong.
+The state transition (inital state, action, next state) will be followed by a section detailing your prediction errors.
+If the prediction errors is blank it means your world model correctly modeled that transition.
+
+In order to craft the world model and get this state transition you explored your environment with an EXPLORATION PLAN.
+The state transitions belonging to an EXPLORATION PLAN will be written below it.
+Note this exploration is a high level plan and the transitions related to it
+are carrying out this high level plan by 
+executing actions in the ACTION SPACE {actions_set}
+
+Pay close attention to what is involved and modify your transition model to be able to handle this.
+Try to infer what the code will be for all actions in the action space. Do not just write pass in the code.
+
+
+DESCRIPTION OF DOMAIN:
+
+Make sure your world model is general. For example, do not hard code colors if there is a particular attribute you notice but have different colors.
+There are different colored objects, keys, doors, boxes and balls.
+
+You can toggle any closed doors to open them and locked ones when you have their colored key
+
+For this environment the state key `agent_carrying` is a list of object names the agent currently holds (e.g., `['red_key']`).
+
+A colored key can unlock any of the same colored doors
+
+You can only carry one thing at a time
+
+You cannot move forward through closed doors unless they are open 
+So you will need to toggle them by being adjacent to it and facing it then toggle
+so closed doors are essentially similar to grey walls in that they block you
+
+
+
+You also cannot move forward to go through other color keys and boxes. 
+
+In the game you cannot overlap with any objects, to pickup the key you need to be adjacent to it and facing it.
+You can toggle doors when you are adjacent and facing them.
+
+
+MISSION:
+
+{mission}
+
+NOTES:
+
+Feel free to also explain your thinking outside of the markup tags, but know that I will only use the code inside the markup tags. 
+
+The exploration plans are set up to help guide you to your overall goal. 
+
+Make sure you use .get() to access the dictionary to avoid key errors!
+
+For example:
+avatar_pos = new_state.get('avatar') to get avatar pos 
+cake_pos = new_state.get('cake') to get cake pos
+
+ACTION SPACE:
+
+{actions_set}
+
+CURRENT WORLD MODEL:
+
+{world_model_str}
+
+
+ERRORS FROM WORLD MODEL:
+
+{errors_from_world_model}
+
+UTILS:
+
+{utils}
+
+
+RESPONSE FORMAT (make sure to include your code in markup tags):
+
+- Make sure that you return the correct state for example if you made a deepcopy of the state and modify the deep copy then return the new_state
+- If you modify the state directly then return the state instead of new_state
+- You can infer what the code will be for other interactions you do not need to only model things you saw in the replay buffer, for example try modeling all actions in the action space. Do not just write pass in the code.
+- Do not write pass anywhere in the code always try your best to model everything
+
+
+
+```Python
+
+# make sure to include these import statements
+from copy import deepcopy
+from utils import directions
+
+def transition_model(state, action):
+
+
+        Return State
+
+```

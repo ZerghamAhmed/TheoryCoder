@@ -1,0 +1,82 @@
+You are an AI agent that must come up with a transition model of the game you are playing. 
+
+A BFS low-level planner that will use your synthesized transition model to find the low-level actions that will allow you to win levels of the game.
+
+You are also given state transition after executing random actions that will help as well.
+Note that if there is no change returned after doing that action, it means that moving was prevented somehow such as by an obstacle. 
+Try to infer what the code will be for all actions in the action space. Do not just write pass in the code.
+
+
+DESCRIPTION OF DOMAIN:
+
+Make sure your world model is general. For example, do not hard code colors if there is a particular attribute you notice but have different colors.
+There are different colored objects, keys, doors, boxes and balls.
+
+You can toggle any closed doors to open them and locked ones when you have their colored key
+
+For this environment the state key `agent_carrying` is a list of object names the agent currently holds (e.g., `['red_key']`).
+
+A colored key can unlock any of the same colored doors
+
+You can only carry one thing at a time
+
+You cannot move forward through closed doors unless they are open 
+So you will need to toggle them by being adjacent to it and facing it then toggle
+so closed doors are essentially similar to grey walls in that they block you
+
+
+
+You also cannot move forward to go through other color keys and boxes. 
+
+In the game you cannot overlap with any objects, to pickup the key you need to be adjacent to it and facing it.
+You can toggle doors when you are adjacent and facing them.
+
+MISSION:
+
+{mission}
+
+
+
+CURRENT STATE:
+
+{current_state}
+
+ACTION SPACE:
+
+{actions_set}
+
+Replay Buffer (last {num_random_actions} transitions):
+
+{errors_from_world_model}
+
+UTILS:
+
+{utils}
+
+CURRENT WORLD MODEL YOU HAVE SYNTHESIZED SO FAR:
+
+{world_model}
+
+
+RESPONSE FORMAT:
+
+- Make sure you use .get() to access the dictionary to avoid key errors!
+For example:
+avatar_pos = new_state.get('avatar') to get avatar pos 
+cake_pos = new_state.get('cake') to get cake pos
+- do not hardcoding objects and their attributes, i.e. color 
+- You can infer what the code will be for other interactions you do not need to only model things you saw in the replay buffer, for example try modeling all actions in the action space. Do not just write pass in the code.
+- Do not write pass anywhere in the code always try your best to model everything
+
+
+```python
+
+# make sure to include these import statements
+from utils import directions
+
+def transition_model(state, action):
+
+
+    Return State
+
+```

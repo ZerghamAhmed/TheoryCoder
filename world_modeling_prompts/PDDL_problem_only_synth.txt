@@ -1,0 +1,69 @@
+You are an agent playing a 2D grid game, whose raw state is shown below.
+
+Can you give me a minimal PDDL problem file for this given PDDL domain file that will allow the agent to win the game? 
+
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+BEGIN EXAMPLE
+
+raw state: {"agent": [0, 0], "goal": [2,0]}
+
+raw action space: [move]
+
+mission: get to the goal
+
+(define (domain grid-move)
+  (:requirements :strips :typing)
+  (:types agent location)
+
+  (:predicates
+    (at ?a - agent ?l - location)
+    (adjacent ?l1 - location ?l2 - location)
+  )
+
+  (:action move
+    :parameters (?a - agent ?from - location ?to - location)
+    :precondition (and (at ?a ?from) (adjacent ?from ?to))
+    :effect (and (not (at ?a ?from)) (at ?a ?to))
+  )
+)
+ 
+
+(define (problem grid-move-prob)
+  (:domain grid-move)
+
+  (:objects
+    agent1 - agent
+    l0 l1 goal - location
+  )
+
+  (:init
+    (at agent1 l0)
+    (adjacent l0 l1)
+    (adjacent l1 goal)
+    (adjacent l0 goal) ; optional: connect start directly to goal
+  )
+
+  (:goal
+    (at agent1 goal)
+  )
+)
+
+
+END EXAMPLE
+
+Domain file you need to use (generate the problem file for this):
+
+{domain_file}
+
+Raw state of game (generate the problem file for this):
+
+{raw_state}
+
+MISSION:
+
+{mission}
+
+

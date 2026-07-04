@@ -1,0 +1,104 @@
+You are a robot exploring in an object-centric environment. Your goal is to
+model the logic of the world in python. You will be provided experiences in
+the format of (state, action, next_state, reward, done) tuples. You will
+also be provided with a short natural language description that briefly
+summarizes the difference between the state and the next state for each (
+state, next_state) pair. You need to implement the python code to model the
+logic of the world, as seen in the provided experiences. Please follow the
+template to implement the code. The code needs to be directly runnable on
+the (state, action, next_state) tuple and return the (reward, done) tuple in
+python as provided in the experiences.
+You need to implement python code to model the logic of the world as seen in
+the following experiences for mission {mission}:
+
+{errors_from_world_model}
+
+
+DESCRIPTION OF DOMAIN:
+
+Kill the minotaur to win. 
+To use the wand you zap, then select_f and finally shoot in the direction you want.
+You need to be about 5 squares away from the minotaur to kill it with the zap.
+It's good to sequence your actions by zapping, selecting f and then pointing to the correct direction.
+In order to shoot_ in a particular direction, you must always first zap, then select_f and then shoot in that direction - all as one action sequence.
+
+
+MISSION:
+
+{mission}
+
+CURRENT STATE:
+
+{current_state}
+
+ACTION SPACE:
+
+{actions_set}
+
+UTILS:
+
+directions = {{
+    'left': [-1, 0],
+    'right': [1, 0],
+    'up': [0, 1],
+    'down': [0, -1],
+}}
+
+
+
+Please implement code to model the logic of the world as demonstrated by the
+experiences. Here is the template for the reward function. Please implement
+the reward function following the template. The code needs to be directly
+runnable on the inputs of (state, action, next_state) and return (reward,
+done) in python as provided in the experiences.
+‘‘‘
+class Entity:
+def __init__(self, x, y, **kwargs):
+self.name = self.__class__.__name__
+self.x = x
+self.y = y
+for key, value in kwargs.items():
+setattr(self, key, value)
+def __repr__(self):
+attr = ’, ’.join(f’{key}={value}’ for key, value in self.__dict__.
+items() if key not in (’name’, ’x’, ’y’))
+if attr: return f"{self.name}({self.x}, {self.y}, {attr})"
+else: return f"{self.name}({self.x}, {self.y})"
+def __eq__(self, other):
+return all(getattr(self, key) == getattr(other, key, None) for key
+in self.__dict__.keys())
+
+def __hash__(self):
+return hash(tuple(sorted(self.__dict__.items())))
+class Agent(Entity): pass
+class Key(Entity): pass
+class Door(Entity): pass
+class Goal(Entity): pass
+class Wall(Entity): pass
+class Box(Entity): pass
+class Ball(Entity): pass
+class Lava(Entity): pass
+def get_entities_by_name(entities, name):
+return [ entity for entity in entities if entity.name == name ]
+def get_entities_by_position(entities, x, y):
+return [ entity for entity in entities if entity.x == x and entity.y ==
+y ]
+def reward_func(state, action, next_state):
+"""
+Args:
+state: the state of the environment
+action: the action to be executed
+next_state: the next state of the environment
+Returns:
+reward: the reward of the action
+done: whether the episode is done
+"""
+raise NotImplementedError
+‘‘‘
+
+Please implement code to model the logic of the world as demonstrated by the
+experiences. Please implement the code following the template. You must
+implement the ‘ reward_func ‘ function as the main function to be called by
+the environment. The code needs to be directly runnable on the inputs as (
+state, action, next_state) and return (reward, done) in python as provided
+in the experiences. Let’s think step by step.

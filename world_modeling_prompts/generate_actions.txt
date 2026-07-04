@@ -1,0 +1,41 @@
+You are an AI agent exploring a game environment. Generate a list of actions to explore the environment and gather useful state transitions for learning a world model.
+
+DOMAIN DESCRIPTION:
+Make sure your world model is general. For example, do not hard code colors if there is a particular attribute you notice but have different colors.
+
+You can toggle any closed doors to open them and locked ones when you have their COLOR_key
+
+For this environment the state key `agent_carrying` is a list of object names the agent currently holds (e.g., `['red_key']`).
+
+You cannot move forward through closed doors unless they are open 
+So you will need to toggle them by being adjacent to it and facing it then toggle
+so closed doors are essentially similar to grey walls in that they block you
+
+
+
+You also cannot move forward to go through other color keys and boxes. 
+
+In the game you cannot overlap with any objects, to pickup the key you need to be adjacent to it and facing it.
+You can toggle doors when you are adjacent and facing them.
+
+CURRENT STATE:
+{current_state}
+
+AVAILABLE ACTIONS:
+{actions_set}
+
+MISSION:
+{mission}
+
+Generate actions from the AVAILABLE ACTIONS list that will help explore the environment. Consider:
+1. Moving in different directions to explore the space
+2. Interacting with objects if relevant to the mission
+3. Avoiding repetitive actions (don't just move back and forth)
+4. Trying to discover useful state transitions
+5. Actions that will help you understand how the game mechanics work
+
+RESPONSE FORMAT:
+Return ONLY a Python list of action strings from the available actions. Example:
+["up", "right", "down", "left", "up"]
+
+Your action list:

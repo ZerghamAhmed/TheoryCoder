@@ -1,0 +1,65 @@
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. 
+
+You are given your current state that you start from in the level as well as the goal to win.
+
+You are given access to a PDDL planner that output the plans for this domain. Your PDDL files and the plan that was output is shown.
+
+Please return the correct plan that is compatible with the actual action space of the game.
+
+You are given an example of what your response 
+format for this list of actions should look like. You will also need to provide your reasoning for why this will allow you to win.
+
+DOMAIN FILE:
+
+{domain_file}
+
+PROBLEM FILE:
+
+{problem_file}
+
+PDDL PLAN:
+
+{pddl_plan}
+
+Current State:
+
+{current_state}
+
+Raw Action Space:
+
+{action_space}
+
+MISSION:
+
+{mission}
+
+EXAMPLE:
+
+raw action space: [cook, eat]
+
+sas_plan
+(cook agent1 shrimp1)
+(eat agent1 shrimp1)
+; cost = 2 (unit cost)
+
+example response: 
+
+```Python
+
+["cook", "eat"]
+
+```
+
+So using the information please return the action sequence that will result in winning the level. 
+Make sure to give your explanation, also
+make sure to just have a seperate section with your actions as demonstrated in the response format.
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag):
+
+```Python
+
+["right", "left", "toggle", "forward", "forward", "pickup"]
+
+```
+

@@ -1,0 +1,58 @@
+You are an agent playing a 2D grid game, whose current state is shown below.
+
+Your task is to output a PDDL domain and problem file for this setup that will allow the agent to win the game.
+
+Your PDDL domain problem file will be used to output actions that will be executed in the game engine.
+
+Return your code blocks with
+```pddl ```
+markup tags so I can easily extract it.
+
+Previously, you attempted to do this but your PDDL had syntax errors.
+Please correct any syntax mistakes without changing the logic or simplifying the domain and problem files.
+
+CHECKLIST (you MUST satisfy all):
+-Ensure all objects are typed and declared; ensure all predicates used in actions appear in (:predicates).
+-Every predicate referenced in actions is declared with correct arity/types.
+-Every object used in init/goal is declared in :objects with correct type.
+
+
+Domain File:
+
+{domain_file}
+
+Problem File:
+
+{problem_file}
+
+Current State:
+
+{raw_state}
+
+MISSION:
+
+{mission_goal}
+
+RESPONSE FORMAT
+
+Return exactly two fenced blocks:
+
+
+```pddl
+(define (domain {{ domain_name }})
+)
+```
+
+```pddl
+(define (problem {{ problem_name }})
+  (:domain {{ domain_name }})
+  (:objects
+  )
+  (:init
+    {{ init_block }}
+  )
+  (:goal
+    {{ goal_block }}
+  )
+)
+```

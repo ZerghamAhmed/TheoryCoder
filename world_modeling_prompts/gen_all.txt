@@ -1,0 +1,202 @@
+You are helping me build ALL artifacts for a tiny 2D grid game in ONE shot.
+
+You will synthesize:
+
+1) A **PDDL domain file**
+2) A **PDDL problem file for the CURRENT level**
+3) A **Python predicates file** (predicate functions mirroring the domain predicates)
+4) A **Python world model** (a `transition_model(state, action)` function)
+
+Your ONLY sources of truth are:
+- The **mission** text
+- The **raw current state** dictionary
+- The **low-level action space**
+- The **utils** helper code (e.g., movement vectors)
+- The **collected execution trajectory** gathered by running a plan (see below)
+- (Optional) Any **current** domain/problem/world-model code I pass, which you may reuse/edit minimally if provided
+
+Your outputs MUST be strictly based on the observed mechanics evidenced by the collected trajectory and the mission description. Favor the **most minimal** but **sufficient** abstractions that allow a planner to solve the level.
+
+──────────────────────────────────────────────────────────────────────────────
+
+## INPUTS
+
+MISSION (natural language goal):
+{mission}
+
+RAW CURRENT STATE (dictionary; object keys are the names you must use when possible):
+{raw_state}
+
+LOW-LEVEL ACTION SPACE:
+{actions_set}
+
+UTILS (Python helpers you may import and use):
+{utils}
+
+COLLECTED EXECUTION TRAJECTORY (ordered triples):
+A list of (state_t, action_t, state_{t+1}) transitions produced by running an LLM-initialized action plan this episode.
+Use this to infer effects, constraints, collisions, push rules, disappear-on-goal rules, etc.
+{trajectory}
+
+OPTIONAL CURRENT FILES (may be empty):
+- CURRENT DOMAIN (PDDL):
+{current_domain}
+
+- CURRENT PROBLEM (PDDL):
+{current_problem}
+
+- CURRENT WORLD MODEL (Python):
+{current_world_model}
+
+──────────────────────────────────────────────────────────────────────────────
+
+## HARD CONSTRAINTS & CONVENTIONS
+
+PDDL authoring rules:
+- Return **two separate PDDL code blocks**: one for the DOMAIN, one for the PROBLEM.
+- Use code fences exactly as:
+  - ```pddl  (for the domain file)
+  - ```pddl  (for the problem file)
+- Operator (action) names must be **lowercase**.
+- **Do NOT** use hyphens in predicate names (e.g., **not** `avatar-at`).
+- **Do NOT** name predicates or the domain using Python keywords (`if`, `else`, `in`, `def`, etc.).
+- **Predicate names must be one word**, no underscores and no hyphens. (Parameters/types may use normal PDDL typing.)
+- **Objects in the problem file** must be named using ONLY keys from the raw state dictionary when applicable.
+- When an object has configuration prefixes/suffixes (e.g., `unopened_black_jar`, `blocked_gold_window`), normalize to a canonical object base name in objects section (e.g., `black_jar`, `gold_window`). (See example behavior.)
+- Do **not** propose predicates that imply **explicit spatial relations** like “from”, “to”, or hard-coded coordinates.
+- Keep the domain minimal but sufficient to capture **observed** mechanics (e.g., pushing boxes into holes removes them; reaching a goal; toggling doors; keys unlocking doors).
+- It’s okay to propose multiple actions and predicates if justified by the trajectory; avoid overfitting to colors/ids unless necessary.
+
+Python predicates file:
+- Return a **single** Python code block with **all predicate functions** that appear in the domain `(:predicates ...)`.
+- Each function signature must be `predicatename(state, *args)` and must include `state` as the **first** argument.
+- Predicate function **names must match** the PDDL predicate names **exactly** (case-sensitive).
+- Use only the information implied by `raw_state`, `trajectory`, and the abstractions you defined. Be robust to missing keys (`state.get(...)`).
+- These functions should be **boolean** and side-effect free.
+
+Python world model:
+- Return a **single** Python code block that defines:
+  - `from copy import deepcopy`
+  - `from utils import directions`
+  - `def transition_model(state, action):`
+- The function must:
+  - Treat `state` as an immutable input (use a deepcopy and return the new dict), **or** if you mutate in-place, then return the mutated dict consistently.
+  - Use `dict.get(...)` for safe access, e.g., `avatar = new_state.get('avatar')`.
+  - Implement observed mechanics evidenced by the **trajectory** (e.g., collision blocking, push chains, box-into-hole → removal, door toggling, key inventory checks).
+  - Never set victory flags in this function (external logic will detect goal conditions).
+- The action arguments are strings from `{actions_set}`.
+
+Formatting & extraction rules:
+- Respond with **exactly FOUR** code blocks in this order:
+  1) PDDL DOMAIN  → fenced with ```pddl
+  2) PDDL PROBLEM → fenced with ```pddl
+  3) PYTHON PREDICATES → fenced with ```python
+  4) PYTHON WORLD MODEL → fenced with ```python
+- **No extra commentary outside code fences.** No markdown headers or explanations beyond comments inside code.
+
+──────────────────────────────────────────────────────────────────────────────
+
+The Python Predicates will be used to terminate the BFS planner to return plans 
+
+For example
+
+for a in actions_set:
+            try:
+                state = transition_model(deepcopy(states[tuple(node)]), a)
+                
+                if state and state != states[tuple(node)]:
+                    new_node = node + [a]
+                    states[tuple(new_node)] = deepcopy(state)
+                    queue.append(new_node)
+
+                    try:
+                        # This is basically using the boolean predicate to see if the state is satisfied
+                        if checker(state, effects, operator):
+                            print('Goal reached')
+                            return list(new_node), state
+
+Example workflow for toy level:
+
+state is 'table': [3, 4], 'mug', [4, 4], 'agent': [1, 1]
+
+action_space is "up", "left", "right", "down"
+
+Domain Description:
+
+In this domain when you collide into object it'll move 
+
+(define (domain toy-domain)
+  (:requirements :strips :typing)
+  
+  (:types
+    object
+  )
+
+  (:predicates
+    (isLeftOf ?x - object ?y - object)
+  )
+
+  (:action placetoleftof
+    :parameters (?obj1 - object ?obj2 - object)
+    :precondition (not (isLeftOf ?obj1 ?obj2))
+    :effect (isLeftOf ?obj1 ?obj2)
+  )
+)
+
+(define (problem toy-problem)
+  (:domain toy-domain)
+
+  (:objects
+    table mug - object
+  )
+
+  (:init
+    (not (isLeftOf mug table))
+  )
+
+  (:goal
+    (isLeftOf mug table)
+  )
+)
+
+Plan would be placetoleftof(table, mug)
+
+The corresponding Python Predicate would be
+
+def isLeftOf(state, arg1, arg2):
+    """
+    Returns True if arg1 is to the left of arg2, based on their x-coordinates.
+
+    Parameters:
+    - state: dict with keys as object names and values as [x, y] positions
+    - arg1: object name (e.g., 'book')
+    - arg2: object name (e.g., 'lamp')
+
+    Returns:
+    - bool: True if arg1's x-coordinate is less than arg2's, False otherwise
+    """
+    pos1 = state.get(arg1)
+    pos2 = state.get(arg2)
+    if pos1 is None or pos2 is None:
+        return False
+    return pos1[0] < pos2[0]
+
+
+World Model for this would be (note this is pseudocode):
+
+def transition_model(state, action)
+
+    # this sould model the action space dynamics 
+
+    return state
+
+
+This is how your pyton predicate will be called so make sure its compatable with transition model
+as well as the output pddl plan
+
+new_state = transition_model(state, action)
+if isLeftOf(new_state, "mug", "table"):
+    print("Goal reached")
+
+
+──────────────────────────────────────────────────────────────────────────────

@@ -125,6 +125,7 @@ if should_run_domain minihack; then
       $extra 2>&1 | /usr/bin/tee "${exp_dir}.log"
   }
   for SEED in $SEEDS; do
+    mkdir -p "$ROOT/minihack/seed_${SEED}"   # ensure per-task .log dir exists for tee/won_in_log
     # Step 1: 5x5 fresh
     FIVE="$ROOT/minihack/seed_${SEED}/5x5_lvl0"
     if ! won_in_log "${FIVE}.log"; then

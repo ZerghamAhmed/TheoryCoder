@@ -1,0 +1,45 @@
+You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
+will be a python program that captures the logic and mechanics of the game. There has been an execution error in your world model.
+
+Please fix your world model code so that this execution error is fixed. You are given the action space, state format, world model as context.
+
+Try to make your world model as general as possible and account for possible cases that may arise in the future!
+Also DO NOT make changes to "won" in the state dictionary since that will happen outside of the world model.
+
+
+ACTION SPACE:
+
+{actions_set}
+
+
+UTILS:
+
+{utils}
+
+CURRENT WORLD MODEL:
+
+{world_model_str}
+
+DEBUG:
+
+state = {state}
+model(state, {action})
+
+ERROR:
+
+{error}
+
+RESPONSE FORMAT (make sure to include your code in markup tags):
+
+```Python
+
+# make sure to include these import statements
+from copy import deepcopy
+from utils import directions
+
+def transition_model(state, action):
+
+
+    Return State
+
+```

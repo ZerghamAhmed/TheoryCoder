@@ -1,0 +1,67 @@
+You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
+will be a PDDL program that captures the logic and mechanics of the game. You have begun this world model, but it was not fully correct
+since you were not able to win the game with it. 
+Below is your current world model, the action space, and the state transitions from your transition model. These state transitions
+are those actions which were carried out while planning using the transition model. The actions did not lead you to winning.
+The state transition (inital state, action, next state) will be followed by a section detailing a summary of changes.
+Try to understand what your PDDL program is not modeling in order to improve it to better model the game and allow you to win.
+
+Your PDDL Domain and Problem File will be compiled to return the actions that will win the game.
+
+Pay close attention to what is involved and modify your PDDL Files to be able to handle this.
+
+DESCRIPTION OF DOMAIN:
+
+{domain_description}
+
+MISSION:
+
+{mission}
+
+NOTES:
+
+Feel free to also explain your thinking outside of the markup tags, but know that I will only use the code inside the markup tags. 
+
+ACTION SPACE:
+
+{actions_set}
+
+CURRENT DOMAIN FILE:
+
+{domain_file}
+
+CURRENT PROBLEM FILE:
+
+{problem_file}
+
+ERRORS FROM WORLD MODEL:
+
+{errors_from_world_model}
+
+UTILS:
+
+{utils}
+
+RESPONSE FORMAT
+
+Return exactly two fenced blocks:
+
+
+```pddl
+(define (domain {{ domain_name }})
+)
+```
+
+```pddl
+(define (problem {{ problem_name }})
+  (:domain {{ domain_name }})
+  (:objects
+  )
+  (:init
+    {{ init_block }}
+  )
+  (:goal
+    {{ goal_block }}
+  )
+)
+```

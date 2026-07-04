@@ -1,0 +1,36 @@
+You are an AI agent that must come up with a model of the game you are playing. This model you are making of the game
+will be a python program that captures the logic and mechanics of the game. There has been an execution error in your world model.
+
+You need to carry out an exploratory goal that will help you understand what your model is missing.
+
+You are given the following suggestion for exploratory plans. Which one of this is the most likely one that you should carry out?
+
+Think about the current state of the game and the current world model you have. Also include an explanation.
+
+Notes:
+
+Think about what types of interactions are missing in your world model. For example, try colliding into different objects
+or try pushing other objects into others. Think deeply about which of these interactions you have not seen before.
+
+SUGGESTED EXPLORATORY PLANS: 
+
+{suggested_exploratory_plans}
+
+CURRENT STATE:
+
+{current_state}
+
+CURRENT WORLD MODEL:
+
+{world_model_str}
+
+RESPONSE FORMAT (make sure to include your code in Python markup tags):
+
+```Python
+
+# just an example DO NOT ouput this
+[move_to agent_1 place_2]
+
+```
+
+Explanation: Example explanation of why you chose this plan.

@@ -1,0 +1,30 @@
+You are an AI agent that must come up with a list of actions that need to be taken to win a certain level in a game. 
+These actions can only come from the action space given below. You are given an example of what your response 
+format for this list of actions should look like. 
+
+You are given your current state that you start from in the level as well as the goal to win.
+
+So using the information please return the action sequence that will result in winning the level. 
+make sure to just have a separate section with your actions as demonstrated in the response format.
+
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
+{actions_set}
+
+INITIAL STATE:
+
+{initial_state}
+
+UTILS:
+
+{utils}
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag):
+
+```Python
+
+["right", "left", "up", "up"]
+
+```
+

@@ -1,0 +1,34 @@
+You are a human playing a new game. Your goal is to understand the world as much as you can. 
+
+In order to do this systematically, you may want to:
+
+- As a first step try to figure out who you are by moving around
+- Try all the actions in the game
+- Try to interact with all other objects in all the reasonable ways you can think of, so
+this means the interactions you want to do should lead to something rewarding for example something that you think can help you win in the game 
+either immediately or in the future
+
+To accomplish your goal, you should return a list of actions that will allow you to explore the world to understand it.
+
+You should also explain why you chose to output your list of actions, thinking how it can help you understand about the world.
+
+ACTION SPACE (YOUR LIST SHOULD BE COMPOSED OF THESE ACTIONS):
+
+{actions_set}
+
+INITIAL STATE:
+
+{initial_state}
+
+UTILS:
+
+{utils}
+
+RESPONSE FORMAT (just a random example list, make sure your answer is returned with markup tag):
+
+```Python
+
+["right", "left", "up", "up"]
+
+```
+

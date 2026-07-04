@@ -59,12 +59,13 @@ def normalize_pddl_whitespace(pddl: str) -> str:
     """
     import re as _re
     return _re.sub(r'(?<=[^\s(])(\?)', r' \1', pddl)
-from pb1_env import pb1env
+from envs.pb1_env import pb1env
+from envs.boulderdash2_env import Boulderdash2Env
 from envs.sokoban_env import SokobanEnv
 from envs.labyrinth_env import LabyrinthEnv
 from envs.games import BabaIsYou
 from envs.maze_env import MazeEnv
-from cheesemaze_env import CheesemazeEnv
+from envs.cheesemaze_env import CheesemazeEnv
 import yaml
 
 from typing import List, Tuple, Optional
@@ -3203,74 +3204,6 @@ class TheoryCoderAgent:
         return bool(self.engine.won)
 
 
-    def prune_exploratory_plans_with_lm(self, exploratory_plans, state, world_model_str):
-        """
-        Use LLM to prune exploratory plans based on the current state and world model.
-
-        Args:
-            exploratory_plans (list): List of suggested exploratory plans.
-            state (dict): Current game state.
-            world_model_str (str): Current world model as a string.
-
-        Returns:
-            list: Pruned exploratory plans.
-        """
-        # Generate the LLM prompt using the defined prune_exploration_prompt
-        formatted_prompt = prune_exploration_prompt.format(
-            suggested_exploratory_plans=exploratory_plans,
-            current_state=state,
-            world_model_str=world_model_str
-        )
-
-
-        # Query the LLM for the pruned plans
-        response, fingerprint = self.query_lm(formatted_prompt)
-#         response, fingerprint = """```Python
-# ['push_to baba_obj rock_obj goop_obj']
-# # ```""", 'fingerprint'
-#         response, fingerprint = """```Python
-# ['form_rule keke_word is_word you_word']
-# ```""", 'fingerprint'
-
-        # Extract the list of plans from the response
-        selected_plans = self.extract_code_from_response(response)
-
-        # Create step directory and save files
-        step_dir = self.logger.create_step("exploratory_plan_pruning")
-        self.logger.save_step_files(
-            step_dir,
-            formatted_prompt,
-            response,
-            selected_plans,
-            "pruned_plans.txt"
-        )
-
-        # Save fingerprint to file
-        with open(os.path.join(step_dir, "fingerprint.txt"), "w") as f:
-            f.write(fingerprint)
-
-        self.logger.add_to_tape({
-            "step": "exploratory_plan_pruning",
-            "prompt": formatted_prompt,
-            "response": response
-        })
-        # Note: timestamp is now added by the logger
-
-        # Read the pruned plans from the saved file
-        pruned_plans_path = os.path.join(step_dir, "pruned_plans.txt")
-        try:
-            with open(pruned_plans_path, 'r') as f:
-                selected_plans = f.read().strip()
-            
-            # Parse the selected plans into a Python list
-            pruned_plans = ast.literal_eval(selected_plans)
-            print(f"Pruned exploratory plans: {pruned_plans}")
-            return pruned_plans
-        except Exception as e:
-            print(f"Error parsing LLM response for pruned plans: {e}")
-            return exploratory_plans  # Fallback to the original plans if parsing fails
-
-    
     # def enumerate_possible_subplans(self, state):
     #     """
     #     Enumerate all possible subplans based on the current state by grounding operators with entities.
@@ -3501,43 +3434,26 @@ class TheoryCoderAgent:
         """
         Turn self.engine’s class into the folder‐name you want under tc_game/.
         """
-        from envs.games import BabaIsYou, LavaGrid
-        from envs.babyai_env import BabyAI
-        from pb1_env import pb1env
-        from envs.sokoban_env import SokobanEnv
-        from envs.labyrinth_env import LabyrinthEnv
-        from envs.maze_env import MazeEnv
-        from cheesemaze_env import CheesemazeEnv
-
-
-
-        if isinstance(self.engine, BabaIsYou):
-            return "baba"
-        elif isinstance(self.engine, LavaGrid):
-            return "lava"
-        elif isinstance(self.engine, DoggoEnv):
-            return "doggo"
-        elif isinstance(self.engine, DrunkDwarfEnv):
-            return "drunkdwarf"
-        elif isinstance(self.engine, BabyAI):
-            return "babyai"
-        elif isinstance(self.engine, Boulderdash2Env):
-            return "boulderdash2"
-        elif isinstance(self.engine, pb1env):
-            return "pb1"
-        elif isinstance(self.engine, SokobanEnv):
-            return "sokoban"
-        elif isinstance(self.engine, SokobanEnvFULL):
-            return "sokobanFULL"
-        elif isinstance(self.engine, LabyrinthEnv):
-            return "labyrinth"
-        elif isinstance(self.engine, MazeEnv):
-            return "maze"
-        elif isinstance(self.engine, CheesemazeEnv):
-            return "cheesemaze"
-        else:
-            # fallback to the class name
-            return self.engine.__class__.__name__.lower()
+        # Map engine class name -> folder name. Keyed by class name string so
+        # this stays robust even for games not shipped in this release (whose
+        # env classes aren't importable here).
+        name_map = {
+            "BabaIsYou": "baba",
+            "LavaGrid": "lava",
+            "DoggoEnv": "doggo",
+            "DrunkDwarfEnv": "drunkdwarf",
+            "BabyAI": "babyai",
+            "Boulderdash2Env": "boulderdash2",
+            "pb1env": "pb1",
+            "SokobanEnv": "sokoban",
+            "SokobanEnvFULL": "sokobanFULL",
+            "LabyrinthEnv": "labyrinth",
+            "MazeEnv": "maze",
+            "CheesemazeEnv": "cheesemaze",
+        }
+        cls_name = type(self.engine).__name__
+        # fallback to the lowercased class name
+        return name_map.get(cls_name, cls_name.lower())
 
 
     def run(self, engine, max_revisions=5, max_attempts=6):

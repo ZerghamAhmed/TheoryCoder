@@ -48,6 +48,6 @@ class SingleKeyEnv(MiniGridEnv):
 # Register the environment with gymnasium so ``gym.make`` can instantiate it.
 register(
     id="MiniGrid-SingleKey-5x5-v0",
-    entry_point="single_key_env:SingleKeyEnv",
+    entry_point="envs.single_key_env:SingleKeyEnv",
     kwargs={"size": 5},
 )

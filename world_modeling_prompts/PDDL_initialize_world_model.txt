@@ -1,0 +1,200 @@
+You are an AI agent that must come up with PDDL Domain and Problem Files to solve this game.
+
+You are also given state transition after executing random actions that will help as well.
+Note that if there is no change returned after doing that action, it means that moving was prevented somehow such as by an obstacle. 
+
+DESCRIPTION OF DOMAIN:
+
+{domain_description}
+
+CURRENT STATE:
+
+{current_state}
+
+MISSION:
+
+{mission}
+
+ACTION SPACE:
+
+{actions_set}
+
+Replay Buffer (last {num_random_actions} transitions):
+
+{errors_from_world_model}
+
+UTILS:
+
+{utils}
+
+YOUR CURRENT DOMAIN FILE YOU HAVE SYNTHESIZED:
+
+{current_domain}
+
+Few shot example of what the domain and problem file should look like for the raw state and action space.
+Make sure to model the PDDL actions to exactly be the raw action space:
+
+BEGIN EXAMPLE
+
+raw state: {"agent": [0, 0], "goal": [2,0]}
+
+raw action space: [move]
+
+mission: get to the goal
+
+(define (domain grid-move)
+  (:requirements :strips :typing)
+  (:types agent location)
+
+  (:predicates
+    (at ?a - agent ?l - location)
+    (adjacent ?l1 - location ?l2 - location)
+  )
+
+  (:action move
+    :parameters (?a - agent ?from - location ?to - location)
+    :precondition (and (at ?a ?from) (adjacent ?from ?to))
+    :effect (and (not (at ?a ?from)) (at ?a ?to))
+  )
+)
+ 
+
+(define (problem grid-move-prob)
+  (:domain grid-move)
+
+  (:objects
+    agent1 - agent
+    l0 l1 goal - location
+  )
+
+  (:init
+    (at agent1 l0)
+    (adjacent l0 l1)
+    (adjacent l1 goal)
+    (adjacent l0 goal) ; optional: connect start directly to goal
+  )
+
+  (:goal
+    (at agent1 goal)
+  )
+)
+
+
+END EXAMPLE
+
+BEGIN EXAMPLE 2
+
+state: {"plate": "dirty"}
+raw action space: [wash, dry]
+
+(define (domain cleaning)
+  (:requirements :strips :typing)
+  (:types dish)
+
+  (:predicates
+    (dirty ?x - dish)
+    (wet ?x - dish)
+    (clean ?x - dish)
+  )
+
+  (:action wash
+    :parameters (?p - dish)
+    :precondition (dirty ?p)
+    :effect (and (wet ?p) (not (dirty ?p)))
+  )
+
+  (:action dry
+    :parameters (?p - dish)
+    :precondition (wet ?p)
+    :effect (and (clean ?p) (not (wet ?p)))
+  )
+)
+
+(define (problem clean-one-plate)
+  (:domain cleaning)
+
+  (:objects
+    plate1 - dish
+  )
+
+  (:init
+    (dirty plate1)
+  )
+
+  (:goal
+    (clean plate1)
+  )
+)
+
+BEGIN EXAMPLE 3
+
+state: {"agent": [0,0], "shrimp": [0,0]}
+raw action space: [cook, eat]
+mission: eat the shrimp
+
+(define (domain eat-the-shrimp)
+  (:requirements :strips :typing)
+  (:types agent object)
+
+  (:predicates
+    (has ?a - agent ?o - object)   
+    (eaten ?o - object)           
+    (available ?o - object)       
+  )
+
+  (:action cook
+    :parameters (?a - agent ?o - object)
+    :precondition (and (available ?o) (not (has ?a ?o)))
+    :effect (and (has ?a ?o) (not (available ?o)))
+  )
+
+  (:action eat
+    :parameters (?a - agent ?o - object)
+    :precondition (and (has ?a ?o) (not (eaten ?o)))
+    :effect (eaten ?o)
+  )
+)
+
+
+(define (problem shrimp-problem)
+  (:domain eat-the-shrimp)
+
+  (:objects
+    agent1 - agent
+    shrimp1 - object
+  )
+
+  (:init
+    (available shrimp1)
+  )
+
+  (:goal
+    (eaten shrimp1)
+  )
+)
+
+
+
+RESPONSE FORMAT
+
+Return exactly two fenced blocks:
+
+
+```pddl
+(define (domain {{ domain_name }})
+)
+```
+
+```pddl
+(define (problem {{ problem_name }})
+  (:domain {{ domain_name }})
+  (:objects
+  )
+  (:init
+    {{ init_block }}
+  )
+  (:goal
+    {{ goal_block }}
+  )
+)
+```
